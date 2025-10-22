@@ -1,0 +1,430 @@
+[
+  {
+    "symbol": "MPWR",
+    "href": "/stocks/mpwr/"
+  },
+  {
+    "symbol": "VEEV",
+    "href": "/stocks/veev/"
+  },
+  {
+    "symbol": "EW",
+    "href": "/stocks/ew/"
+  },
+  {
+    "symbol": "CPRT",
+    "href": "/stocks/cprt/"
+  },
+  {
+    "symbol": "RMD",
+    "href": "/stocks/rmd/"
+  },
+  {
+    "symbol": "CTSH",
+    "href": "/stocks/ctsh/"
+  },
+  {
+    "symbol": "RJF",
+    "href": "/stocks/rjf/"
+  },
+  {
+    "symbol": "LEN",
+    "href": "/stocks/len/"
+  },
+  {
+    "symbol": "AU",
+    "href": "/stocks/au/"
+  },
+  {
+    "symbol": "LEN.B",
+    "href": "/stocks/len.b/"
+  },
+  {
+    "symbol": "WIT",
+    "href": "/stocks/wit/"
+  },
+  {
+    "symbol": "ZM",
+    "href": "/stocks/zm/"
+  },
+  {
+    "symbol": "PHM",
+    "href": "/stocks/phm/"
+  },
+  {
+    "symbol": "MKL",
+    "href": "/stocks/mkl/"
+  },
+  {
+    "symbol": "TROW",
+    "href": "/stocks/trow/"
+  },
+  {
+    "symbol": "NVR",
+    "href": "/stocks/nvr/"
+  },
+  {
+    "symbol": "STLD",
+    "href": "/stocks/stld/"
+  },
+  {
+    "symbol": "TPL",
+    "href": "/stocks/tpl/"
+  },
+  {
+    "symbol": "LULU",
+    "href": "/stocks/lulu/"
+  },
+  {
+    "symbol": "WST",
+    "href": "/stocks/wst/"
+  },
+  {
+    "symbol": "UTHR",
+    "href": "/stocks/uthr/"
+  },
+  {
+    "symbol": "SNA",
+    "href": "/stocks/sna/"
+  },
+  {
+    "symbol": "LOGI",
+    "href": "/stocks/logi/"
+  },
+  {
+    "symbol": "DECK",
+    "href": "/stocks/deck/"
+  },
+  {
+    "symbol": "WWD",
+    "href": "/stocks/wwd/"
+  },
+  {
+    "symbol": "COO",
+    "href": "/stocks/coo/"
+  },
+  {
+    "symbol": "RS",
+    "href": "/stocks/rs/"
+  },
+  {
+    "symbol": "WSO.B",
+    "href": "/stocks/wso.b/"
+  },
+  {
+    "symbol": "KSPI",
+    "href": "/stocks/kspi/"
+  },
+  {
+    "symbol": "FN",
+    "href": "/stocks/fn/"
+  },
+  {
+    "symbol": "NBIX",
+    "href": "/stocks/nbix/"
+  },
+  {
+    "symbol": "WSO",
+    "href": "/stocks/wso/"
+  },
+  {
+    "symbol": "GGG",
+    "href": "/stocks/ggg/"
+  },
+  {
+    "symbol": "CF",
+    "href": "/stocks/cf/"
+  },
+  {
+    "symbol": "TOL",
+    "href": "/stocks/tol/"
+  },
+  {
+    "symbol": "UNM",
+    "href": "/stocks/unm/"
+  },
+  {
+    "symbol": "IEX",
+    "href": "/stocks/iex/"
+  },
+  {
+    "symbol": "DOCS",
+    "href": "/stocks/docs/"
+  },
+  {
+    "symbol": "MLI",
+    "href": "/stocks/mli/"
+  },
+  {
+    "symbol": "SEIC",
+    "href": "/stocks/seic/"
+  },
+  {
+    "symbol": "AIT",
+    "href": "/stocks/ait/"
+  },
+  {
+    "symbol": "EXEL",
+    "href": "/stocks/exel/"
+  },
+  {
+    "symbol": "NVMI",
+    "href": "/stocks/nvmi/"
+  },
+  {
+    "symbol": "WTS",
+    "href": "/stocks/wts/"
+  },
+  {
+    "symbol": "EPAM",
+    "href": "/stocks/epam/"
+  },
+  {
+    "symbol": "APPF",
+    "href": "/stocks/appf/"
+  },
+  {
+    "symbol": "TSEM",
+    "href": "/stocks/tsem/"
+  },
+  {
+    "symbol": "AAON",
+    "href": "/stocks/aaon/"
+  },
+  {
+    "symbol": "CORT",
+    "href": "/stocks/cort/"
+  },
+  {
+    "symbol": "INGR",
+    "href": "/stocks/ingr/"
+  },
+  {
+    "symbol": "ELF",
+    "href": "/stocks/elf/"
+  },
+  {
+    "symbol": "FSS",
+    "href": "/stocks/fss/"
+  },
+  {
+    "symbol": "OLLI",
+    "href": "/stocks/olli/"
+  },
+  {
+    "symbol": "SSD",
+    "href": "/stocks/ssd/"
+  },
+  {
+    "symbol": "PJT",
+    "href": "/stocks/pjt/"
+  },
+  {
+    "symbol": "OLED",
+    "href": "/stocks/oled/"
+  },
+  {
+    "symbol": "EXLS",
+    "href": "/stocks/exls/"
+  },
+  {
+    "symbol": "HLNE",
+    "href": "/stocks/hlne/"
+  },
+  {
+    "symbol": "CRUS",
+    "href": "/stocks/crus/"
+  },
+  {
+    "symbol": "LRN",
+    "href": "/stocks/lrn/"
+  },
+  {
+    "symbol": "LPX",
+    "href": "/stocks/lpx/"
+  },
+  {
+    "symbol": "TMHC",
+    "href": "/stocks/tmhc/"
+  },
+  {
+    "symbol": "LOPE",
+    "href": "/stocks/lope/"
+  },
+  {
+    "symbol": "ESNT",
+    "href": "/stocks/esnt/"
+  },
+  {
+    "symbol": "PIPR",
+    "href": "/stocks/pipr/"
+  },
+  {
+    "symbol": "GNTX",
+    "href": "/stocks/gntx/"
+  },
+  {
+    "symbol": "BMI",
+    "href": "/stocks/bmi/"
+  },
+  {
+    "symbol": "UFPI",
+    "href": "/stocks/ufpi/"
+  },
+  {
+    "symbol": "CAMT",
+    "href": "/stocks/camt/"
+  },
+  {
+    "symbol": "BCPC",
+    "href": "/stocks/bcpc/"
+  },
+  {
+    "symbol": "MTH",
+    "href": "/stocks/mth/"
+  },
+  {
+    "symbol": "FCN",
+    "href": "/stocks/fcn/"
+  },
+  {
+    "symbol": "MZTI",
+    "href": "/stocks/mzti/"
+  },
+  {
+    "symbol": "DORM",
+    "href": "/stocks/dorm/"
+  },
+  {
+    "symbol": "CVCO",
+    "href": "/stocks/cvco/"
+  },
+  {
+    "symbol": "SKY",
+    "href": "/stocks/sky/"
+  },
+  {
+    "symbol": "SIM",
+    "href": "/stocks/sim/"
+  },
+  {
+    "symbol": "CSW",
+    "href": "/stocks/csw/"
+  },
+  {
+    "symbol": "POWL",
+    "href": "/stocks/powl/"
+  },
+  {
+    "symbol": "USLM",
+    "href": "/stocks/uslm/"
+  },
+  {
+    "symbol": "FHI",
+    "href": "/stocks/fhi/"
+  },
+  {
+    "symbol": "KFY",
+    "href": "/stocks/kfy/"
+  },
+  {
+    "symbol": "MHO",
+    "href": "/stocks/mho/"
+  },
+  {
+    "symbol": "CARG",
+    "href": "/stocks/carg/"
+  },
+  {
+    "symbol": "APAM",
+    "href": "/stocks/apam/"
+  },
+  {
+    "symbol": "EXPO",
+    "href": "/stocks/expo/"
+  },
+  {
+    "symbol": "KAI",
+    "href": "/stocks/kai/"
+  },
+  {
+    "symbol": "PAM",
+    "href": "/stocks/pam/"
+  },
+  {
+    "symbol": "TGS",
+    "href": "/stocks/tgs/"
+  },
+  {
+    "symbol": "FIZZ",
+    "href": "/stocks/fizz/"
+  },
+  {
+    "symbol": "IPAR",
+    "href": "/stocks/ipar/"
+  },
+  {
+    "symbol": "WHD",
+    "href": "/stocks/whd/"
+  },
+  {
+    "symbol": "GRBK",
+    "href": "/stocks/grbk/"
+  },
+  {
+    "symbol": "COLM",
+    "href": "/stocks/colm/"
+  },
+  {
+    "symbol": "TPH",
+    "href": "/stocks/tph/"
+  },
+  {
+    "symbol": "YETI",
+    "href": "/stocks/yeti/"
+  },
+  {
+    "symbol": "NMIH",
+    "href": "/stocks/nmih/"
+  },
+  {
+    "symbol": "BSM",
+    "href": "/stocks/bsm/"
+  },
+  {
+    "symbol": "WDFC",
+    "href": "/stocks/wdfc/"
+  },
+  {
+    "symbol": "CPRX",
+    "href": "/stocks/cprx/"
+  },
+  {
+    "symbol": "ACLS",
+    "href": "/stocks/acls/"
+  },
+  {
+    "symbol": "ACMR",
+    "href": "/stocks/acmr/"
+  },
+  {
+    "symbol": "PRDO",
+    "href": "/stocks/prdo/"
+  },
+  {
+    "symbol": "ALG",
+    "href": "/stocks/alg/"
+  },
+  {
+    "symbol": "ROCK",
+    "href": "/stocks/rock/"
+  },
+  {
+    "symbol": "DRD",
+    "href": "/stocks/drd/"
+  },
+  {
+    "symbol": "SII",
+    "href": "/stocks/sii/"
+  }
+]

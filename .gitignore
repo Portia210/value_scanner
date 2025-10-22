@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Playwright screenshots and outputs
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# Cookie files (keep .example files)
+cookies.txt
+*cookies*.txt
+!cookies.example.txt
