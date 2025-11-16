@@ -5,20 +5,27 @@ import pandas as pd
 
 enums_folder = "enums/"
 if not os.path.exists(enums_folder):
+    os.remove(enums_folder)
     os.makedirs(enums_folder)
+
+def camel_string(s):
+    """Convert string to CamelCase"""
+    return ''.join(word.capitalize() for word in s.split('_'))
+    
 
 def save_enum_from_df(csv_path):
     """Generate Python Enum file from DataFrame with actual index values"""
     
     # get base name and remove extension
-    report_type = re.search(r'([^/]+)\.csv$', csv_path).group(1).replace('-', '_')
+    report_name = re.search(r'([^/]+)\.csv$', csv_path).group(1).replace('-', '_')
+    report_cameled_name = camel_string(report_name)
     
     # Get the corresponding .py filename
-    py_filename = f"{report_type}_csv_enum.py"
+    py_filename = f"{report_name}_index.py"
     py_filepath = os.path.join(enums_folder, py_filename)
     df = pd.read_csv(csv_path, index_col=0)
     
-    lines = ["from enum import Enum\n\nclass ReportIndex(Enum):"]
+    lines = [f"from enum import Enum\n\nclass {report_cameled_name}Index(Enum):"]
     
     for index_value in df.index:
         # Convert to valid Python identifier
@@ -54,11 +61,11 @@ def save_enum_from_df(csv_path):
     
     print(f"Generated enum file: {py_filepath}")
 
-# Usage
 
-import os
-nvda_csv_files = os.listdir("data/NVDA/")
-for file in nvda_csv_files:
-    full_path = os.path.join("data/NVDA/", file)
-    if full_path.endswith(".csv"):
-        save_enum_from_df(full_path)
+
+if __name__ == "__main__":
+    nvda_csv_files = os.listdir("data/NVDA/")
+    for file in nvda_csv_files:
+        full_path = os.path.join("data/NVDA/", file)
+        if full_path.endswith(".csv"):
+            save_enum_from_df(full_path)

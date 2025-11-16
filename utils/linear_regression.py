@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
-from utils.pd_parser import parse_percentage, parse_row_percentages
 
 def get_row_consistency(row_name, df: pd.DataFrame):
     """Main function: return consistency analysis for a row"""

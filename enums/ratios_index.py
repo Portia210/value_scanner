@@ -1,6 +1,6 @@
 from enum import Enum
 
-class ReportIndex(Enum):
+class RatiosIndex(Enum):
     MARKET_CAPITALIZATION = "Market Capitalization"
     MARKET_CAP_GROWTH_PERCENT = "Market Cap Growth (%)"
     ENTERPRISE_VALUE = "Enterprise Value"

@@ -7,7 +7,7 @@ def get_logger():
     if _logger is None:
         _logger = logging.getLogger("main_logger")
         _logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s')
         ch = logging.StreamHandler()
         ch.setFormatter(formatter)
         _logger.addHandler(ch)

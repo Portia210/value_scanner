@@ -1,6 +1,6 @@
 from enum import Enum
 
-class ReportIndex(Enum):
+class BalanceSheetIndex(Enum):
     CASH_AND_EQUIVALENTS = "Cash & Equivalents"
     SHORT_TERM_INVESTMENTS = "Short-Term Investments"
     CASH_AND_SHORT_TERM_INVESTMENTS = "Cash & Short-Term Investments"

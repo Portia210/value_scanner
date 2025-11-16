@@ -10,7 +10,6 @@ from utils.logger import get_logger
 
 logger = get_logger()
 
-EXISTING_STOCKS_FILE_NAME = "filtered_stocks.json"
 
 FINANTIAL_ROUTES = {
     "income-statement": "/financials/",
@@ -31,21 +30,21 @@ async def main():
             await context.add_cookies(cookies)
             page = await context.new_page()
 
-            companies_list = await load_filtered_companies(page)
-            if not companies_list:
+            companies_dict = await load_filtered_companies(page)
+            if not companies_dict:
                 logger.info("No stocks found after filtering. Exiting.")
                 await page.close()
                 return
 
             
             # Pass context to stock2filter instead of page
-            for stock in companies_list:
-                logger.info(f"Processing stock: {stock['symbol']}")
+            for symbol, company_info in companies_dict.items():
+                logger.info(f"Processing company: {symbol}")
                 try:
-                    fetcher = ReportsFetcher(context, stock['symbol'], stock['href'])
+                    fetcher = ReportsFetcher(context, company_info['symbol'], company_info['href'])
                     await fetcher.fetch_all_reports()
                 except Exception as e:
-                    logger.info(f"Error processing stock {stock['symbol']}: {e}")
+                    logger.info(f"Error processing stock {company_info['symbol']}: {e}")
             # Clean up the initial page
             await page.close()
             

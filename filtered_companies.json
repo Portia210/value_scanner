@@ -1,637 +1,637 @@
-[
-  {
-    "symbol": "NVDA",
-    "href": "/stocks/nvda/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "TSLA",
-    "href": "/stocks/tsla/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "TSM",
-    "href": "/stocks/tsm/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "BRK.B",
-    "href": "/stocks/brk.b/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "BRK.A",
-    "href": "/stocks/brk.a/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "AMD",
-    "href": "/stocks/amd/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "ISRG",
-    "href": "/stocks/isrg/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "ANET",
-    "href": "/stocks/anet/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "LRCX",
-    "href": "/stocks/lrcx/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "AMAT",
-    "href": "/stocks/amat/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "VRTX",
-    "href": "/stocks/vrtx/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "NTES",
-    "href": "/stocks/ntes/",
-    "sector": "Communication Services"
-  },
-  {
-    "symbol": "CDNS",
-    "href": "/stocks/cdns/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "COIN",
-    "href": "/stocks/coin/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "INFY",
-    "href": "/stocks/infy/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "MNST",
-    "href": "/stocks/mnst/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "REGN",
-    "href": "/stocks/regn/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "FAST",
-    "href": "/stocks/fast/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "GRMN",
-    "href": "/stocks/grmn/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "MPWR",
-    "href": "/stocks/mpwr/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "DHI",
-    "href": "/stocks/dhi/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "VEEV",
-    "href": "/stocks/veev/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "EW",
-    "href": "/stocks/ew/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "CPRT",
-    "href": "/stocks/cprt/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "RMD",
-    "href": "/stocks/rmd/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "CTSH",
-    "href": "/stocks/ctsh/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "AU",
-    "href": "/stocks/au/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "RJF",
-    "href": "/stocks/rjf/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "LEN",
-    "href": "/stocks/len/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "LEN.B",
-    "href": "/stocks/len.b/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "WIT",
-    "href": "/stocks/wit/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "ZM",
-    "href": "/stocks/zm/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "PHM",
-    "href": "/stocks/phm/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "MKL",
-    "href": "/stocks/mkl/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "TROW",
-    "href": "/stocks/trow/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "NVR",
-    "href": "/stocks/nvr/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "STLD",
-    "href": "/stocks/stld/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "TPL",
-    "href": "/stocks/tpl/",
-    "sector": "Energy"
-  },
-  {
-    "symbol": "LULU",
-    "href": "/stocks/lulu/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "WST",
-    "href": "/stocks/wst/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "UTHR",
-    "href": "/stocks/uthr/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "SNA",
-    "href": "/stocks/sna/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "LOGI",
-    "href": "/stocks/logi/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "WWD",
-    "href": "/stocks/wwd/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "DECK",
-    "href": "/stocks/deck/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "COO",
-    "href": "/stocks/coo/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "RS",
-    "href": "/stocks/rs/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "WSO.B",
-    "href": "/stocks/wso.b/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "KSPI",
-    "href": "/stocks/kspi/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "NBIX",
-    "href": "/stocks/nbix/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "FN",
-    "href": "/stocks/fn/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "WSO",
-    "href": "/stocks/wso/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "CF",
-    "href": "/stocks/cf/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "GGG",
-    "href": "/stocks/ggg/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "TOL",
-    "href": "/stocks/tol/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "UNM",
-    "href": "/stocks/unm/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "IEX",
-    "href": "/stocks/iex/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "DOCS",
-    "href": "/stocks/docs/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "MLI",
-    "href": "/stocks/mli/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "SEIC",
-    "href": "/stocks/seic/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "AIT",
-    "href": "/stocks/ait/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "EXEL",
-    "href": "/stocks/exel/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "NVMI",
-    "href": "/stocks/nvmi/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "WTS",
-    "href": "/stocks/wts/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "EPAM",
-    "href": "/stocks/epam/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "APPF",
-    "href": "/stocks/appf/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "TSEM",
-    "href": "/stocks/tsem/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "AAON",
-    "href": "/stocks/aaon/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "INGR",
-    "href": "/stocks/ingr/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "CORT",
-    "href": "/stocks/cort/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "FSS",
-    "href": "/stocks/fss/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "OLLI",
-    "href": "/stocks/olli/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "SSD",
-    "href": "/stocks/ssd/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "ELF",
-    "href": "/stocks/elf/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "PJT",
-    "href": "/stocks/pjt/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "OLED",
-    "href": "/stocks/oled/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "HLNE",
-    "href": "/stocks/hlne/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "EXLS",
-    "href": "/stocks/exls/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "CRUS",
-    "href": "/stocks/crus/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "LRN",
-    "href": "/stocks/lrn/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "LPX",
-    "href": "/stocks/lpx/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "TMHC",
-    "href": "/stocks/tmhc/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "ESNT",
-    "href": "/stocks/esnt/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "LOPE",
-    "href": "/stocks/lope/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "PIPR",
-    "href": "/stocks/pipr/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "GNTX",
-    "href": "/stocks/gntx/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "UFPI",
-    "href": "/stocks/ufpi/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "BMI",
-    "href": "/stocks/bmi/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "CAMT",
-    "href": "/stocks/camt/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "BCPC",
-    "href": "/stocks/bcpc/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "MTH",
-    "href": "/stocks/mth/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "FCN",
-    "href": "/stocks/fcn/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "MZTI",
-    "href": "/stocks/mzti/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "DORM",
-    "href": "/stocks/dorm/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "CVCO",
-    "href": "/stocks/cvco/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "SKY",
-    "href": "/stocks/sky/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "SIM",
-    "href": "/stocks/sim/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "CSW",
-    "href": "/stocks/csw/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "POWL",
-    "href": "/stocks/powl/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "FHI",
-    "href": "/stocks/fhi/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "USLM",
-    "href": "/stocks/uslm/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "KFY",
-    "href": "/stocks/kfy/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "MHO",
-    "href": "/stocks/mho/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "APAM",
-    "href": "/stocks/apam/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "CARG",
-    "href": "/stocks/carg/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "EXPO",
-    "href": "/stocks/expo/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "PAM",
-    "href": "/stocks/pam/",
-    "sector": "Utilities"
-  },
-  {
-    "symbol": "TGS",
-    "href": "/stocks/tgs/",
-    "sector": "Energy"
-  },
-  {
-    "symbol": "KAI",
-    "href": "/stocks/kai/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "FIZZ",
-    "href": "/stocks/fizz/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "IPAR",
-    "href": "/stocks/ipar/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "WHD",
-    "href": "/stocks/whd/",
-    "sector": "Energy"
-  },
-  {
-    "symbol": "COLM",
-    "href": "/stocks/colm/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "GRBK",
-    "href": "/stocks/grbk/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "TPH",
-    "href": "/stocks/tph/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "NMIH",
-    "href": "/stocks/nmih/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "YETI",
-    "href": "/stocks/yeti/",
-    "sector": "Consumer Discretionary"
-  },
-  {
-    "symbol": "WDFC",
-    "href": "/stocks/wdfc/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "BSM",
-    "href": "/stocks/bsm/",
-    "sector": "Energy"
-  },
-  {
-    "symbol": "CPRX",
-    "href": "/stocks/cprx/",
-    "sector": "Healthcare"
-  },
-  {
-    "symbol": "ACLS",
-    "href": "/stocks/acls/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "ACMR",
-    "href": "/stocks/acmr/",
-    "sector": "Technology"
-  },
-  {
-    "symbol": "PRDO",
-    "href": "/stocks/prdo/",
-    "sector": "Consumer Staples"
-  },
-  {
-    "symbol": "ALG",
-    "href": "/stocks/alg/",
-    "sector": "Industrials"
-  },
-  {
-    "symbol": "DRD",
-    "href": "/stocks/drd/",
-    "sector": "Materials"
-  },
-  {
-    "symbol": "SII",
-    "href": "/stocks/sii/",
-    "sector": "Financials"
-  },
-  {
-    "symbol": "ROCK",
-    "href": "/stocks/rock/",
-    "sector": "Industrials"
-  }
-]
+{
+    "NVDA": {
+        "symbol": "NVDA",
+        "href": "/stocks/nvda/",
+        "sector": "Technology"
+    },
+    "TSLA": {
+        "symbol": "TSLA",
+        "href": "/stocks/tsla/",
+        "sector": "Consumer Discretionary"
+    },
+    "TSM": {
+        "symbol": "TSM",
+        "href": "/stocks/tsm/",
+        "sector": "Technology"
+    },
+    "BRK.B": {
+        "symbol": "BRK.B",
+        "href": "/stocks/brk.b/",
+        "sector": "Financials"
+    },
+    "BRK.A": {
+        "symbol": "BRK.A",
+        "href": "/stocks/brk.a/",
+        "sector": "Financials"
+    },
+    "AMD": {
+        "symbol": "AMD",
+        "href": "/stocks/amd/",
+        "sector": "Technology"
+    },
+    "ISRG": {
+        "symbol": "ISRG",
+        "href": "/stocks/isrg/",
+        "sector": "Healthcare"
+    },
+    "ANET": {
+        "symbol": "ANET",
+        "href": "/stocks/anet/",
+        "sector": "Technology"
+    },
+    "LRCX": {
+        "symbol": "LRCX",
+        "href": "/stocks/lrcx/",
+        "sector": "Technology"
+    },
+    "AMAT": {
+        "symbol": "AMAT",
+        "href": "/stocks/amat/",
+        "sector": "Technology"
+    },
+    "VRTX": {
+        "symbol": "VRTX",
+        "href": "/stocks/vrtx/",
+        "sector": "Healthcare"
+    },
+    "NTES": {
+        "symbol": "NTES",
+        "href": "/stocks/ntes/",
+        "sector": "Communication Services"
+    },
+    "CDNS": {
+        "symbol": "CDNS",
+        "href": "/stocks/cdns/",
+        "sector": "Technology"
+    },
+    "COIN": {
+        "symbol": "COIN",
+        "href": "/stocks/coin/",
+        "sector": "Financials"
+    },
+    "INFY": {
+        "symbol": "INFY",
+        "href": "/stocks/infy/",
+        "sector": "Technology"
+    },
+    "MNST": {
+        "symbol": "MNST",
+        "href": "/stocks/mnst/",
+        "sector": "Consumer Staples"
+    },
+    "REGN": {
+        "symbol": "REGN",
+        "href": "/stocks/regn/",
+        "sector": "Healthcare"
+    },
+    "FAST": {
+        "symbol": "FAST",
+        "href": "/stocks/fast/",
+        "sector": "Industrials"
+    },
+    "GRMN": {
+        "symbol": "GRMN",
+        "href": "/stocks/grmn/",
+        "sector": "Technology"
+    },
+    "MPWR": {
+        "symbol": "MPWR",
+        "href": "/stocks/mpwr/",
+        "sector": "Technology"
+    },
+    "DHI": {
+        "symbol": "DHI",
+        "href": "/stocks/dhi/",
+        "sector": "Consumer Discretionary"
+    },
+    "VEEV": {
+        "symbol": "VEEV",
+        "href": "/stocks/veev/",
+        "sector": "Healthcare"
+    },
+    "EW": {
+        "symbol": "EW",
+        "href": "/stocks/ew/",
+        "sector": "Healthcare"
+    },
+    "CPRT": {
+        "symbol": "CPRT",
+        "href": "/stocks/cprt/",
+        "sector": "Industrials"
+    },
+    "RMD": {
+        "symbol": "RMD",
+        "href": "/stocks/rmd/",
+        "sector": "Healthcare"
+    },
+    "CTSH": {
+        "symbol": "CTSH",
+        "href": "/stocks/ctsh/",
+        "sector": "Technology"
+    },
+    "AU": {
+        "symbol": "AU",
+        "href": "/stocks/au/",
+        "sector": "Materials"
+    },
+    "RJF": {
+        "symbol": "RJF",
+        "href": "/stocks/rjf/",
+        "sector": "Financials"
+    },
+    "LEN": {
+        "symbol": "LEN",
+        "href": "/stocks/len/",
+        "sector": "Consumer Discretionary"
+    },
+    "LEN.B": {
+        "symbol": "LEN.B",
+        "href": "/stocks/len.b/",
+        "sector": "Consumer Discretionary"
+    },
+    "WIT": {
+        "symbol": "WIT",
+        "href": "/stocks/wit/",
+        "sector": "Technology"
+    },
+    "ZM": {
+        "symbol": "ZM",
+        "href": "/stocks/zm/",
+        "sector": "Technology"
+    },
+    "PHM": {
+        "symbol": "PHM",
+        "href": "/stocks/phm/",
+        "sector": "Consumer Discretionary"
+    },
+    "MKL": {
+        "symbol": "MKL",
+        "href": "/stocks/mkl/",
+        "sector": "Financials"
+    },
+    "TROW": {
+        "symbol": "TROW",
+        "href": "/stocks/trow/",
+        "sector": "Financials"
+    },
+    "NVR": {
+        "symbol": "NVR",
+        "href": "/stocks/nvr/",
+        "sector": "Consumer Discretionary"
+    },
+    "STLD": {
+        "symbol": "STLD",
+        "href": "/stocks/stld/",
+        "sector": "Materials"
+    },
+    "TPL": {
+        "symbol": "TPL",
+        "href": "/stocks/tpl/",
+        "sector": "Energy"
+    },
+    "LULU": {
+        "symbol": "LULU",
+        "href": "/stocks/lulu/",
+        "sector": "Consumer Discretionary"
+    },
+    "WST": {
+        "symbol": "WST",
+        "href": "/stocks/wst/",
+        "sector": "Healthcare"
+    },
+    "UTHR": {
+        "symbol": "UTHR",
+        "href": "/stocks/uthr/",
+        "sector": "Healthcare"
+    },
+    "SNA": {
+        "symbol": "SNA",
+        "href": "/stocks/sna/",
+        "sector": "Industrials"
+    },
+    "LOGI": {
+        "symbol": "LOGI",
+        "href": "/stocks/logi/",
+        "sector": "Technology"
+    },
+    "WWD": {
+        "symbol": "WWD",
+        "href": "/stocks/wwd/",
+        "sector": "Industrials"
+    },
+    "DECK": {
+        "symbol": "DECK",
+        "href": "/stocks/deck/",
+        "sector": "Consumer Discretionary"
+    },
+    "COO": {
+        "symbol": "COO",
+        "href": "/stocks/coo/",
+        "sector": "Healthcare"
+    },
+    "RS": {
+        "symbol": "RS",
+        "href": "/stocks/rs/",
+        "sector": "Materials"
+    },
+    "WSO.B": {
+        "symbol": "WSO.B",
+        "href": "/stocks/wso.b/",
+        "sector": "Industrials"
+    },
+    "KSPI": {
+        "symbol": "KSPI",
+        "href": "/stocks/kspi/",
+        "sector": "Technology"
+    },
+    "NBIX": {
+        "symbol": "NBIX",
+        "href": "/stocks/nbix/",
+        "sector": "Healthcare"
+    },
+    "FN": {
+        "symbol": "FN",
+        "href": "/stocks/fn/",
+        "sector": "Technology"
+    },
+    "WSO": {
+        "symbol": "WSO",
+        "href": "/stocks/wso/",
+        "sector": "Industrials"
+    },
+    "CF": {
+        "symbol": "CF",
+        "href": "/stocks/cf/",
+        "sector": "Materials"
+    },
+    "GGG": {
+        "symbol": "GGG",
+        "href": "/stocks/ggg/",
+        "sector": "Industrials"
+    },
+    "TOL": {
+        "symbol": "TOL",
+        "href": "/stocks/tol/",
+        "sector": "Consumer Discretionary"
+    },
+    "UNM": {
+        "symbol": "UNM",
+        "href": "/stocks/unm/",
+        "sector": "Financials"
+    },
+    "IEX": {
+        "symbol": "IEX",
+        "href": "/stocks/iex/",
+        "sector": "Industrials"
+    },
+    "DOCS": {
+        "symbol": "DOCS",
+        "href": "/stocks/docs/",
+        "sector": "Healthcare"
+    },
+    "MLI": {
+        "symbol": "MLI",
+        "href": "/stocks/mli/",
+        "sector": "Industrials"
+    },
+    "SEIC": {
+        "symbol": "SEIC",
+        "href": "/stocks/seic/",
+        "sector": "Financials"
+    },
+    "AIT": {
+        "symbol": "AIT",
+        "href": "/stocks/ait/",
+        "sector": "Industrials"
+    },
+    "EXEL": {
+        "symbol": "EXEL",
+        "href": "/stocks/exel/",
+        "sector": "Healthcare"
+    },
+    "NVMI": {
+        "symbol": "NVMI",
+        "href": "/stocks/nvmi/",
+        "sector": "Technology"
+    },
+    "WTS": {
+        "symbol": "WTS",
+        "href": "/stocks/wts/",
+        "sector": "Industrials"
+    },
+    "EPAM": {
+        "symbol": "EPAM",
+        "href": "/stocks/epam/",
+        "sector": "Technology"
+    },
+    "APPF": {
+        "symbol": "APPF",
+        "href": "/stocks/appf/",
+        "sector": "Technology"
+    },
+    "TSEM": {
+        "symbol": "TSEM",
+        "href": "/stocks/tsem/",
+        "sector": "Technology"
+    },
+    "AAON": {
+        "symbol": "AAON",
+        "href": "/stocks/aaon/",
+        "sector": "Industrials"
+    },
+    "INGR": {
+        "symbol": "INGR",
+        "href": "/stocks/ingr/",
+        "sector": "Consumer Staples"
+    },
+    "CORT": {
+        "symbol": "CORT",
+        "href": "/stocks/cort/",
+        "sector": "Healthcare"
+    },
+    "FSS": {
+        "symbol": "FSS",
+        "href": "/stocks/fss/",
+        "sector": "Industrials"
+    },
+    "OLLI": {
+        "symbol": "OLLI",
+        "href": "/stocks/olli/",
+        "sector": "Consumer Staples"
+    },
+    "SSD": {
+        "symbol": "SSD",
+        "href": "/stocks/ssd/",
+        "sector": "Materials"
+    },
+    "ELF": {
+        "symbol": "ELF",
+        "href": "/stocks/elf/",
+        "sector": "Consumer Staples"
+    },
+    "PJT": {
+        "symbol": "PJT",
+        "href": "/stocks/pjt/",
+        "sector": "Financials"
+    },
+    "OLED": {
+        "symbol": "OLED",
+        "href": "/stocks/oled/",
+        "sector": "Technology"
+    },
+    "HLNE": {
+        "symbol": "HLNE",
+        "href": "/stocks/hlne/",
+        "sector": "Financials"
+    },
+    "EXLS": {
+        "symbol": "EXLS",
+        "href": "/stocks/exls/",
+        "sector": "Technology"
+    },
+    "CRUS": {
+        "symbol": "CRUS",
+        "href": "/stocks/crus/",
+        "sector": "Technology"
+    },
+    "LRN": {
+        "symbol": "LRN",
+        "href": "/stocks/lrn/",
+        "sector": "Consumer Staples"
+    },
+    "LPX": {
+        "symbol": "LPX",
+        "href": "/stocks/lpx/",
+        "sector": "Industrials"
+    },
+    "TMHC": {
+        "symbol": "TMHC",
+        "href": "/stocks/tmhc/",
+        "sector": "Consumer Discretionary"
+    },
+    "ESNT": {
+        "symbol": "ESNT",
+        "href": "/stocks/esnt/",
+        "sector": "Financials"
+    },
+    "LOPE": {
+        "symbol": "LOPE",
+        "href": "/stocks/lope/",
+        "sector": "Consumer Staples"
+    },
+    "PIPR": {
+        "symbol": "PIPR",
+        "href": "/stocks/pipr/",
+        "sector": "Financials"
+    },
+    "GNTX": {
+        "symbol": "GNTX",
+        "href": "/stocks/gntx/",
+        "sector": "Consumer Discretionary"
+    },
+    "UFPI": {
+        "symbol": "UFPI",
+        "href": "/stocks/ufpi/",
+        "sector": "Materials"
+    },
+    "BMI": {
+        "symbol": "BMI",
+        "href": "/stocks/bmi/",
+        "sector": "Technology"
+    },
+    "CAMT": {
+        "symbol": "CAMT",
+        "href": "/stocks/camt/",
+        "sector": "Technology"
+    },
+    "BCPC": {
+        "symbol": "BCPC",
+        "href": "/stocks/bcpc/",
+        "sector": "Materials"
+    },
+    "MTH": {
+        "symbol": "MTH",
+        "href": "/stocks/mth/",
+        "sector": "Consumer Discretionary"
+    },
+    "FCN": {
+        "symbol": "FCN",
+        "href": "/stocks/fcn/",
+        "sector": "Industrials"
+    },
+    "MZTI": {
+        "symbol": "MZTI",
+        "href": "/stocks/mzti/",
+        "sector": "Consumer Staples"
+    },
+    "DORM": {
+        "symbol": "DORM",
+        "href": "/stocks/dorm/",
+        "sector": "Consumer Discretionary"
+    },
+    "CVCO": {
+        "symbol": "CVCO",
+        "href": "/stocks/cvco/",
+        "sector": "Consumer Discretionary"
+    },
+    "SKY": {
+        "symbol": "SKY",
+        "href": "/stocks/sky/",
+        "sector": "Consumer Discretionary"
+    },
+    "SIM": {
+        "symbol": "SIM",
+        "href": "/stocks/sim/",
+        "sector": "Materials"
+    },
+    "CSW": {
+        "symbol": "CSW",
+        "href": "/stocks/csw/",
+        "sector": "Industrials"
+    },
+    "POWL": {
+        "symbol": "POWL",
+        "href": "/stocks/powl/",
+        "sector": "Industrials"
+    },
+    "FHI": {
+        "symbol": "FHI",
+        "href": "/stocks/fhi/",
+        "sector": "Financials"
+    },
+    "USLM": {
+        "symbol": "USLM",
+        "href": "/stocks/uslm/",
+        "sector": "Materials"
+    },
+    "KFY": {
+        "symbol": "KFY",
+        "href": "/stocks/kfy/",
+        "sector": "Industrials"
+    },
+    "MHO": {
+        "symbol": "MHO",
+        "href": "/stocks/mho/",
+        "sector": "Consumer Discretionary"
+    },
+    "APAM": {
+        "symbol": "APAM",
+        "href": "/stocks/apam/",
+        "sector": "Financials"
+    },
+    "CARG": {
+        "symbol": "CARG",
+        "href": "/stocks/carg/",
+        "sector": "Consumer Discretionary"
+    },
+    "EXPO": {
+        "symbol": "EXPO",
+        "href": "/stocks/expo/",
+        "sector": "Industrials"
+    },
+    "PAM": {
+        "symbol": "PAM",
+        "href": "/stocks/pam/",
+        "sector": "Utilities"
+    },
+    "TGS": {
+        "symbol": "TGS",
+        "href": "/stocks/tgs/",
+        "sector": "Energy"
+    },
+    "KAI": {
+        "symbol": "KAI",
+        "href": "/stocks/kai/",
+        "sector": "Industrials"
+    },
+    "FIZZ": {
+        "symbol": "FIZZ",
+        "href": "/stocks/fizz/",
+        "sector": "Consumer Staples"
+    },
+    "IPAR": {
+        "symbol": "IPAR",
+        "href": "/stocks/ipar/",
+        "sector": "Consumer Staples"
+    },
+    "WHD": {
+        "symbol": "WHD",
+        "href": "/stocks/whd/",
+        "sector": "Energy"
+    },
+    "COLM": {
+        "symbol": "COLM",
+        "href": "/stocks/colm/",
+        "sector": "Consumer Discretionary"
+    },
+    "GRBK": {
+        "symbol": "GRBK",
+        "href": "/stocks/grbk/",
+        "sector": "Consumer Discretionary"
+    },
+    "TPH": {
+        "symbol": "TPH",
+        "href": "/stocks/tph/",
+        "sector": "Consumer Discretionary"
+    },
+    "NMIH": {
+        "symbol": "NMIH",
+        "href": "/stocks/nmih/",
+        "sector": "Financials"
+    },
+    "YETI": {
+        "symbol": "YETI",
+        "href": "/stocks/yeti/",
+        "sector": "Consumer Discretionary"
+    },
+    "WDFC": {
+        "symbol": "WDFC",
+        "href": "/stocks/wdfc/",
+        "sector": "Materials"
+    },
+    "BSM": {
+        "symbol": "BSM",
+        "href": "/stocks/bsm/",
+        "sector": "Energy"
+    },
+    "CPRX": {
+        "symbol": "CPRX",
+        "href": "/stocks/cprx/",
+        "sector": "Healthcare"
+    },
+    "ACLS": {
+        "symbol": "ACLS",
+        "href": "/stocks/acls/",
+        "sector": "Technology"
+    },
+    "ACMR": {
+        "symbol": "ACMR",
+        "href": "/stocks/acmr/",
+        "sector": "Technology"
+    },
+    "PRDO": {
+        "symbol": "PRDO",
+        "href": "/stocks/prdo/",
+        "sector": "Consumer Staples"
+    },
+    "ALG": {
+        "symbol": "ALG",
+        "href": "/stocks/alg/",
+        "sector": "Industrials"
+    },
+    "DRD": {
+        "symbol": "DRD",
+        "href": "/stocks/drd/",
+        "sector": "Materials"
+    },
+    "SII": {
+        "symbol": "SII",
+        "href": "/stocks/sii/",
+        "sector": "Financials"
+    },
+    "ROCK": {
+        "symbol": "ROCK",
+        "href": "/stocks/rock/",
+        "sector": "Industrials"
+    }
+}

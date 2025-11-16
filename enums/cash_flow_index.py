@@ -1,6 +1,6 @@
 from enum import Enum
 
-class ReportIndex(Enum):
+class CashFlowIndex(Enum):
     NET_INCOME = "Net Income"
     DEPRECIATION_AND_AMORTIZATION = "Depreciation & Amortization"
     LOSS_GAIN_FROM_SALE_OF_INVESTMENTS = "Loss (Gain) From Sale of Investments"

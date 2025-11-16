@@ -1,106 +1,119 @@
-from utils.linear_regression import get_row_consistency
-from utils.pd_parser import parse_row_percentages
-from utils.financial_helpers import safe_get_numeric_value
 from enum import Enum
+import pandas as pd
+import re
+from enums import IncomeIndex, BalanceSheetIndex, RatiosIndex, CashFlowIndex    
+from utils.get_symbol_csvs_paths import get_symbol_csvs_paths
+from utils.logger import get_logger
+from utils.file_handler import load_json_file
+from config import EXISTING_STOCKS_FILE_PATH
 
-percent_suffix = " (%)"
+logger = get_logger()
 
-class incomeRows(Enum):
-    NET_INCOME_GROWTH = "Net Income Growth" + percent_suffix
-    OPERATING_MARGIN = "Operating Margin" + percent_suffix
-    PROFIT_MARGIN = "Profit Margin" + percent_suffix
-    REVENUE = "Revenue"
-    EPS = "EPS (Diluted)"
+income_index_rows = [i.value for i in [IncomeIndex.NET_INCOME_GROWTH_PERCENT, IncomeIndex.OPERATING_MARGIN_PERCENT, IncomeIndex.PROFIT_MARGIN_PERCENT]]
+balance_index_rows =  [i.value for i in [BalanceSheetIndex.WORKING_CAPITAL]]
+ratio_index_rows = [i.value for i in [RatiosIndex.CURRENT_RATIO, RatiosIndex.RETURN_ON_EQUITY_ROE_PERCENT, RatiosIndex.PE_RATIO, RatiosIndex.PB_RATIO, RatiosIndex.P_OCF_RATIO]]
+ 
+
+
+def get_symbol_sector(symbol):
+    companies_json = load_json_file(EXISTING_STOCKS_FILE_PATH)
+    if not companies_json:
+        logger.warning("cannot read companies json")
     
-class balanceSheetRows(Enum):
-    WORKING_CAPITAL = "Working Capital"
-    LONG_TERM_DEBT = "Long-Term Debt"
+    if not symbol in companies_json:
+        logger.info(f"{symbol} not found in list")
     
-class ratiosRows(Enum):
-    CURRENT_RATIO = "Current Ratio"
-    ROE = "Return on Equity (ROE)" + percent_suffix
-    PE_RATIO = "PE Ratio"
-    PB_RATIO = "PB Ratio"
-    POCF_RATIO = "P/OCF Ratio"
+    try:
+        return companies_json[symbol]["sector"]
+    except Exception as e:
+        logger.error(e)
+
     
-    
-    
-    
-def check_df_for_missing_rows(df, required_rows):
-    missing_rows = [row.value for row in required_rows if row.value not in df.index]
+def check_missing_rows_in_df(df, required_rows: list, df_name: str = None) -> list:
+    "required rows is a list of enum members"
+    missing_rows = [row for row in required_rows if row not in df.index]
     if missing_rows:
-        logger.warning(f"Missing rows: {missing_rows}")
+        t = f"for {df_name}" if df_name else ""
+        logger.warning(f"missing_rows {t}: {missing_rows}")
+        return missing_rows
+    return []
 
+def validate_all_dfs(income_df, balance_df, ratios_df):
+    "function check for only required parameters for the calculations"
+    missing_income = check_missing_rows_in_df(income_df, income_index_rows, "income df")
+    missing_balance = check_missing_rows_in_df(balance_df, balance_index_rows, "balace df")
+    missing_ratios = check_missing_rows_in_df(ratios_df, ratio_index_rows, "ratios df")
+    full_missing_rows = missing_income + missing_balance + missing_ratios
+    if len(full_missing_rows) == 0:
+        return True
+    return False
 
-def validate_all_csvs(ticker):
-    files_paths = get_csv_files_paths(ticker, cleaned=True)
-    income_csv = pd.read_csv(files_paths["income"], index_col=0)
-    check_df_for_missing_rows(income_csv, incomeRows)
-    ratios_csv = pd.read_csv(files_paths["ratios"], index_col=0)
-    check_df_for_missing_rows(ratios_csv, ratiosRows)
-    balance_csv = pd.read_csv(files_paths["balance"], index_col=0)
-    check_df_for_missing_rows(balance_csv, balanceSheetRows)
+def check_for_long_term_debt(balance_df):
+    if check_missing_rows_in_df(balance_df, [BalanceSheetIndex.LONG_TERM_DEBT.value], "balance df"):
+        return True
+    return False
+    
+def check_row_data(df: pd.DataFrame, row_index: Enum, wanted_cols=None, min_avg=0, min_sum=0):
+    cols = wanted_cols if wanted_cols else df.columns
+    try:
+        net_income_growth_row = df.loc[row_index.value, cols]
+        # Calculate sum, average (mean), and median
+        total = net_income_growth_row.sum()
+        avg = net_income_growth_row.mean()  # mean() is the same as average
+        if total > min_sum and avg > min_avg:
+            return True
+        else:
+            logger.info("not meet up standarts")
+            return False
+            
+    except Exception as e:
+        logger.error(e)
 
-
-class ReportMaker:
-    async def income_statement(self, df):
-        wanted_rows = ['Net Income Growth', 'Operating Margin', 'Profit Margin']
-        df_filtered = df[df.iloc[:, 0].isin(wanted_rows)]
-        df_filterd_md = df_filtered.to_markdown(index=False)
-        net_income_consistency = get_row_consistency(wanted_rows[0], df)
-        operating_margin_consistency = get_row_consistency(wanted_rows[1], df)
-        profit_margin_values = parse_row_percentages('Profit Margin', df)
-        profit_margin_avg = profit_margin_values.mean()
-        rows_to_add = []
-        net_income_consistency = f"**{wanted_rows[0]} Consistency:** {net_income_consistency:.2f}"
-        operating_margin_consistency = f"**{wanted_rows[1]} Consistency:** {operating_margin_consistency:.2f}"
-        profit_margin_avg = f"**Average {wanted_rows[2]}:** {profit_margin_avg:.2f}%"
-        rows_to_add.extend([net_income_consistency, operating_margin_consistency, profit_margin_avg])
-        df_filterd_md += f"\n\n{net_income_consistency}\n{operating_margin_consistency}\n{profit_margin_avg}\n"
-        return df_filterd_md  
+def generate_report(symbol):
+    csvs_paths = get_symbol_csvs_paths(symbol)
+    if csvs_paths == None:
+        logger.warning(f"not all the csvs exists for {symbol}, skipping")
+        
+    company_secotr = get_symbol_sector(symbol)
+    paths = get_symbol_csvs_paths(symbol)
+    income_df = pd.read_csv(paths["income"], index_col=0)
+    balance_df = pd.read_csv(paths["balance-sheet"], index_col=0)
+    ratios_df = pd.read_csv(paths["ratios"], index_col=0)
+    logger.info(income_df.info())
     
-    async def balance_sheet(self, df):
-        wanted_rows = ['Long-Term Debt', 'Working Capital']
-        df_filtered = df[df.iloc[:, 0].isin(wanted_rows)]
-        df_filterd_md = df_filtered.to_markdown(index=False)
-        last_year_column_name = sorted([c for c in df_filtered.columns if c.startswith('FY ')], reverse=True)[0]
-        last_year_working_capital = safe_get_numeric_value(df, 'Working Capital', last_year_column_name)
-        last_year_debt = safe_get_numeric_value(df, 'Long-Term Debt', last_year_column_name)
-        df_filterd_md += f"\n\n**Working Capital - Long-Term Debt (Last Year):** {last_year_working_capital - last_year_debt}\n\n"
-        return df_filterd_md
-    
-    async def cash_flow(self, df):
-        return await self._fetch_report("cash-flow")
-    
-    async def ratios(self, df):
-        wanted_rows = ['Return on Equity (ROE)', 'Current Ratio']
-        df_filtered = df[df.iloc[:, 0].isin(wanted_rows)]
-        df_filterd_md = df_filtered.to_markdown(index=False)
-        roe_values = parse_row_percentages('Return on Equity (ROE)', df)
-        roe_avg = roe_values.mean()
-        df_filterd_md += f"\n\n**Average Return on Equity (ROE):** {roe_avg:.2f}%\n"
-        return df_filterd_md  
-    
-async def stock_finantial_filters(context: BrowserContext, ticker: str, href: str):
-    finiatial_summary_path = f"data/{ticker}/financial_summary.md"
-    if os.path.exists(finiatial_summary_path):
-        print(f"Financial summary for {ticker} already exists. Skipping.")
+    if not validate_all_dfs(income_df, balance_df, ratios_df):
+        logger.warning(f"not all df valid for {symbol}, skipping")
         return
-    # Use class-based approach with parallel execution
+    
+    long_term_debt_exist = check_for_long_term_debt(balance_df)
+    logger.info(f"is long term debt exist {long_term_debt_exist}")
+    
+    # sort years cols to filter only FY 20{/d/d}
+    last_5_years_cols = [col for col in income_df.columns if re.match(r'FY 20\d{2}', col)][:5]
+    last_5_years_cols.sort(reverse=True)
+    logger.info(f"last 5 years {last_5_years_cols}")
+    logger.info(f"last 5 years {type(last_5_years_cols)}")
+    first_lesson_filters(symbol, income_df, balance_df, ratios_df, last_5_years_cols)
 
-    income_md, balance_md, ratios_md = "", "", ""
+    
+def first_lesson_filters(sybmol, income_df: pd.DataFrame, balance_df: pd.DataFrame, ratios_df: pd.DataFrame, last_5_years_cols: list):
+    # for row in [IncomeIndex.NET_INCOME_GROWTH_PERCENT, IncomeIndex.OPERATING_MARGIN_PERCENT, IncomeIndex.PROFIT_MARGIN_PERCENT]:
+    # # meet_up_standard = check_row_data(income_df, row, last_5_years_cols, min_avg=15, min_sum=60)
+    # # if not meet_up_standard:
+    #     pass    
+    income_df_sub = income_df.loc[income_index_rows]
+    balance_df_sub = balance_df.loc[balance_index_rows]
+    ratios_df_sub = ratios_df.loc[ratio_index_rows]
 
-    full_report = f"""## Financial Summary for {ticker}
-
-### Income Statement Highlights
-{income_md}
-
-### Balance Sheet Highlights
-{balance_md}
-
-### Key Ratios
-{ratios_md}
-
-"""
-    with open(f"data/{ticker}/financial_summary.md", "w") as f:
-        f.write(full_report)
+    full_md_file = f"""summary for {sybmol}
+    \n\n**Income statement**\n{income_df_sub.to_markdown()}
+    \n\n**balance statment**\n{balance_df_sub.to_markdown()}
+    \n\n**ratios statment**\n{ratios_df_sub.to_markdown()}
+    """
+    
+    with open("short_report.md", "w") as f:
+        f.write(full_md_file)
+    
+    
+if __name__ == "__main__":
+    generate_report("NVDA")

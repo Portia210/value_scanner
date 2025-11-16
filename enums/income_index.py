@@ -1,6 +1,6 @@
 from enum import Enum
 
-class ReportIndex(Enum):
+class IncomeIndex(Enum):
     REVENUE = "Revenue"
     REVENUE_GROWTH_YOY_PERCENT = "Revenue Growth (YoY) (%)"
     COST_OF_REVENUE = "Cost of Revenue"
