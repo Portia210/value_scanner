@@ -1,26 +1,33 @@
-summary for NVDA
-    
+summary for AIT
+
 
 **Income statement**
 | Fiscal Year           |   TTM |   FY 2025 |   FY 2024 |   FY 2023 |   FY 2022 |   FY 2021 |
 |:----------------------|------:|----------:|----------:|----------:|----------:|----------:|
-| Net Income Growth (%) | 63.37 |    144.89 |    581.32 |    -55.21 |    125.11 |     54.94 |
-| Operating Margin (%)  | 58.09 |     62.42 |     54.12 |     20.67 |     37.31 |     28.31 |
-| Profit Margin (%)     | 52.41 |     55.85 |     48.85 |     16.19 |     36.23 |     25.98 |
-    
+| Net Income Growth (%) |  4.62 |      1.87 |     11.25 |     34.7  |     77.83 |    502.1  |
+| Operating Margin (%)  | 11.06 |     10.96 |     11.07 |     10.72 |      9.38 |      7.87 |
+| Profit Margin (%)     |  8.61 |      8.61 |      8.61 |      7.86 |      6.75 |      4.47 |
+
 
 **balance statment**
 | Fiscal Year     |   TTM |   FY 2025 |   FY 2024 |   FY 2023 |   FY 2022 |   FY 2021 |
 |:----------------|------:|----------:|----------:|----------:|----------:|----------:|
-| Working Capital | 77962 |     62079 |     33714 |     16510 |     24494 |     12130 |
-    
+| Working Capital |  1268 |      1221 |      1269 |      1106 |     859.9 |    768.88 |
+
 
 **ratios statment**
 | Fiscal Year                |   Current |   FY 2025 |   FY 2024 |   FY 2023 |   FY 2022 |   FY 2021 |
 |:---------------------------|----------:|----------:|----------:|----------:|----------:|----------:|
-| Current Ratio              |      4.21 |      4.44 |      4.17 |      3.52 |      6.65 |      4.09 |
-| Return on Equity (ROE) (%) |    109.42 |    119.18 |     91.46 |     17.93 |     44.83 |     29.78 |
-| PE Ratio                   |     51.35 |     47.93 |     50.65 |    114.74 |     58.55 |     74.24 |
-| PB Ratio                   |     44.05 |     44.03 |     35.08 |     22.68 |     21.46 |     19.04 |
-| P/OCF Ratio                |     56.39 |     54.5  |     53.67 |     88.85 |     62.69 |     55.24 |
+| Current Ratio              |      3.55 |      3.32 |      3.53 |      3.05 |      2.72 |      2.8  |
+| Return on Equity (ROE) (%) |     22.1  |     22.25 |     24.51 |     26.59 |     24.73 |     16.3  |
+| PE Ratio                   |     24.82 |     22.53 |     19.41 |     16.15 |     14.36 |     24.45 |
+| PB Ratio                   |      5.16 |      4.8  |      4.43 |      3.84 |      3.22 |      3.79 |
+| P/OCF Ratio                |     20.1  |     17.98 |     20.16 |     16.28 |     19.71 |     14.64 |
+
+
+- net income:  **valid?** True, avarage: 125.55, total: 627.75
+- operting margin:  **valid?** True, avarage: 10.00, total: 50.00
+- profit margin:  **valid?** False, avarage: 7.26, total: 36.30
+- working capital vs long-term debt:  **valid?**: True, working capital minus debt is (1221.0 - 572.3) = 648.70
+- ROE check:  **valid?** True, avarage: 22.88, total: 114.38
     

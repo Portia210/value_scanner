@@ -48,24 +48,24 @@ def validate_all_dfs(income_df, balance_df, ratios_df):
         return True
     return False
 
-def check_for_long_term_debt(balance_df):
+def has_long_term_debt(balance_df):
+    """Returns True if Long-Term Debt row exists in the DataFrame"""
     if check_missing_rows_in_df(balance_df, [BalanceSheetIndex.LONG_TERM_DEBT.value], "balance df"):
-        return True
-    return False
+        return False  # Missing means no debt data
+    return True  # Row exists
     
-def check_row_data(df: pd.DataFrame, row_index: Enum, wanted_cols=None, min_avg=0, min_sum=0):
-    cols = wanted_cols if wanted_cols else df.columns
+def check_row_data(df: pd.DataFrame, row_index: Enum, years_cols: list, min_avg=0, min_sum=0):
+    cols = years_cols if years_cols else df.columns
     try:
-        net_income_growth_row = df.loc[row_index.value, cols]
+        row = df.loc[row_index.value, cols]
         # Calculate sum, average (mean), and median
-        total = net_income_growth_row.sum()
-        avg = net_income_growth_row.mean()  # mean() is the same as average
-        if total > min_sum and avg > min_avg:
-            return True
+        total = row.sum()
+        avg = row.mean()  # mean() is the same as average
+        if total >= min_sum and avg >= min_avg:
+            pass_check = True
         else:
-            logger.info("not meet up standarts")
-            return False
-            
+            pass_check =  False
+        return f"**valid?** {pass_check}, avarage: {avg:.2f}, total: {total:.2f}"
     except Exception as e:
         logger.error(e)
 
@@ -79,20 +79,15 @@ def generate_report(symbol):
     income_df = pd.read_csv(paths["income"], index_col=0)
     balance_df = pd.read_csv(paths["balance-sheet"], index_col=0)
     ratios_df = pd.read_csv(paths["ratios"], index_col=0)
-    logger.info(income_df.info())
     
     if not validate_all_dfs(income_df, balance_df, ratios_df):
         logger.warning(f"not all df valid for {symbol}, skipping")
         return
     
-    long_term_debt_exist = check_for_long_term_debt(balance_df)
-    logger.info(f"is long term debt exist {long_term_debt_exist}")
-    
+
     # sort years cols to filter only FY 20{/d/d}
     last_5_years_cols = [col for col in income_df.columns if re.match(r'FY 20\d{2}', col)][:5]
     last_5_years_cols.sort(reverse=True)
-    logger.info(f"last 5 years {last_5_years_cols}")
-    logger.info(f"last 5 years {type(last_5_years_cols)}")
     first_lesson_filters(symbol, income_df, balance_df, ratios_df, last_5_years_cols)
 
     
@@ -104,11 +99,31 @@ def first_lesson_filters(sybmol, income_df: pd.DataFrame, balance_df: pd.DataFra
     income_df_sub = income_df.loc[income_index_rows]
     balance_df_sub = balance_df.loc[balance_index_rows]
     ratios_df_sub = ratios_df.loc[ratio_index_rows]
+    net_income_check = check_row_data(income_df, IncomeIndex.NET_INCOME_GROWTH_PERCENT, last_5_years_cols, 10, 35)
+    operating_margin_chceck = check_row_data(income_df, IncomeIndex.OPERATING_MARGIN_PERCENT, last_5_years_cols, 10, 35)
+    profit_margin_check = check_row_data(income_df, IncomeIndex.PROFIT_MARGIN_PERCENT, last_5_years_cols, 10, 35)
+    roe_check = check_row_data(ratios_df, RatiosIndex.RETURN_ON_EQUITY_ROE_PERCENT, last_5_years_cols, 15, 50)
+    
+    if has_long_term_debt(balance_df):
+        # logger.info("there is a debt")
+        working_capital = balance_df.loc[BalanceSheetIndex.WORKING_CAPITAL.value, last_5_years_cols[0]]
+        long_term_debt = balance_df.loc[BalanceSheetIndex.LONG_TERM_DEBT.value, last_5_years_cols[0]]
+        working_capital_greater_than_debt = working_capital >= long_term_debt
+        capital_vs_debt = f"**valid?**: {working_capital_greater_than_debt}, working capital minus debt is ({working_capital} - {long_term_debt}) = {(working_capital - long_term_debt):.2f}"
+    else:
+        capital_vs_debt = f"**valid?**: {True}, There is no long term debt"
+
+
 
     full_md_file = f"""summary for {sybmol}
-    \n\n**Income statement**\n{income_df_sub.to_markdown()}
-    \n\n**balance statment**\n{balance_df_sub.to_markdown()}
-    \n\n**ratios statment**\n{ratios_df_sub.to_markdown()}
+\n\n**Income statement**\n{income_df_sub.to_markdown()}
+\n\n**balance statment**\n{balance_df_sub.to_markdown()}
+\n\n**ratios statment**\n{ratios_df_sub.to_markdown()}
+\n\n- net income:  {net_income_check}
+- operting margin:  {operating_margin_chceck}
+- profit margin:  {profit_margin_check}
+- working capital vs long-term debt:  {capital_vs_debt}
+- ROE check:  {roe_check}
     """
     
     with open("short_report.md", "w") as f:
@@ -116,4 +131,4 @@ def first_lesson_filters(sybmol, income_df: pd.DataFrame, balance_df: pd.DataFra
     
     
 if __name__ == "__main__":
-    generate_report("NVDA")
+    generate_report("AIT")
