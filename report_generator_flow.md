@@ -31,11 +31,12 @@ The report generator reads CSV files from `data/{SYMBOL}/`:
 
 ### Report Output
 
-- **Output File**: `short_report.md`
+- **Output File**: `data/{SYMBOL}/report.md`
 - **Content Structure**:
-  1. Summary tables (Income, Balance Sheet, Ratios)
-  2. Basic Reports Check results
-  3. Benjamin Graham Investment Criteria Check results
+  1. Company header (symbol and sector)
+  2. Financial summary tables (Income, Balance Sheet, Ratios)
+  3. Basic Reports Check results
+  4. Benjamin Graham Investment Criteria Check results
 
 ---
 
@@ -159,6 +160,13 @@ All validation results use colored indicators for easy scanning:
 
 The `format_valid()` function in `utils/formatting.py` handles this consistently across all reports.
 
+### Missing Data Handling
+
+- Reports generate even when data is missing (no longer skipped)
+- Missing rows/cells show as `🔴 FAIL` with clear error messages
+- Example: `🔴 **FAIL**, row 'Revenue' not found in data`
+- NaN values in tables display as `-` for cleaner output
+
 ---
 
 ## Usage Example
@@ -195,6 +203,7 @@ generate_report("AIT")
 - Columns must match format: `FY 20XX` (e.g., "FY 2024", "FY 2023")
 
 ### Error Handling
-- All helper functions include try-except blocks
-- Returns descriptive error messages in validation strings
+- All helper functions include try-except blocks with KeyError handling
+- Returns descriptive error messages: `row 'X' not found in data`
 - Logs warnings for missing data via logger utility
+- Dollar signs escaped (`\$`) to prevent markdown LaTeX interpretation

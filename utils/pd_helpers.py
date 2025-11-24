@@ -8,6 +8,8 @@ logger = get_logger()
 def check_missing_rows_in_df(df, required_rows: list, df_name: str = None) -> list:
     "required rows is a list of enum members"
     missing_rows = [row for row in required_rows if row not in df.index]
+    if "Long-Term Debt" in missing_rows:
+        missing_rows.remove("Long-Term Debt")
     if missing_rows:
         t = f"for {df_name}" if df_name else ""
         logger.warning(f"missing_rows {t}: {missing_rows}")
@@ -28,22 +30,31 @@ def check_row_data(df: pd.DataFrame, row_index: Enum, years_cols: list, min_avg=
         else:
             pass_check =  False
         return f"**valid?** {pass_check}, avarage: {avg:.2f}, total: {total:.2f}"
+    except KeyError:
+        return f"**valid?** False, row '{row_index.value}' not found in data"
     except Exception as e:
         logger.error(e)
+        return f"**valid?** False, error reading '{row_index.value}': {str(e)}"
         
 def check_cell_data(df: pd.DataFrame, row_index: Enum, col, greater_than: float= None, lower_than: float = None):
-    cell = df.loc[row_index.value, col]
-    cell_valid = True
-    greater_than_txt = ""
-    if greater_than:
-        cell_valid = greater_than <= cell
-        greater_than_txt = f"value greater than {greater_than:.2f}. "
-    lower_than_txt = ""
-    if lower_than:
-        cell_valid = lower_than >= cell and cell_valid
-        lower_than_txt = f"value lower than {greater_than:.2f}. "
+    try:
+        cell = df.loc[row_index.value, col]
+        cell_valid = True
+        greater_than_txt = ""
+        if greater_than:
+            cell_valid = greater_than <= cell
+            greater_than_txt = f"value greater than {greater_than:.2f}. "
+        lower_than_txt = ""
+        if lower_than:
+            cell_valid = lower_than >= cell and cell_valid
+            lower_than_txt = f"value lower than {greater_than:.2f}. "
 
-    return f"**valid?**: {cell_valid}, {row_index.value} value ({cell}). {greater_than_txt+lower_than_txt}"
+        return f"**valid?**: {cell_valid}, {row_index.value} value ({cell}). {greater_than_txt+lower_than_txt}"
+    except KeyError:
+        return f"**valid?**: False, row '{row_index.value}' not found in data"
+    except Exception as e:
+        logger.error(e)
+        return f"**valid?**: False, error reading '{row_index.value}': {str(e)}"
 
 
 def check_cell_range(df: pd.DataFrame, row_index: Enum, col, min_value: float, max_value: float) -> tuple[bool, str]:
@@ -52,9 +63,11 @@ def check_cell_range(df: pd.DataFrame, row_index: Enum, col, min_value: float, m
         cell = df.loc[row_index.value, col]
         cell_valid = min_value < cell < max_value
         return cell_valid, f"**valid?**: {cell_valid}, {row_index.value} value ({cell:.2f}) should be between {min_value} and {max_value}"
+    except KeyError:
+        return False, f"**valid?**: False, row '{row_index.value}' not found in data"
     except Exception as e:
         logger.error(e)
-        return False, f"**valid?**: False, error checking {row_index.value}: {str(e)}"
+        return False, f"**valid?**: False, error reading '{row_index.value}': {str(e)}"
 
 
 def check_eps_growth(df: pd.DataFrame, row_index: Enum, years_cols: list, min_growth_percent: float = 30) -> tuple[bool, str]:
@@ -80,9 +93,11 @@ def check_eps_growth(df: pd.DataFrame, row_index: Enum, years_cols: list, min_gr
         is_valid = growth_percent >= min_growth_percent
 
         return is_valid, f"**valid?**: {is_valid}, EPS growth: {growth_percent:.2f}% (first 2yr avg: {first_two_avg:.2f}, last 2yr avg: {last_two_avg:.2f})"
+    except KeyError:
+        return False, f"**valid?**: False, row '{row_index.value}' not found in data"
     except Exception as e:
         logger.error(e)
-        return False, f"**valid?**: False, error: {str(e)}"
+        return False, f"**valid?**: False, error reading '{row_index.value}': {str(e)}"
 
 
 def check_pe_pb_product(ratios_df: pd.DataFrame, pe_index: Enum, pb_index: Enum, col, max_product: float = 22) -> tuple[bool, str]:
@@ -94,9 +109,11 @@ def check_pe_pb_product(ratios_df: pd.DataFrame, pe_index: Enum, pb_index: Enum,
         is_valid = product < max_product
 
         return is_valid, f"**valid?**: {is_valid}, P/E × P/B = {pe:.2f} × {pb:.2f} = {product:.2f} (should be < {max_product})"
+    except KeyError as e:
+        return False, f"**valid?**: False, row '{e.args[0]}' not found in data"
     except Exception as e:
         logger.error(e)
-        return False, f"**valid?**: False, error: {str(e)}"
+        return False, f"**valid?**: False, error reading ratio data: {str(e)}"
 
 
 def check_p_ocf_vs_pe(ratios_df: pd.DataFrame, p_ocf_index: Enum, pe_index: Enum, col) -> tuple[bool, str]:
@@ -107,7 +124,31 @@ def check_p_ocf_vs_pe(ratios_df: pd.DataFrame, p_ocf_index: Enum, pe_index: Enum
         is_valid = p_ocf < pe
 
         return is_valid, f"**valid?**: {is_valid}, P/OCF ({p_ocf:.2f}) < P/E ({pe:.2f})"
+    except KeyError as e:
+        return False, f"**valid?**: False, row '{e.args[0]}' not found in data"
     except Exception as e:
         logger.error(e)
-        return False, f"**valid?**: False, error: {str(e)}"
+        return False, f"**valid?**: False, error reading ratio data: {str(e)}"
+
+
+def get_cell_value_safe(df: pd.DataFrame, row_index: Enum, col) -> float | None:
+    """
+    Safely get a cell value from DataFrame, returning None if NaN or missing.
+
+    Args:
+        df: DataFrame to read from
+        row_index: Enum for the row index
+        col: Column name
+
+    Returns:
+        Cell value as float, or None if NaN/missing
+    """
+    try:
+        if row_index.value not in df.index:
+            return None
+        value = df.loc[row_index.value, col]
+        return None if pd.isna(value) else value
+    except Exception as e:
+        logger.error(f"Error getting cell value for {row_index.value}: {e}")
+        return None
 

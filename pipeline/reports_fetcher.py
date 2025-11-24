@@ -91,12 +91,12 @@ class ReportsFetcher:
         if missing_reports:
             logger.info(f"Reports missing for {self.ticker}: {missing_reports}")
             return True
-        logger.info(f"All reports exist for {self.ticker}.")
         return False
     
     async def fetch_all_reports(self):
         if not self.is_report_missing():
             return
+        logger.info(f"Processing company: {self.ticker}")
         
         tasks = [self._fetch_report(report_type) for report_type in REPORTS_ROUTES.keys()]
         await asyncio.gather(*tasks)

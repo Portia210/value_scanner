@@ -1,51 +1,51 @@
-summary for AIT
+summary for SII
 
 
 **Income statement**
-| Fiscal Year           |     TTM |   FY 2025 |   FY 2024 |   FY 2023 |   FY 2022 |   FY 2021 |
-|:----------------------|--------:|----------:|----------:|----------:|----------:|----------:|
-| Revenue               | 4664    |   4563    |   4479    |   4413    |   3811    |   3236    |
-| Net Income Growth (%) |    4.62 |      1.87 |     11.25 |     34.7  |     77.83 |    502.1  |
-| Operating Margin (%)  |   11.06 |     10.96 |     11.07 |     10.72 |      9.38 |      7.87 |
-| Profit Margin (%)     |    8.61 |      8.61 |      8.61 |      7.86 |      6.75 |      4.47 |
-| EPS (Diluted)         |   10.39 |     10.12 |      9.83 |      8.84 |      6.58 |      3.68 |
+| Fiscal Year           |    TTM |   FY 2024 |   FY 2023 |   FY 2022 |   FY 2021 |   FY 2020 |
+|:----------------------|-------:|----------:|----------:|----------:|----------:|----------:|
+| Revenue               | 197.66 |    178.66 |    151.37 |    145.18 |    164.65 |    121.78 |
+| Net Income Growth (%) |  20.51 |     17.93 |    137.06 |    -46.87 |     23.01 |    164.26 |
+| Operating Margin (%)  |  37.31 |     39.25 |     31.78 |     29.9  |     31.58 |     35.05 |
+| Profit Margin (%)     |  25.21 |     27.59 |     27.61 |     12.14 |     20.16 |     22.15 |
+| EPS (Diluted)         |   1.94 |      1.91 |      1.6  |      0.67 |      1.28 |      1.05 |
 
 
 **balance statment**
-| Fiscal Year     |    TTM |   FY 2025 |   FY 2024 |   FY 2023 |   FY 2022 |   FY 2021 |
+| Fiscal Year     |    TTM |   FY 2024 |   FY 2023 |   FY 2022 |   FY 2021 |   FY 2020 |
 |:----------------|-------:|----------:|----------:|----------:|----------:|----------:|
-| Working Capital | 1268   |    1221   |   1269    |   1106    |    859.9  |    768.88 |
-| Long-Term Debt  |  572.3 |     572.3 |    572.28 |    596.93 |    649.15 |    784.86 |
+| Working Capital |  65.67 |     48.91 |     22.13 |     51.21 |     49.41 |     38.07 |
+| Long-Term Debt  | nan    |    nan    |     24.24 |     54.44 |     29.77 |     16.99 |
 
 
 **ratios statment**
-| Fiscal Year                |   Current |   FY 2025 |   FY 2024 |   FY 2023 |   FY 2022 |   FY 2021 |
+| Fiscal Year                |   Current |   FY 2024 |   FY 2023 |   FY 2022 |   FY 2021 |   FY 2020 |
 |:---------------------------|----------:|----------:|----------:|----------:|----------:|----------:|
-| Market Capitalization      |   9727    |   8853    |   7489    |   5598    |   3697    |   3539    |
-| Current Ratio              |      3.55 |      3.32 |      3.53 |      3.05 |      2.72 |      2.8  |
-| Return on Equity (ROE) (%) |     22.1  |     22.25 |     24.51 |     26.59 |     24.73 |     16.3  |
-| PE Ratio                   |     24.82 |     22.53 |     19.41 |     16.15 |     14.36 |     24.45 |
-| PB Ratio                   |      5.16 |      4.8  |      4.43 |      3.84 |      3.22 |      3.79 |
-| P/OCF Ratio                |     20.1  |     17.98 |     20.16 |     16.28 |     19.71 |     14.64 |
+| Market Capitalization      |   2162    |   1070    |    856    |    833    |   1122    |    740    |
+| Current Ratio              |      2.53 |      2.62 |      2.03 |      2.99 |      2.76 |      1.81 |
+| Return on Equity (ROE) (%) |     14.34 |     14.97 |     13.72 |      6.04 |     11.27 |      9.54 |
+| PE Ratio                   |     43.46 |     21.7  |     20.47 |     47.24 |     33.8  |     27.43 |
+| PB Ratio                   |      5.99 |      3.17 |      2.67 |      2.89 |      3.8  |      2.52 |
+| P/OCF Ratio                |     25.77 |     15.47 |     28.66 |     25.63 |     21.89 |     28.2  |
 
 
 
 > **Basic Reports Check**
-- current ratio: **🟢 PASS**, Current Ratio value (3.32). value greater than 2.00. 
-- net income:  **🟢 PASS**, avarage: 125.55, total: 627.75
-- operating margin:  **🟢 PASS**, avarage: 10.00, total: 50.00
-- profit margin:  **🔴 FAIL**, avarage: 7.26, total: 36.30
+- current ratio: **🟢 PASS**, Current Ratio value (2.62). value greater than 2.00. 
+- net income:  **🟢 PASS**, avarage: 59.08, total: 295.39
+- operating margin:  **🟢 PASS**, avarage: 33.51, total: 167.56
+- profit margin:  **🟢 PASS**, avarage: 21.93, total: 109.65
 - working capital vs long-term debt:  **🟢 PASS**, There is no long term debt
-- ROE check:  **🟢 PASS**, avarage: 22.88, total: 114.38
+- ROE check:  **🔴 FAIL**, avarage: 11.11, total: 55.54
     
 
 
-> **Benjamin Graham Check** (AIT - Industrials - Regular)
-- market cap (> $2B): **🟢 PASS**, Market Cap: $8853.00M (should be > $2,000M)
-- revenue (> $350M): **🟢 PASS**, Revenue: $4563.00M (should be > $350M)
+> **Benjamin Graham Check** (SII - Financials - Regular)
+- market cap (> $2B): **🔴 FAIL**, Market Cap: $1070.00M (should be > $2,000M)
+- revenue (> $350M): **🔴 FAIL**, Revenue: $178.66M (should be > $350M)
 - working capital vs debt (WC > debt): **🟢 PASS**, No long-term debt
-- P/E ratio (5-15): **🔴 FAIL**, PE Ratio value (22.53) should be between 5 and 15
-- graham number (P/E × P/B < 22): **🔴 FAIL**, P/E × P/B = 22.53 × 4.80 = 108.14 (should be < 22)
+- P/E ratio (5-15): **🔴 FAIL**, PE Ratio value (21.70) should be between 5 and 15
+- graham number (P/E × P/B < 22): **🔴 FAIL**, P/E × P/B = 21.70 × 3.17 = 68.79 (should be < 22)
 - tech P/OCF check (P/OCF < P/E): N/A (Regular company - uses Graham Number instead)
-- EPS growth (30% over 5yr): **🟢 PASS**, EPS growth: 94.44% (first 2yr avg: 5.13, last 2yr avg: 9.97)
+- EPS growth (30% over 5yr): **🟢 PASS**, EPS growth: 50.64% (first 2yr avg: 1.17, last 2yr avg: 1.75)
     

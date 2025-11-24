@@ -36,7 +36,7 @@ def get_symbol_sector(symbol):
 def validate_all_dfs(income_df, balance_df, ratios_df):
     "function check for only required parameters for the calculations"
     missing_income = check_missing_rows_in_df(income_df, income_index_rows, "income df")
-    missing_balance = check_missing_rows_in_df(balance_df, balance_index_rows, "balace df")
+    missing_balance = check_missing_rows_in_df(balance_df, balance_index_rows, "balance df")
     missing_ratios = check_missing_rows_in_df(ratios_df, ratio_index_rows, "ratios df")
     full_missing_rows = missing_income + missing_balance + missing_ratios
     if len(full_missing_rows) == 0:
@@ -46,6 +46,7 @@ def validate_all_dfs(income_df, balance_df, ratios_df):
     
 
 def generate_report(symbol):
+    logger.info(f"generating report for symbol {symbol}")
     csvs_paths = get_symbol_csvs_paths(symbol)
     if csvs_paths == None:
         logger.warning(f"not all the csvs exists for {symbol}, skipping")
@@ -56,20 +57,29 @@ def generate_report(symbol):
     balance_df = pd.read_csv(paths["balance-sheet"], index_col=0)
     ratios_df = pd.read_csv(paths["ratios"], index_col=0)
     
-    if not validate_all_dfs(income_df, balance_df, ratios_df):
-        logger.warning(f"not all df valid for {symbol}, skipping")
-        return
+    # Continue even with missing data - check functions will show failures
+    validate_all_dfs(income_df, balance_df, ratios_df)
     
 
     # sort years cols to filter only FY 20{/d/d}
     last_5_years_cols = [col for col in income_df.columns if re.match(r'FY 20\d{2}', col)][:5]
     last_5_years_cols.sort(reverse=True)
-    income_df_sub = income_df.loc[income_index_rows]
-    balance_df_sub = balance_df.loc[balance_index_rows]
-    ratios_df_sub = ratios_df.loc[ratio_index_rows]
-    
-    md_file_txt = f"""summary for {symbol}
-\n\n**Income statement**\n{income_df_sub.to_markdown()}
+    income_df_sub = income_df.reindex(income_index_rows)
+    balance_df_sub = balance_df.reindex(balance_index_rows)
+    ratios_df_sub = ratios_df.reindex(ratio_index_rows)
+
+    # Replace NaN with '-' for better markdown display
+    income_df_sub = income_df_sub.fillna('-')
+    balance_df_sub = balance_df_sub.fillna('-')
+    ratios_df_sub = ratios_df_sub.fillna('-')
+
+    md_file_txt = f"""# {symbol}
+**Sector:** {company_secotr or 'Unknown'}
+
+---
+
+## Financial Summary
+\n**Income statement**\n{income_df_sub.to_markdown()}
 \n\n**balance statment**\n{balance_df_sub.to_markdown()}
 \n\n**ratios statment**\n{ratios_df_sub.to_markdown()}
 """
@@ -79,7 +89,7 @@ def generate_report(symbol):
     # Add Benjamin Graham investment criteria check
     md_file_txt += benjamin_graham_check(symbol, income_df, balance_df, ratios_df, last_5_years_cols, company_secotr)
 
-    with open("short_report.md", "w") as f:
+    with open(f"data/{symbol}/report.md", "w") as f:
         f.write(md_file_txt)
 
     

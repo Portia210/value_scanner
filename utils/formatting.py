@@ -13,24 +13,17 @@ def format_valid(is_valid: bool, message: str) -> str:
 
     Returns:
         Formatted message with 🟢 PASS or 🔴 FAIL indicators
-
-    Examples:
-        >>> format_valid(True, "**valid?**: True, Revenue: $500M")
-        "**🟢 PASS**, Revenue: $500M"
-
-        >>> format_valid(False, "**valid?** False, P/E too high")
-        "**🔴 FAIL**, P/E too high"
     """
     # Skip formatting for N/A or skipped checks
     if "N/A" in message or "Skipped" in message:
         return message
 
-    indicator = "🟢 PASS" if is_valid else "🔴 FAIL"
+    # Emoji outside bold for better markdown rendering
+    emoji = "🟢" if is_valid else "🔴"
+    indicator = f"{emoji} **PASS**" if is_valid else f"{emoji} **FAIL**"
 
     # Replace both formats: "**valid?**: True/False" and "**valid?** True/False"
-    message = message.replace("**valid?**: True", f"**{indicator}**")
-    message = message.replace("**valid?**: False", f"**{indicator}**")
-    message = message.replace("**valid?** True", f"**{indicator}**")
-    message = message.replace("**valid?** False", f"**{indicator}**")
+    message = message.replace(f"**valid?**: {is_valid}", indicator)
+    message = message.replace(f"**valid?** {is_valid}", indicator)
 
     return message
