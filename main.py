@@ -39,7 +39,6 @@ async def main():
                 await page.close()
                 return
             
-            return
 
             
             # Pass context to stock2filter instead of page

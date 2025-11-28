@@ -27,13 +27,9 @@ def benjamin_graham_check(symbol: str, income_df: pd.DataFrame, balance_df: pd.D
     Note: Current Ratio check is handled in basic_reports_check
     """
 
-    # Determine if this is a tech company
-    is_tech_company = False
-    if company_sector:
-        # Based on actual sectors from filtered_companies.json:
-        # Technology, Communication Services (tech-related)
-        tech_keywords = ['Technology', 'Communication Services', 'Consumer Electronics', 'Internet Content & Information', 'Semiconductors']
-        is_tech_company = any(keyword.lower() in company_sector.lower() for keyword in tech_keywords)
+    # Determine if this is a tech company (sector-based check)
+    TECH_SECTORS = {'Technology', 'Communication Services'}
+    is_tech_company = company_sector in TECH_SECTORS if company_sector else False
 
     most_recent_year = last_5_years_cols[0]
     company_type = "Tech" if is_tech_company else "Regular"

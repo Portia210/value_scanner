@@ -8,20 +8,16 @@ def basic_reports_check(symbol, income_df: pd.DataFrame, balance_df: pd.DataFram
 
     # Define requirements
     current_ratio_min = 2
-    net_income_min_avg = 2
-    net_income_min_sum = 10
-    operating_margin_min_avg = 2
-    operating_margin_min_sum = 10
-    profit_margin_min_avg = 2
-    profit_margin_min_sum = 10
+    net_income_min_avg = 0
+    operating_margin_min_avg = 0
+    profit_margin_min_avg = 0
     roe_min_avg = 15
-    roe_min_sum = 50
 
     current_ratio_check = validate_cell_bounds(ratios_df, RatiosIndex.CURRENT_RATIO, most_recent_year, current_ratio_min)
-    net_income_check = validate_row_thresholds(income_df, IncomeIndex.NET_INCOME_GROWTH_PERCENT, last_5_years_cols, net_income_min_avg, net_income_min_sum)
-    operating_margin_check = validate_row_thresholds(income_df, IncomeIndex.OPERATING_MARGIN_PERCENT, last_5_years_cols, operating_margin_min_avg, operating_margin_min_sum)
-    profit_margin_check = validate_row_thresholds(income_df, IncomeIndex.PROFIT_MARGIN_PERCENT, last_5_years_cols, profit_margin_min_avg, profit_margin_min_sum)
-    roe_check = validate_row_thresholds(ratios_df, RatiosIndex.RETURN_ON_EQUITY_ROE_PERCENT, last_5_years_cols, roe_min_avg, roe_min_sum)
+    net_income_check = validate_row_thresholds(income_df, IncomeIndex.NET_INCOME_GROWTH_PERCENT, last_5_years_cols, net_income_min_avg)
+    operating_margin_check = validate_row_thresholds(income_df, IncomeIndex.OPERATING_MARGIN_PERCENT, last_5_years_cols, operating_margin_min_avg)
+    profit_margin_check = validate_row_thresholds(income_df, IncomeIndex.PROFIT_MARGIN_PERCENT, last_5_years_cols, profit_margin_min_avg)
+    roe_check = validate_row_thresholds(ratios_df, RatiosIndex.RETURN_ON_EQUITY_ROE_PERCENT, last_5_years_cols, roe_min_avg)
 
     working_capital = get_cell_safe(balance_df, BalanceSheetIndex.WORKING_CAPITAL, most_recent_year)
     long_term_debt = get_cell_safe(balance_df, BalanceSheetIndex.LONG_TERM_DEBT, most_recent_year)
@@ -44,9 +40,9 @@ def basic_reports_check(symbol, income_df: pd.DataFrame, balance_df: pd.DataFram
     return f"""
 \n\n> **Basic Reports Check**
 - current ratio (≥ {current_ratio_min}): {current_ratio_check}
-- net income (avg ≥ {net_income_min_avg}%, total ≥ {net_income_min_sum}%):  {net_income_check}
-- operating margin (avg ≥ {operating_margin_min_avg}%, total ≥ {operating_margin_min_sum}%):  {operating_margin_check}
-- profit margin (avg ≥ {profit_margin_min_avg}%, total ≥ {profit_margin_min_sum}%):  {profit_margin_check}
+- net income (avg ≥ {net_income_min_avg}%):  {net_income_check}
+- operating margin (avg ≥ {operating_margin_min_avg}%):  {operating_margin_check}
+- profit margin (avg ≥ {profit_margin_min_avg}%):  {profit_margin_check}
 - working capital vs long-term debt (WC ≥ debt):  {capital_vs_debt}
-- ROE (avg ≥ {roe_min_avg}%, total ≥ {roe_min_sum}%):  {roe_check}
+- ROE (avg ≥ {roe_min_avg}%):  {roe_check}
     """
