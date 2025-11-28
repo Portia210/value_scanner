@@ -4,11 +4,9 @@ from playwright.async_api import Page, BrowserContext
 from playwright_utils.page_helper import PageHelper
 from playwright.async_api import TimeoutError
 from playwright_utils.close_popup import close_popup
-import pandas as pd
-from io import StringIO
 from utils.df_cleaner import full_df_cleaning
 from utils.logger import get_logger
-
+from utils.pd_helpers import extract_html_table_to_df
 logger = get_logger()
 
 
@@ -19,19 +17,7 @@ REPORTS_ROUTES = {
     "ratios": "/financials/ratios/",
 }
 
-async def extract_html_table_to_df(page: Page, table_selector: str):
-    # Get table HTML
-    table_html = await page.locator(table_selector).inner_html(timeout=3000)
-        
-    # Parse with pandas using StringIO
-    df = pd.read_html(StringIO(f"<table>{table_html}</table>"))[0]
-    # Flatten multi-level columns if any
-    df.columns = df.columns.get_level_values(0)
-    # Remove columns where any cell contains "Upgrade"
-    for col in df.columns:
-        if (df[col] == 'Upgrade').any():
-            df = df.drop(columns=[col])
-    return df
+
 
 
 class ReportsFetcher:

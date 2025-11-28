@@ -1,657 +1,1082 @@
 {
   "NVDA": {
+    "company_name": "NVIDIA Corporation",
     "symbol": "NVDA",
     "href": "/stocks/nvda/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 2.27
   },
   "TSLA": {
+    "company_name": "Tesla, Inc.",
     "symbol": "TSLA",
     "href": "/stocks/tsla/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Auto Manufacturers",
+    "beta": 1.87
   },
   "TSM": {
+    "company_name": "Taiwan Semiconductor Manufacturing Company Limited",
     "symbol": "TSM",
     "href": "/stocks/tsm/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 1.26
   },
   "BRK.A": {
+    "company_name": "Berkshire Hathaway Inc.",
     "symbol": "BRK.A",
     "href": "/stocks/brk.a/",
-    "sector": "Financials"
+    "sector": "Financials",
+    "industry": "Insurance - Diversified",
+    "beta": 0.71
   },
   "BRK.B": {
+    "company_name": "Berkshire Hathaway Inc.",
     "symbol": "BRK.B",
     "href": "/stocks/brk.b/",
-    "sector": "Financials"
+    "sector": "Financials",
+    "industry": "Insurance - Diversified",
+    "beta": 0.71
   },
   "AMD": {
+    "company_name": "Advanced Micro Devices, Inc.",
     "symbol": "AMD",
     "href": "/stocks/amd/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 1.91
   },
   "ISRG": {
+    "company_name": "Intuitive Surgical, Inc.",
     "symbol": "ISRG",
     "href": "/stocks/isrg/",
-    "sector": "Healthcare"
-  },
-  "LRCX": {
-    "symbol": "LRCX",
-    "href": "/stocks/lrcx/",
-    "sector": "Technology"
+    "sector": "Healthcare",
+    "industry": "Medical Instruments & Supplies",
+    "beta": 1.69
   },
   "AMAT": {
+    "company_name": "Applied Materials, Inc.",
     "symbol": "AMAT",
     "href": "/stocks/amat/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "beta": 1.67
+  },
+  "LRCX": {
+    "company_name": "Lam Research Corporation",
+    "symbol": "LRCX",
+    "href": "/stocks/lrcx/",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "beta": 1.78
   },
   "BLK": {
+    "company_name": "BlackRock, Inc.",
     "symbol": "BLK",
     "href": "/stocks/blk/",
-    "sector": "Financials"
+    "sector": "Financials",
+    "industry": "Asset Management",
+    "beta": 1.48
   },
   "ANET": {
+    "company_name": "Arista Networks Inc",
     "symbol": "ANET",
     "href": "/stocks/anet/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Computer Hardware",
+    "beta": 1.39
   },
   "VRTX": {
+    "company_name": "Vertex Pharmaceuticals Incorporated",
     "symbol": "VRTX",
     "href": "/stocks/vrtx/",
-    "sector": "Healthcare"
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "beta": 0.32
   },
   "NTES": {
+    "company_name": "NetEase, Inc.",
     "symbol": "NTES",
     "href": "/stocks/ntes/",
-    "sector": "Communication Services"
+    "sector": "Communication Services",
+    "industry": "Electronic Gaming & Multimedia",
+    "beta": 0.91
   },
   "CDNS": {
+    "company_name": "Cadence Design Systems, Inc.",
     "symbol": "CDNS",
     "href": "/stocks/cdns/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Software - Application",
+    "beta": 1.04
   },
   "REGN": {
+    "company_name": "Regeneron Pharmaceuticals, Inc.",
     "symbol": "REGN",
     "href": "/stocks/regn/",
-    "sector": "Healthcare"
-  },
-  "INFY": {
-    "symbol": "INFY",
-    "href": "/stocks/infy/",
-    "sector": "Technology"
-  },
-  "MNST": {
-    "symbol": "MNST",
-    "href": "/stocks/mnst/",
-    "sector": "Consumer Staples"
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "beta": 0.39
   },
   "COIN": {
+    "company_name": "Coinbase Global, Inc.",
     "symbol": "COIN",
     "href": "/stocks/coin/",
-    "sector": "Financials"
+    "sector": "Financials",
+    "industry": "Financial Data & Stock Exchanges",
+    "beta": 3.67
+  },
+  "MNST": {
+    "company_name": "Monster Beverage Corporation",
+    "symbol": "MNST",
+    "href": "/stocks/mnst/",
+    "sector": "Consumer Staples",
+    "industry": "Beverages - Non-Alcoholic",
+    "beta": 0.49
+  },
+  "INFY": {
+    "company_name": "Infosys Limited",
+    "symbol": "INFY",
+    "href": "/stocks/infy/",
+    "sector": "Technology",
+    "industry": "Information Technology Services",
+    "beta": 0.34
   },
   "EW": {
+    "company_name": "Edwards Lifesciences Corporation",
     "symbol": "EW",
     "href": "/stocks/ew/",
-    "sector": "Healthcare"
-  },
-  "FAST": {
-    "symbol": "FAST",
-    "href": "/stocks/fast/",
-    "sector": "Industrials"
+    "sector": "Healthcare",
+    "industry": "Medical Devices",
+    "beta": 0.97
   },
   "DHI": {
+    "company_name": "D.R. Horton, Inc.",
     "symbol": "DHI",
     "href": "/stocks/dhi/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.39
+  },
+  "FAST": {
+    "company_name": "Fastenal Company",
+    "symbol": "FAST",
+    "href": "/stocks/fast/",
+    "sector": "Industrials",
+    "industry": "Industrial Distribution",
+    "beta": 0.88
   },
   "MPWR": {
+    "company_name": "Monolithic Power Systems, Inc.",
     "symbol": "MPWR",
     "href": "/stocks/mpwr/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 1.46
   },
   "AU": {
+    "company_name": "AngloGold Ashanti plc",
     "symbol": "AU",
     "href": "/stocks/au/",
-    "sector": "Materials"
+    "sector": "Materials",
+    "industry": "Gold",
+    "beta": 0.61
   },
   "VEEV": {
+    "company_name": "Veeva Systems Inc.",
     "symbol": "VEEV",
     "href": "/stocks/veev/",
-    "sector": "Healthcare"
+    "sector": "Healthcare",
+    "industry": "Health Information Services",
+    "beta": 1.04
   },
   "CPRT": {
+    "company_name": "Copart, Inc.",
     "symbol": "CPRT",
     "href": "/stocks/cprt/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Specialty Business Services",
+    "beta": 1.11
   },
   "GRMN": {
+    "company_name": "Garmin Ltd.",
     "symbol": "GRMN",
     "href": "/stocks/grmn/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Scientific & Technical Instruments",
+    "beta": 1.01
   },
   "CTSH": {
+    "company_name": "Cognizant Technology Solutions Corporation",
     "symbol": "CTSH",
     "href": "/stocks/ctsh/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Information Technology Services",
+    "beta": 0.97
   },
   "RMD": {
+    "company_name": "ResMed Inc.",
     "symbol": "RMD",
     "href": "/stocks/rmd/",
-    "sector": "Healthcare"
+    "sector": "Healthcare",
+    "industry": "Medical Instruments & Supplies",
+    "beta": 0.87
   },
   "NUE": {
+    "company_name": "Nucor Corporation",
     "symbol": "NUE",
     "href": "/stocks/nue/",
-    "sector": "Materials"
+    "sector": "Materials",
+    "industry": "Steel",
+    "beta": 1.87
+  },
+  "KEYS": {
+    "company_name": "Keysight Technologies, Inc.",
+    "symbol": "KEYS",
+    "href": "/stocks/keys/",
+    "sector": "Technology",
+    "industry": "Scientific & Technical Instruments",
+    "beta": 1.2
   },
   "LEN": {
+    "company_name": "Lennar Corporation",
     "symbol": "LEN",
     "href": "/stocks/len/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.41
   },
   "LEN.B": {
+    "company_name": "Lennar Corporation",
     "symbol": "LEN.B",
     "href": "/stocks/len.b/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.41
+  },
+  "RJF": {
+    "company_name": "Raymond James Financial, Inc.",
+    "symbol": "RJF",
+    "href": "/stocks/rjf/",
+    "sector": "Financials",
+    "industry": "Asset Management",
+    "beta": 1.01
   },
   "WIT": {
+    "company_name": "Wipro Limited",
     "symbol": "WIT",
     "href": "/stocks/wit/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Information Technology Services",
+    "beta": 0.59
   },
   "MKL": {
+    "company_name": "Markel Group Inc.",
     "symbol": "MKL",
     "href": "/stocks/mkl/",
-    "sector": "Financials"
+    "sector": "Financials",
+    "industry": "Insurance - Property & Casualty",
+    "beta": 0.81
   },
   "DOV": {
+    "company_name": "Dover Corporation",
     "symbol": "DOV",
     "href": "/stocks/dov/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "beta": 1.31
   },
   "ZM": {
+    "company_name": "Zoom Communications Inc.",
     "symbol": "ZM",
     "href": "/stocks/zm/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Software - Application",
+    "beta": 0.81
   },
   "PHM": {
+    "company_name": "PulteGroup, Inc.",
     "symbol": "PHM",
     "href": "/stocks/phm/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.32
   },
   "STLD": {
+    "company_name": "Steel Dynamics, Inc.",
     "symbol": "STLD",
     "href": "/stocks/stld/",
-    "sector": "Materials"
+    "sector": "Materials",
+    "industry": "Steel",
+    "beta": 1.48
   },
   "TROW": {
+    "company_name": "T. Rowe Price Group, Inc.",
     "symbol": "TROW",
     "href": "/stocks/trow/",
-    "sector": "Financials"
-  },
-  "NVR": {
-    "symbol": "NVR",
-    "href": "/stocks/nvr/",
-    "sector": "Consumer Discretionary"
-  },
-  "TPL": {
-    "symbol": "TPL",
-    "href": "/stocks/tpl/",
-    "sector": "Energy"
-  },
-  "UTHR": {
-    "symbol": "UTHR",
-    "href": "/stocks/uthr/",
-    "sector": "Healthcare"
+    "sector": "Financials",
+    "industry": "Asset Management",
+    "beta": 1.54
   },
   "LULU": {
+    "company_name": "lululemon athletica inc.",
     "symbol": "LULU",
     "href": "/stocks/lulu/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Apparel Retail",
+    "beta": 1.02
   },
-  "WST": {
-    "symbol": "WST",
-    "href": "/stocks/wst/",
-    "sector": "Healthcare"
+  "NVR": {
+    "company_name": "NVR, Inc.",
+    "symbol": "NVR",
+    "href": "/stocks/nvr/",
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.01
+  },
+  "UTHR": {
+    "company_name": "United Therapeutics Corporation",
+    "symbol": "UTHR",
+    "href": "/stocks/uthr/",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic",
+    "beta": 0.87
   },
   "ON": {
+    "company_name": "ON Semiconductor Corporation",
     "symbol": "ON",
     "href": "/stocks/on/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 1.57
+  },
+  "WST": {
+    "company_name": "West Pharmaceutical Services, Inc.",
+    "symbol": "WST",
+    "href": "/stocks/wst/",
+    "sector": "Healthcare",
+    "industry": "Medical Instruments & Supplies",
+    "beta": 1.16
+  },
+  "TPL": {
+    "company_name": "Texas Pacific Land Corporation",
+    "symbol": "TPL",
+    "href": "/stocks/tpl/",
+    "sector": "Energy",
+    "industry": "Oil & Gas Exploration & Production",
+    "beta": 0.95
   },
   "UMC": {
+    "company_name": "United Microelectronics Corporation",
     "symbol": "UMC",
     "href": "/stocks/umc/",
-    "sector": "Technology"
-  },
-  "SNA": {
-    "symbol": "SNA",
-    "href": "/stocks/sna/",
-    "sector": "Industrials"
-  },
-  "LOGI": {
-    "symbol": "LOGI",
-    "href": "/stocks/logi/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 0.95
   },
   "WWD": {
+    "company_name": "Woodward, Inc.",
     "symbol": "WWD",
     "href": "/stocks/wwd/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "beta": 1.04
   },
-  "COO": {
-    "symbol": "COO",
-    "href": "/stocks/coo/",
-    "sector": "Healthcare"
+  "SNA": {
+    "company_name": "Snap-on Incorporated",
+    "symbol": "SNA",
+    "href": "/stocks/sna/",
+    "sector": "Industrials",
+    "industry": "Tools & Accessories",
+    "beta": 0.78
   },
-  "RS": {
-    "symbol": "RS",
-    "href": "/stocks/rs/",
-    "sector": "Materials"
-  },
-  "NBIX": {
-    "symbol": "NBIX",
-    "href": "/stocks/nbix/",
-    "sector": "Healthcare"
+  "LOGI": {
+    "company_name": "Logitech International S.A.",
+    "symbol": "LOGI",
+    "href": "/stocks/logi/",
+    "sector": "Technology",
+    "industry": "Computer Hardware",
+    "beta": 0.81
   },
   "FN": {
+    "company_name": "Fabrinet",
     "symbol": "FN",
     "href": "/stocks/fn/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "beta": 1.05
   },
-  "GGG": {
-    "symbol": "GGG",
-    "href": "/stocks/ggg/",
-    "sector": "Industrials"
+  "COO": {
+    "company_name": "The Cooper Companies, Inc.",
+    "symbol": "COO",
+    "href": "/stocks/coo/",
+    "sector": "Healthcare",
+    "industry": "Medical Instruments & Supplies",
+    "beta": 1.06
+  },
+  "NBIX": {
+    "company_name": "Neurocrine Biosciences, Inc.",
+    "symbol": "NBIX",
+    "href": "/stocks/nbix/",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic",
+    "beta": 0.28
   },
   "KSPI": {
+    "company_name": "Joint Stock Company Kaspi.kz",
     "symbol": "KSPI",
     "href": "/stocks/kspi/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "beta": -0.07
   },
-  "IEX": {
-    "symbol": "IEX",
-    "href": "/stocks/iex/",
-    "sector": "Industrials"
+  "RS": {
+    "company_name": "Reliance, Inc.",
+    "symbol": "RS",
+    "href": "/stocks/rs/",
+    "sector": "Materials",
+    "industry": "Steel",
+    "beta": 0.91
   },
-  "WSO": {
-    "symbol": "WSO",
-    "href": "/stocks/wso/",
-    "sector": "Industrials"
+  "GGG": {
+    "company_name": "Graco Inc.",
+    "symbol": "GGG",
+    "href": "/stocks/ggg/",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "beta": 1.09
   },
   "TOL": {
+    "company_name": "Toll Brothers, Inc.",
     "symbol": "TOL",
     "href": "/stocks/tol/",
-    "sector": "Consumer Discretionary"
-  },
-  "UNM": {
-    "symbol": "UNM",
-    "href": "/stocks/unm/",
-    "sector": "Financials"
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.39
   },
   "WSO.B": {
+    "company_name": "Watsco, Inc.",
     "symbol": "WSO.B",
     "href": "/stocks/wso.b/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Industrial Distribution",
+    "beta": 1.0
+  },
+  "WSO": {
+    "company_name": "Watsco, Inc.",
+    "symbol": "WSO",
+    "href": "/stocks/wso/",
+    "sector": "Industrials",
+    "industry": "Industrial Distribution",
+    "beta": 1.0
+  },
+  "IEX": {
+    "company_name": "IDEX Corporation",
+    "symbol": "IEX",
+    "href": "/stocks/iex/",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "beta": 1.0
   },
   "DECK": {
+    "company_name": "Deckers Outdoor Corporation",
     "symbol": "DECK",
     "href": "/stocks/deck/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Footwear & Accessories",
+    "beta": 1.19
+  },
+  "UNM": {
+    "company_name": "Unum Group",
+    "symbol": "UNM",
+    "href": "/stocks/unm/",
+    "sector": "Financials",
+    "industry": "Insurance - Life",
+    "beta": 0.2
   },
   "CF": {
+    "company_name": "CF Industries Holdings, Inc.",
     "symbol": "CF",
     "href": "/stocks/cf/",
-    "sector": "Materials"
+    "sector": "Materials",
+    "industry": "Agricultural Inputs",
+    "beta": 0.67
   },
   "MLI": {
+    "company_name": "Mueller Industries, Inc.",
     "symbol": "MLI",
     "href": "/stocks/mli/",
-    "sector": "Industrials"
-  },
-  "AFG": {
-    "symbol": "AFG",
-    "href": "/stocks/afg/",
-    "sector": "Financials"
-  },
-  "EXEL": {
-    "symbol": "EXEL",
-    "href": "/stocks/exel/",
-    "sector": "Healthcare"
+    "sector": "Industrials",
+    "industry": "Metal Fabrication",
+    "beta": 1.05
   },
   "TSEM": {
+    "company_name": "Tower Semiconductor Ltd.",
     "symbol": "TSEM",
     "href": "/stocks/tsem/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 0.91
+  },
+  "EXEL": {
+    "company_name": "Exelixis, Inc.",
+    "symbol": "EXEL",
+    "href": "/stocks/exel/",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "beta": 0.41
+  },
+  "AFG": {
+    "company_name": "American Financial Group, Inc.",
+    "symbol": "AFG",
+    "href": "/stocks/afg/",
+    "sector": "Financials",
+    "industry": "Insurance - Property & Casualty",
+    "beta": 0.68
   },
   "EPAM": {
+    "company_name": "EPAM Systems, Inc.",
     "symbol": "EPAM",
     "href": "/stocks/epam/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Information Technology Services",
+    "beta": 1.77
   },
   "SEIC": {
+    "company_name": "SEI Investments Company",
     "symbol": "SEIC",
     "href": "/stocks/seic/",
-    "sector": "Financials"
-  },
-  "DOCS": {
-    "symbol": "DOCS",
-    "href": "/stocks/docs/",
-    "sector": "Healthcare"
+    "sector": "Financials",
+    "industry": "Asset Management",
+    "beta": 0.98
   },
   "AIT": {
+    "company_name": "Applied Industrial Technologies, Inc.",
     "symbol": "AIT",
     "href": "/stocks/ait/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Industrial Distribution",
+    "beta": 0.85
+  },
+  "DOCS": {
+    "company_name": "Doximity, Inc.",
+    "symbol": "DOCS",
+    "href": "/stocks/docs/",
+    "sector": "Healthcare",
+    "industry": "Health Information Services",
+    "beta": 1.36
   },
   "WTS": {
+    "company_name": "Watts Water Technologies, Inc.",
     "symbol": "WTS",
     "href": "/stocks/wts/",
-    "sector": "Industrials"
-  },
-  "ASR": {
-    "symbol": "ASR",
-    "href": "/stocks/asr/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "beta": 1.23
   },
   "DRS": {
+    "company_name": "Leonardo DRS, Inc.",
     "symbol": "DRS",
     "href": "/stocks/drs/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "beta": 0.23
+  },
+  "ASR": {
+    "company_name": "Grupo Aeroportuario del Sureste, S. A. B. de C. V.",
+    "symbol": "ASR",
+    "href": "/stocks/asr/",
+    "sector": "Industrials",
+    "industry": "Airports & Air Services",
+    "beta": 0.42
   },
   "APPF": {
+    "company_name": "AppFolio, Inc.",
     "symbol": "APPF",
     "href": "/stocks/appf/",
-    "sector": "Technology"
-  },
-  "OLLI": {
-    "symbol": "OLLI",
-    "href": "/stocks/olli/",
-    "sector": "Consumer Staples"
+    "sector": "Technology",
+    "industry": "Software - Application",
+    "beta": 0.79
   },
   "AAON": {
+    "company_name": "AAON, Inc.",
     "symbol": "AAON",
     "href": "/stocks/aaon/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment",
+    "beta": 1.05
+  },
+  "OLLI": {
+    "company_name": "Ollie's Bargain Outlet Holdings, Inc.",
+    "symbol": "OLLI",
+    "href": "/stocks/olli/",
+    "sector": "Consumer Staples",
+    "industry": "Discount Stores",
+    "beta": 0.45
   },
   "HLNE": {
+    "company_name": "Hamilton Lane Incorporated",
     "symbol": "HLNE",
     "href": "/stocks/hlne/",
-    "sector": "Financials"
-  },
-  "PJT": {
-    "symbol": "PJT",
-    "href": "/stocks/pjt/",
-    "sector": "Financials"
-  },
-  "INGR": {
-    "symbol": "INGR",
-    "href": "/stocks/ingr/",
-    "sector": "Consumer Staples"
+    "sector": "Financials",
+    "industry": "Asset Management",
+    "beta": 1.35
   },
   "SSD": {
+    "company_name": "Simpson Manufacturing Co., Inc.",
     "symbol": "SSD",
     "href": "/stocks/ssd/",
-    "sector": "Materials"
+    "sector": "Materials",
+    "industry": "Lumber & Wood Production",
+    "beta": 1.35
   },
   "FSS": {
+    "company_name": "Federal Signal Corporation",
     "symbol": "FSS",
     "href": "/stocks/fss/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Pollution & Treatment Controls",
+    "beta": 1.34
   },
-  "MTG": {
-    "symbol": "MTG",
-    "href": "/stocks/mtg/",
-    "sector": "Financials"
+  "PJT": {
+    "company_name": "PJT Partners Inc.",
+    "symbol": "PJT",
+    "href": "/stocks/pjt/",
+    "sector": "Financials",
+    "industry": "Capital Markets",
+    "beta": 0.84
   },
-  "EXLS": {
-    "symbol": "EXLS",
-    "href": "/stocks/exls/",
-    "sector": "Technology"
-  },
-  "ESNT": {
-    "symbol": "ESNT",
-    "href": "/stocks/esnt/",
-    "sector": "Financials"
-  },
-  "CRUS": {
-    "symbol": "CRUS",
-    "href": "/stocks/crus/",
-    "sector": "Technology"
+  "INGR": {
+    "company_name": "Ingredion Incorporated",
+    "symbol": "INGR",
+    "href": "/stocks/ingr/",
+    "sector": "Consumer Staples",
+    "industry": "Packaged Foods",
+    "beta": 0.71
   },
   "LFUS": {
+    "company_name": "Littelfuse, Inc.",
     "symbol": "LFUS",
     "href": "/stocks/lfus/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "beta": 1.44
+  },
+  "MTG": {
+    "company_name": "MGIC Investment Corporation",
+    "symbol": "MTG",
+    "href": "/stocks/mtg/",
+    "sector": "Financials",
+    "industry": "Insurance - Specialty",
+    "beta": 0.85
+  },
+  "EXLS": {
+    "company_name": "ExlService Holdings, Inc.",
+    "symbol": "EXLS",
+    "href": "/stocks/exls/",
+    "sector": "Technology",
+    "industry": "Information Technology Services",
+    "beta": 0.91
+  },
+  "CRUS": {
+    "company_name": "Cirrus Logic, Inc.",
+    "symbol": "CRUS",
+    "href": "/stocks/crus/",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 1.07
   },
   "TMHC": {
+    "company_name": "Taylor Morrison Home Corporation",
     "symbol": "TMHC",
     "href": "/stocks/tmhc/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.58
+  },
+  "ESNT": {
+    "company_name": "Essent Group Ltd.",
+    "symbol": "ESNT",
+    "href": "/stocks/esnt/",
+    "sector": "Financials",
+    "industry": "Insurance - Specialty",
+    "beta": 0.9
   },
   "PIPR": {
+    "company_name": "Piper Sandler Companies",
     "symbol": "PIPR",
     "href": "/stocks/pipr/",
-    "sector": "Financials"
+    "sector": "Financials",
+    "industry": "Capital Markets",
+    "beta": 1.55
   },
   "LPX": {
+    "company_name": "Louisiana-Pacific Corporation",
     "symbol": "LPX",
     "href": "/stocks/lpx/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment",
+    "beta": 1.8
   },
   "OLED": {
+    "company_name": "Universal Display Corporation",
     "symbol": "OLED",
     "href": "/stocks/oled/",
-    "sector": "Technology"
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "beta": 1.6
   },
   "UFPI": {
+    "company_name": "UFP Industries, Inc.",
     "symbol": "UFPI",
     "href": "/stocks/ufpi/",
-    "sector": "Materials"
+    "sector": "Materials",
+    "industry": "Lumber & Wood Production",
+    "beta": 1.49
+  },
+  "ATAT": {
+    "company_name": "Atour Lifestyle Holdings Limited",
+    "symbol": "ATAT",
+    "href": "/stocks/atat/",
+    "sector": "Consumer Discretionary",
+    "industry": "Lodging",
+    "beta": 0.79
   },
   "BMI": {
+    "company_name": "Badger Meter, Inc.",
     "symbol": "BMI",
     "href": "/stocks/bmi/",
-    "sector": "Technology"
-  },
-  "BCPC": {
-    "symbol": "BCPC",
-    "href": "/stocks/bcpc/",
-    "sector": "Materials"
+    "sector": "Technology",
+    "industry": "Scientific & Technical Instruments",
+    "beta": 0.92
   },
   "MTH": {
+    "company_name": "Meritage Homes Corporation",
     "symbol": "MTH",
     "href": "/stocks/mth/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.45
+  },
+  "BCPC": {
+    "company_name": "Balchem Corporation",
+    "symbol": "BCPC",
+    "href": "/stocks/bcpc/",
+    "sector": "Materials",
+    "industry": "Specialty Chemicals",
+    "beta": 0.99
   },
   "GNTX": {
+    "company_name": "Gentex Corporation",
     "symbol": "GNTX",
     "href": "/stocks/gntx/",
-    "sector": "Consumer Discretionary"
-  },
-  "TGS": {
-    "symbol": "TGS",
-    "href": "/stocks/tgs/",
-    "sector": "Energy"
-  },
-  "MZTI": {
-    "symbol": "MZTI",
-    "href": "/stocks/mzti/",
-    "sector": "Consumer Staples"
+    "sector": "Consumer Discretionary",
+    "industry": "Auto Parts",
+    "beta": 0.78
   },
   "SKY": {
+    "company_name": "Champion Homes, Inc.",
     "symbol": "SKY",
     "href": "/stocks/sky/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.09
+  },
+  "TGS": {
+    "company_name": "Transportadora de Gas del Sur S.A.",
+    "symbol": "TGS",
+    "href": "/stocks/tgs/",
+    "sector": "Energy",
+    "industry": "Oil & Gas Integrated",
+    "beta": -0.26
   },
   "CVCO": {
+    "company_name": "Cavco Industries, Inc.",
     "symbol": "CVCO",
     "href": "/stocks/cvco/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.3
   },
-  "LOPE": {
-    "symbol": "LOPE",
-    "href": "/stocks/lope/",
-    "sector": "Consumer Staples"
+  "MZTI": {
+    "company_name": "The Marzetti Company",
+    "symbol": "MZTI",
+    "href": "/stocks/mzti/",
+    "sector": "Consumer Staples",
+    "industry": "Packaged Foods",
+    "beta": 0.43
   },
   "CSW": {
+    "company_name": "CSW Industrials, Inc.",
     "symbol": "CSW",
     "href": "/stocks/csw/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "beta": 0.84
+  },
+  "LOPE": {
+    "company_name": "Grand Canyon Education, Inc.",
+    "symbol": "LOPE",
+    "href": "/stocks/lope/",
+    "sector": "Consumer Staples",
+    "industry": "Education & Training Services",
+    "beta": 0.76
   },
   "FELE": {
+    "company_name": "Franklin Electric Co., Inc.",
     "symbol": "FELE",
     "href": "/stocks/fele/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "beta": 1.07
   },
   "DORM": {
+    "company_name": "Dorman Products, Inc.",
     "symbol": "DORM",
     "href": "/stocks/dorm/",
-    "sector": "Consumer Discretionary"
-  },
-  "MWA": {
-    "symbol": "MWA",
-    "href": "/stocks/mwa/",
-    "sector": "Industrials"
-  },
-  "BRC": {
-    "symbol": "BRC",
-    "href": "/stocks/brc/",
-    "sector": "Industrials"
-  },
-  "FHI": {
-    "symbol": "FHI",
-    "href": "/stocks/fhi/",
-    "sector": "Financials"
-  },
-  "EXPO": {
-    "symbol": "EXPO",
-    "href": "/stocks/expo/",
-    "sector": "Industrials"
-  },
-  "MHO": {
-    "symbol": "MHO",
-    "href": "/stocks/mho/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Auto Parts",
+    "beta": 0.88
   },
   "POWL": {
+    "company_name": "Powell Industries, Inc.",
     "symbol": "POWL",
     "href": "/stocks/powl/",
-    "sector": "Industrials"
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "beta": 0.85
   },
-  "KFY": {
-    "symbol": "KFY",
-    "href": "/stocks/kfy/",
-    "sector": "Industrials"
+  "MWA": {
+    "company_name": "Mueller Water Products, Inc.",
+    "symbol": "MWA",
+    "href": "/stocks/mwa/",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "beta": 1.17
+  },
+  "FHI": {
+    "company_name": "Federated Hermes, Inc.",
+    "symbol": "FHI",
+    "href": "/stocks/fhi/",
+    "sector": "Financials",
+    "industry": "Asset Management",
+    "beta": 0.75
+  },
+  "BRC": {
+    "company_name": "Brady Corporation",
+    "symbol": "BRC",
+    "href": "/stocks/brc/",
+    "sector": "Industrials",
+    "industry": "Security & Protection Services",
+    "beta": 0.69
+  },
+  "EXPO": {
+    "company_name": "Exponent, Inc.",
+    "symbol": "EXPO",
+    "href": "/stocks/expo/",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction",
+    "beta": 0.82
+  },
+  "MHO": {
+    "company_name": "M/I Homes, Inc.",
+    "symbol": "MHO",
+    "href": "/stocks/mho/",
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.73
   },
   "USLM": {
+    "company_name": "United States Lime & Minerals, Inc.",
     "symbol": "USLM",
     "href": "/stocks/uslm/",
-    "sector": "Materials"
+    "sector": "Materials",
+    "industry": "Building Materials",
+    "beta": 0.96
   },
-  "APAM": {
-    "symbol": "APAM",
-    "href": "/stocks/apam/",
-    "sector": "Financials"
+  "KFY": {
+    "company_name": "Korn Ferry",
+    "symbol": "KFY",
+    "href": "/stocks/kfy/",
+    "sector": "Industrials",
+    "industry": "Staffing & Employment Services",
+    "beta": 1.35
   },
   "WHD": {
+    "company_name": "Cactus, Inc.",
     "symbol": "WHD",
     "href": "/stocks/whd/",
-    "sector": "Energy"
+    "sector": "Energy",
+    "industry": "Oil & Gas Equipment & Services",
+    "beta": 1.29
   },
-  "FIZZ": {
-    "symbol": "FIZZ",
-    "href": "/stocks/fizz/",
-    "sector": "Consumer Staples"
+  "APAM": {
+    "company_name": "Artisan Partners Asset Management Inc.",
+    "symbol": "APAM",
+    "href": "/stocks/apam/",
+    "sector": "Financials",
+    "industry": "Asset Management",
+    "beta": 1.76
   },
   "KAI": {
+    "company_name": "Kadant Inc.",
     "symbol": "KAI",
     "href": "/stocks/kai/",
-    "sector": "Industrials"
-  },
-  "CNS": {
-    "symbol": "CNS",
-    "href": "/stocks/cns/",
-    "sector": "Financials"
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "beta": 1.26
   },
   "YETI": {
+    "company_name": "YETI Holdings, Inc.",
     "symbol": "YETI",
     "href": "/stocks/yeti/",
-    "sector": "Consumer Discretionary"
+    "sector": "Consumer Discretionary",
+    "industry": "Leisure",
+    "beta": 1.81
   },
-  "BSM": {
-    "symbol": "BSM",
-    "href": "/stocks/bsm/",
-    "sector": "Energy"
+  "CNS": {
+    "company_name": "Cohen & Steers, Inc.",
+    "symbol": "CNS",
+    "href": "/stocks/cns/",
+    "sector": "Financials",
+    "industry": "Asset Management",
+    "beta": 1.27
   },
-  "NMIH": {
-    "symbol": "NMIH",
-    "href": "/stocks/nmih/",
-    "sector": "Financials"
-  },
-  "COLM": {
-    "symbol": "COLM",
-    "href": "/stocks/colm/",
-    "sector": "Consumer Discretionary"
-  },
-  "CPRX": {
-    "symbol": "CPRX",
-    "href": "/stocks/cprx/",
-    "sector": "Healthcare"
-  },
-  "GRBK": {
-    "symbol": "GRBK",
-    "href": "/stocks/grbk/",
-    "sector": "Consumer Discretionary"
-  },
-  "LRN": {
-    "symbol": "LRN",
-    "href": "/stocks/lrn/",
-    "sector": "Consumer Staples"
-  },
-  "TPH": {
-    "symbol": "TPH",
-    "href": "/stocks/tph/",
-    "sector": "Consumer Discretionary"
+  "FIZZ": {
+    "company_name": "National Beverage Corp.",
+    "symbol": "FIZZ",
+    "href": "/stocks/fizz/",
+    "sector": "Consumer Staples",
+    "industry": "Beverages - Non-Alcoholic",
+    "beta": 0.48
   },
   "COCO": {
+    "company_name": "The Vita Coco Company, Inc.",
     "symbol": "COCO",
     "href": "/stocks/coco/",
-    "sector": "Consumer Staples"
+    "sector": "Consumer Staples",
+    "industry": "Beverages - Non-Alcoholic",
+    "beta": 0.39
+  },
+  "BSM": {
+    "company_name": "Black Stone Minerals, L.P.",
+    "symbol": "BSM",
+    "href": "/stocks/bsm/",
+    "sector": "Energy",
+    "industry": "Oil & Gas Exploration & Production",
+    "beta": 0.09
+  },
+  "GRBK": {
+    "company_name": "Green Brick Partners, Inc.",
+    "symbol": "GRBK",
+    "href": "/stocks/grbk/",
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 2.01
+  },
+  "NMIH": {
+    "company_name": "NMI Holdings, Inc.",
+    "symbol": "NMIH",
+    "href": "/stocks/nmih/",
+    "sector": "Financials",
+    "industry": "Insurance - Specialty",
+    "beta": 0.67
+  },
+  "TPH": {
+    "company_name": "Tri Pointe Homes, Inc.",
+    "symbol": "TPH",
+    "href": "/stocks/tph/",
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.34
+  },
+  "COLM": {
+    "company_name": "Columbia Sportswear Company",
+    "symbol": "COLM",
+    "href": "/stocks/colm/",
+    "sector": "Consumer Discretionary",
+    "industry": "Apparel Manufacturing",
+    "beta": 0.92
+  },
+  "CPRX": {
+    "company_name": "Catalyst Pharmaceuticals, Inc.",
+    "symbol": "CPRX",
+    "href": "/stocks/cprx/",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "beta": 0.69
+  },
+  "LRN": {
+    "company_name": "Stride, Inc.",
+    "symbol": "LRN",
+    "href": "/stocks/lrn/",
+    "sector": "Consumer Staples",
+    "industry": "Education & Training Services",
+    "beta": 0.02
   },
   "WDFC": {
+    "company_name": "WD-40 Company",
     "symbol": "WDFC",
     "href": "/stocks/wdfc/",
-    "sector": "Materials"
-  },
-  "IPAR": {
-    "symbol": "IPAR",
-    "href": "/stocks/ipar/",
-    "sector": "Consumer Staples"
-  },
-  "MGRC": {
-    "symbol": "MGRC",
-    "href": "/stocks/mgrc/",
-    "sector": "Industrials"
-  },
-  "PLUS": {
-    "symbol": "PLUS",
-    "href": "/stocks/plus/",
-    "sector": "Technology"
-  },
-  "ACLS": {
-    "symbol": "ACLS",
-    "href": "/stocks/acls/",
-    "sector": "Technology"
+    "sector": "Materials",
+    "industry": "Specialty Chemicals",
+    "beta": 0.15
   },
   "DRD": {
+    "company_name": "DRDGOLD Limited",
     "symbol": "DRD",
     "href": "/stocks/drd/",
-    "sector": "Materials"
+    "sector": "Materials",
+    "industry": "Gold",
+    "beta": 0.48
+  },
+  "IPAR": {
+    "company_name": "Interparfums, Inc.",
+    "symbol": "IPAR",
+    "href": "/stocks/ipar/",
+    "sector": "Consumer Staples",
+    "industry": "Household & Personal Products",
+    "beta": 1.26
+  },
+  "ACLS": {
+    "company_name": "Axcelis Technologies, Inc.",
+    "symbol": "ACLS",
+    "href": "/stocks/acls/",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "beta": 1.73
+  },
+  "MGRC": {
+    "company_name": "McGrath RentCorp",
+    "symbol": "MGRC",
+    "href": "/stocks/mgrc/",
+    "sector": "Industrials",
+    "industry": "Rental & Leasing Services",
+    "beta": 0.5
+  },
+  "PLUS": {
+    "company_name": "ePlus inc.",
+    "symbol": "PLUS",
+    "href": "/stocks/plus/",
+    "sector": "Technology",
+    "industry": "Software - Application",
+    "beta": 1.03
   },
   "SII": {
+    "company_name": "Sprott Inc.",
     "symbol": "SII",
     "href": "/stocks/sii/",
-    "sector": "Financials"
+    "sector": "Financials",
+    "industry": "Asset Management",
+    "beta": 1.2
+  },
+  "ACMR": {
+    "company_name": "ACM Research, Inc.",
+    "symbol": "ACMR",
+    "href": "/stocks/acmr/",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "beta": 1.43
   }
 }

@@ -38,13 +38,15 @@ async def main():
                 logger.info("No stocks found after filtering. Exiting.")
                 await page.close()
                 return
+            
+            return
 
             
             # Pass context to stock2filter instead of page
             for symbol, company_info in companies_dict.items():
                 try:
                     fetcher = ReportsFetcher(context, company_info['symbol'], company_info['href'])
-                    await fetcher.fetch_all_reports()
+                    # await fetcher.fetch_all_reports()
                     generate_report(symbol)
                 except Exception as e:
                     logger.info(f"Error processing stock {company_info['symbol']}: {e}")

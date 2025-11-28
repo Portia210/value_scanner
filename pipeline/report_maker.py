@@ -7,7 +7,7 @@ from utils.logger import get_logger
 from utils.file_handler import load_json_file
 from config import EXISTING_STOCKS_FILE_PATH
 from reports_checks import basic_reports_check, benjamin_graham_check
-from utils.pd_helpers import check_cell_data, check_missing_rows_in_df, check_row_data
+from utils.pd_helpers import validate_cell_bounds, find_missing_rows, validate_row_thresholds
 
 logger = get_logger()
 
@@ -35,9 +35,9 @@ def get_symbol_sector(symbol):
 
 def validate_all_dfs(income_df, balance_df, ratios_df):
     "function check for only required parameters for the calculations"
-    missing_income = check_missing_rows_in_df(income_df, income_index_rows, "income df")
-    missing_balance = check_missing_rows_in_df(balance_df, balance_index_rows, "balance df")
-    missing_ratios = check_missing_rows_in_df(ratios_df, ratio_index_rows, "ratios df")
+    missing_income = find_missing_rows(income_df, income_index_rows, "income df")
+    missing_balance = find_missing_rows(balance_df, balance_index_rows, "balance df")
+    missing_ratios = find_missing_rows(ratios_df, ratio_index_rows, "ratios df")
     full_missing_rows = missing_income + missing_balance + missing_ratios
     if len(full_missing_rows) == 0:
         return True

@@ -1,12 +1,81 @@
+"""Generic pandas DataFrame utilities for safe data access and validation."""
+
 import pandas as pd
+from io import StringIO
+from playwright.async_api import Page
 from enum import Enum
+from bs4 import BeautifulSoup
 from .logger import get_logger
 
 logger = get_logger()
 
 
-def check_missing_rows_in_df(df, required_rows: list, df_name: str = None) -> list:
-    "required rows is a list of enum members"
+
+
+async def extract_html_table_to_df(page: Page, table_selector: str, href_col_number: int = None):
+    """Extract HTML table to DataFrame, optionally extracting href from specific td column."""
+
+    # Get table HTML
+    table_html = await page.locator(table_selector).inner_html(timeout=3000)
+    full_table_html = f"<table>{table_html}</table>"
+
+    # Parse table with pandas
+    df = pd.read_html(StringIO(full_table_html))[0]
+    df.columns = df.columns.get_level_values(0)  # Flatten multi-level columns
+
+    # Extract hrefs if requested
+    if href_col_number is not None:
+        soup = BeautifulSoup(full_table_html, 'html.parser')
+        data_rows = soup.find_all('tr')[1:]  # Skip header row
+
+        hrefs = []
+        for row in data_rows[:len(df)]:
+            tds = row.find_all('td')
+            link = tds[href_col_number].find('a') if href_col_number < len(tds) else None
+            hrefs.append(link.get('href') if link else None)
+
+        df['href'] = hrefs
+
+    # Remove columns containing "Upgrade"
+    upgrade_cols = [col for col in df.columns if (df[col] == 'Upgrade').any()]
+    df = df.drop(columns=upgrade_cols)
+
+    return df
+
+# ============================================================================
+# SAFE GETTER FUNCTIONS
+# ============================================================================
+
+def get_cell_safe(df: pd.DataFrame, row_index: Enum, col) -> float | None:
+    """Get single cell value, returns None if missing/NaN."""
+    try:
+        if row_index.value not in df.index:
+            return None
+        value = df.loc[row_index.value, col]
+        return None if pd.isna(value) else value
+    except Exception as e:
+        logger.error(f"Error getting cell {row_index.value}: {e}")
+        return None
+
+
+def get_row_safe(df: pd.DataFrame, row_index: Enum, cols: list = None) -> pd.Series | None:
+    """Get entire row, returns None if missing."""
+    try:
+        if row_index.value not in df.index:
+            return None
+        columns = cols if cols else df.columns
+        return df.loc[row_index.value, columns]
+    except Exception as e:
+        logger.error(f"Error getting row {row_index.value}: {e}")
+        return None
+
+
+# ============================================================================
+# GENERIC VALIDATION FUNCTIONS
+# ============================================================================
+
+def find_missing_rows(df, required_rows: list, df_name: str = None) -> list:
+    """Check which required rows are missing from DataFrame."""
     missing_rows = [row for row in required_rows if row not in df.index]
     if "Long-Term Debt" in missing_rows:
         missing_rows.remove("Long-Term Debt")
@@ -17,138 +86,43 @@ def check_missing_rows_in_df(df, required_rows: list, df_name: str = None) -> li
     return []
 
 
-
-def check_row_data(df: pd.DataFrame, row_index: Enum, years_cols: list, min_avg=0, min_sum=0):
+def validate_row_thresholds(df: pd.DataFrame, row_index: Enum, years_cols: list, min_avg=0, min_sum=0):
+    """Validate row against minimum average and sum thresholds."""
     cols = years_cols if years_cols else df.columns
-    try:
-        row = df.loc[row_index.value, cols]
-        # Calculate sum, average (mean), and median
-        total = row.sum()
-        avg = row.mean()  # mean() is the same as average
-        if total >= min_sum and avg >= min_avg:
-            pass_check = True
-        else:
-            pass_check =  False
-        return f"**valid?** {pass_check}, avarage: {avg:.2f}, total: {total:.2f}"
-    except KeyError:
+    row = get_row_safe(df, row_index, cols)
+
+    if row is None:
         return f"**valid?** False, row '{row_index.value}' not found in data"
+
+    try:
+        total = row.sum()
+        avg = row.mean()
+        pass_check = total >= min_sum and avg >= min_avg
+        return f"**valid?** {pass_check}, avarage: {avg:.2f}, total: {total:.2f}"
     except Exception as e:
         logger.error(e)
         return f"**valid?** False, error reading '{row_index.value}': {str(e)}"
-        
-def check_cell_data(df: pd.DataFrame, row_index: Enum, col, greater_than: float= None, lower_than: float = None):
+
+
+def validate_cell_bounds(df: pd.DataFrame, row_index: Enum, col, greater_than: float = None, lower_than: float = None):
+    """Validate cell value against min/max thresholds."""
+    cell = get_cell_safe(df, row_index, col)
+
+    if cell is None:
+        return f"**valid?**: False, row '{row_index.value}' not found in data"
+
     try:
-        cell = df.loc[row_index.value, col]
         cell_valid = True
         greater_than_txt = ""
-        if greater_than:
+        if greater_than is not None:
             cell_valid = greater_than <= cell
             greater_than_txt = f"value greater than {greater_than:.2f}. "
         lower_than_txt = ""
-        if lower_than:
+        if lower_than is not None:
             cell_valid = lower_than >= cell and cell_valid
-            lower_than_txt = f"value lower than {greater_than:.2f}. "
+            lower_than_txt = f"value lower than {lower_than:.2f}. "
 
         return f"**valid?**: {cell_valid}, {row_index.value} value ({cell}). {greater_than_txt+lower_than_txt}"
-    except KeyError:
-        return f"**valid?**: False, row '{row_index.value}' not found in data"
     except Exception as e:
         logger.error(e)
         return f"**valid?**: False, error reading '{row_index.value}': {str(e)}"
-
-
-def check_cell_range(df: pd.DataFrame, row_index: Enum, col, min_value: float, max_value: float) -> tuple[bool, str]:
-    """Check if a cell value is within a specified range (min < value < max)"""
-    try:
-        cell = df.loc[row_index.value, col]
-        cell_valid = min_value < cell < max_value
-        return cell_valid, f"**valid?**: {cell_valid}, {row_index.value} value ({cell:.2f}) should be between {min_value} and {max_value}"
-    except KeyError:
-        return False, f"**valid?**: False, row '{row_index.value}' not found in data"
-    except Exception as e:
-        logger.error(e)
-        return False, f"**valid?**: False, error reading '{row_index.value}': {str(e)}"
-
-
-def check_eps_growth(df: pd.DataFrame, row_index: Enum, years_cols: list, min_growth_percent: float = 30) -> tuple[bool, str]:
-    """
-    Check EPS growth by comparing average of first 2 years vs last 2 years
-    Returns True if growth >= min_growth_percent
-    """
-    try:
-        if len(years_cols) < 5:
-            return False, f"**valid?**: False, need at least 5 years of data, got {len(years_cols)}"
-
-        row = df.loc[row_index.value, years_cols]
-
-        # First 2 years (oldest)
-        first_two_avg = row.iloc[-2:].mean()  # Last 2 indices are oldest years
-        # Last 2 years (most recent)
-        last_two_avg = row.iloc[:2].mean()  # First 2 indices are most recent
-
-        if first_two_avg == 0:
-            return False, f"**valid?**: False, first period average is 0, cannot calculate growth"
-
-        growth_percent = ((last_two_avg - first_two_avg) / first_two_avg) * 100
-        is_valid = growth_percent >= min_growth_percent
-
-        return is_valid, f"**valid?**: {is_valid}, EPS growth: {growth_percent:.2f}% (first 2yr avg: {first_two_avg:.2f}, last 2yr avg: {last_two_avg:.2f})"
-    except KeyError:
-        return False, f"**valid?**: False, row '{row_index.value}' not found in data"
-    except Exception as e:
-        logger.error(e)
-        return False, f"**valid?**: False, error reading '{row_index.value}': {str(e)}"
-
-
-def check_pe_pb_product(ratios_df: pd.DataFrame, pe_index: Enum, pb_index: Enum, col, max_product: float = 22) -> tuple[bool, str]:
-    """Check if P/E × P/B < max_product (default 22 for Graham number)"""
-    try:
-        pe = ratios_df.loc[pe_index.value, col]
-        pb = ratios_df.loc[pb_index.value, col]
-        product = pe * pb
-        is_valid = product < max_product
-
-        return is_valid, f"**valid?**: {is_valid}, P/E × P/B = {pe:.2f} × {pb:.2f} = {product:.2f} (should be < {max_product})"
-    except KeyError as e:
-        return False, f"**valid?**: False, row '{e.args[0]}' not found in data"
-    except Exception as e:
-        logger.error(e)
-        return False, f"**valid?**: False, error reading ratio data: {str(e)}"
-
-
-def check_p_ocf_vs_pe(ratios_df: pd.DataFrame, p_ocf_index: Enum, pe_index: Enum, col) -> tuple[bool, str]:
-    """Check if P/OCF < P/E (for tech companies)"""
-    try:
-        p_ocf = ratios_df.loc[p_ocf_index.value, col]
-        pe = ratios_df.loc[pe_index.value, col]
-        is_valid = p_ocf < pe
-
-        return is_valid, f"**valid?**: {is_valid}, P/OCF ({p_ocf:.2f}) < P/E ({pe:.2f})"
-    except KeyError as e:
-        return False, f"**valid?**: False, row '{e.args[0]}' not found in data"
-    except Exception as e:
-        logger.error(e)
-        return False, f"**valid?**: False, error reading ratio data: {str(e)}"
-
-
-def get_cell_value_safe(df: pd.DataFrame, row_index: Enum, col) -> float | None:
-    """
-    Safely get a cell value from DataFrame, returning None if NaN or missing.
-
-    Args:
-        df: DataFrame to read from
-        row_index: Enum for the row index
-        col: Column name
-
-    Returns:
-        Cell value as float, or None if NaN/missing
-    """
-    try:
-        if row_index.value not in df.index:
-            return None
-        value = df.loc[row_index.value, col]
-        return None if pd.isna(value) else value
-    except Exception as e:
-        logger.error(f"Error getting cell value for {row_index.value}: {e}")
-        return None
-

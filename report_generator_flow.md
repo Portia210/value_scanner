@@ -115,33 +115,40 @@ The `benjamin_graham_check()` function implements the following investment requi
 
 **For AI Agents**: Always read these files to understand current implementation and monitor changes:
 
-1. **`utils/pd_helpers.py`**
-   - Contains all reusable validation helper functions
-   - Modular functions for checking DataFrame cells, rows, and ranges
-   - Benjamin Graham-specific validation utilities
+1. **`utils/pd_helpers.py`** - Generic pandas utilities (domain-agnostic)
+   - **Safe getters**: `get_cell_safe()`, `get_row_safe()` - Safe data access
+   - **Generic validators**: `check_missing_rows_in_df()`, `check_row_data()`, `check_cell_data()`
+   - No formula-specific logic - only reusable DataFrame utilities
 
-2. **`utils/formatting.py`**
-   - Visual formatting utilities for report output
-   - `format_valid()` function: Adds colored indicators (🟢 PASS / 🔴 FAIL) to validation messages
+2. **`reports_checks/formula_helpers.py`** - Investment formula validators (domain-specific)
+   - `check_cell_range()` - P/E ratio range validation
+   - `check_eps_growth()` - Benjamin Graham EPS growth formula
+   - `check_pe_pb_product()` - Graham Number (P/E × P/B < 22)
+   - `check_p_ocf_vs_pe()` - Tech company P/OCF validation
+   - Uses safe getters from `pd_helpers.py` internally
+
+3. **`utils/formatting.py`** - Visual formatting utilities
+   - `format_valid()` function: Adds colored indicators (🟢 PASS / 🔴 FAIL)
    - Used consistently across all report check functions
 
-3. **`reports_checks/benjamin_graham_check.py`**
+4. **`reports_checks/benjamin_graham_check.py`** - Benjamin Graham criteria
    - Main implementation of Benjamin Graham investment criteria
-   - Contains the complete check logic and tech company detection
-   - Integrates all helper functions from `pd_helpers.py`
+   - Complete check logic and tech company detection
+   - Imports from both `pd_helpers` (safe getters) and `formula_helpers` (formulas)
    - Uses `format_valid()` for colored output
 
-4. **`reports_checks/basic_reports_check.py`**
+5. **`reports_checks/basic_reports_check.py`** - Basic financial health checks
    - General financial health metrics validation
    - Basic checks for margins, ratios, and working capital
+   - Uses only generic functions from `pd_helpers.py`
    - Uses `format_valid()` for colored output
 
-5. **`pipeline/report_maker.py`**
+6. **`pipeline/report_maker.py`** - Report orchestration
    - Report generation orchestration
    - Loads data, calls check functions, generates markdown output
    - Entry point: `generate_report(symbol)` function
 
-6. **`enums/` folder**
+7. **`enums/` folder** - Data structure definitions
    - `income_index.py`, `balance_sheet_index.py`, `ratios_index.py`, `cash_flow_index.py`
    - Enum definitions for CSV row indices
    - Used to access financial data consistently across the codebase
@@ -187,9 +194,11 @@ generate_report("AIT")
 
 ## Implementation Notes
 
-### Modular Design
-- All validation functions are reusable and independent
-- Helper functions return consistent tuple format: `(bool, str)`
+### Modular Design & Code Organization
+- **Separation of concerns**: Generic pandas utilities (`pd_helpers.py`) vs formula-specific logic (`formula_helpers.py`)
+- **Safe data access**: All formula functions use `get_cell_safe()` and `get_row_safe()` to handle missing data gracefully
+- **KISS principle**: One-line docstrings, clean functions, minimal complexity
+- Helper functions return consistent tuple format: `(bool, str)` for validation results
 - Each check is self-contained with error handling
 
 ### Tech Company Detection
