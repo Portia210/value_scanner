@@ -46,7 +46,7 @@ def validate_all_dfs(income_df, balance_df, ratios_df):
     
 
 def generate_report(symbol):
-    logger.info(f"generating report for symbol {symbol}")
+    logger.info(f"Compiling analysis report for: {symbol}")
     csvs_paths = get_symbol_csvs_paths(symbol)
     if csvs_paths == None:
         logger.warning(f"not all the csvs exists for {symbol}, skipping")

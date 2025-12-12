@@ -17,6 +17,11 @@ async def extract_html_table_to_df(page: Page, table_selector: str, href_col_num
 
     # Get table HTML
     table_html = await page.locator(table_selector).inner_html(timeout=3000)
+    return parse_html_table_str(table_html, href_col_number)
+
+
+def parse_html_table_str(table_html: str, href_col_number: int = None) -> pd.DataFrame:
+    """Parse HTML table string to DataFrame."""
     full_table_html = f"<table>{table_html}</table>"
 
     # Parse table with pandas
