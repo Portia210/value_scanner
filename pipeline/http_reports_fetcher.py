@@ -45,7 +45,7 @@ class HttpReportsFetcher:
     
     async def fetch_all_reports(self, symbol: str, stock_href: str):
         """Fetch all reports for a given symbol sequentially with delays, ensuring completion."""
-        logger.info(f"Fetching financial data for: {symbol}")
+        logger.debug(f"Fetching financial data for: {symbol}")
         base_url = f"https://stockanalysis.com{stock_href}"
         
         for report_type, url_suffix in self.REPORTS_ROUTES.items():

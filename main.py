@@ -2,13 +2,43 @@ import asyncio
 import os
 import shutil
 import pandas as pd
-from config import DATA_DIR, FILTERS_CSV_PATH
+from dotenv import load_dotenv
+from config import DATA_DIR, FILTERS_CSV_PATH, COOKIES_FILE_PATH
 from pipeline.update_stock_list import update_stock_list_interactive
 from pipeline.batch_processor import batch_process_companies
 from company_classifiers.generate_classifications import generate_classification_csv
+from playwright_utils import BrowserManager
+from playwright_utils.cookie_utils import validate_cookie
+from playwright_utils.login_utils import login_and_save_cookies
 from utils.logger import get_logger
 
 logger = get_logger()
+# Load env vars for possible login
+load_dotenv()
+
+async def ensure_valid_cookies():
+    """
+    Check if cookies are valid. If not, attempt to login and save new ones.
+    """
+    logger.info(f"Verifying session cookies at {COOKIES_FILE_PATH}...")
+    if validate_cookie(COOKIES_FILE_PATH):
+        logger.info("Session cookies are valid.")
+        return True
+
+    logger.warning("Cookies are invalid, expired, or missing. Initiating auto-login protocol...")
+    try:
+        async with BrowserManager(headless=False, slow_mo=100) as manager:
+            async with manager.new_page() as page:
+                success = await login_and_save_cookies(page, COOKIES_FILE_PATH)
+                if success:
+                    logger.info("Auto-login successful! Session refreshed.")
+                    return True
+                else:
+                    logger.error("Auto-login failed. Please check your credentials in .env.")
+                    return False
+    except Exception as e:
+        logger.error(f"Error during auto-login execution: {e}")
+        return False
 
 def cleanup_stale_data(companies_dict: dict):
     """
@@ -30,6 +60,30 @@ def cleanup_stale_data(companies_dict: dict):
             except Exception as e:
                 logger.error(f"Error removing {folder}: {e}")
 
+def initialize_output_files():
+    """
+    Remove existing result files to prevent duplicate entries on rerun.
+    """
+    logger.info("Cleaning up old result files...")
+    
+    # Clean CSV
+    if FILTERS_CSV_PATH.exists():
+        try:
+            FILTERS_CSV_PATH.unlink()
+            logger.info(f"Removed {FILTERS_CSV_PATH}")
+        except Exception as e:
+            logger.error(f"Failed to remove {FILTERS_CSV_PATH}: {e}")
+            
+    # Clean Markdown Dashboard
+    from config import OUTPUT_DIR
+    md_path = OUTPUT_DIR / "filters_results.md"
+    if md_path.exists():
+        try:
+            md_path.unlink()
+            logger.info(f"Removed {md_path}")
+        except Exception as e:
+            logger.error(f"Failed to remove {md_path}: {e}")
+
 def sort_results_csv():
     """
     Sort the results CSV alphabetically by Symbol.
@@ -47,6 +101,9 @@ def sort_results_csv():
         logger.error(f"Error sorting results CSV: {e}")
 
 async def main():
+    # 0. Ensure Valid Session
+    await ensure_valid_cookies()
+
     # 1. Update Stock List
     # Ask for update first
     user_input = input("do you want to update stock symbols? type y or any other key: ")
@@ -64,10 +121,13 @@ async def main():
     # 3. Generate Classifications (Source of Truth)
     generate_classification_csv()
 
-    # 4. Batch Process (Fetch & Report)
+    # 4. Clean Output Files
+    initialize_output_files()
+
+    # 5. Batch Process (Fetch & Report)
     await batch_process_companies(companies_dict)
     
-    # 5. Final Sorting
+    # 6. Final Sorting
     sort_results_csv()
 
 if __name__ == "__main__":
