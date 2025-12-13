@@ -10,3 +10,8 @@
 
 ### Removed (1)
 - **removed** **COO** | Healthcare | Medical Instruments & Supplies | Beta: 1.06
+
+## 2025-12-13 13:35:34
+
+### Added (1)
+- **added** **GMAB** | Healthcare | Biotechnology | Beta: 0.79

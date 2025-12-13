@@ -24,14 +24,14 @@ def check_cell_range(df: pd.DataFrame, row_index: Enum, col, min_value: float, m
         return False, f"**valid?**: False, error reading '{row_index.value}': {str(e)}"
 
 
-def check_eps_growth(df: pd.DataFrame, row_index: Enum, years_cols: list, min_growth_percent: float = 30) -> tuple[bool, str]:
-    """Check EPS growth: average of first 2 years vs last 2 years."""
+def calculate_eps_growth_percent(df: pd.DataFrame, row_index: Enum, years_cols: list) -> float:
+    """Calculate the EPS growth percentage over the period."""
     if len(years_cols) < 5:
-        return False, f"**valid?**: False, need at least 5 years of data, got {len(years_cols)}"
+        return None
 
     row = get_row_safe(df, row_index, years_cols)
     if row is None:
-        return False, f"**valid?**: False, row '{row_index.value}' not found in data"
+        return None
 
     try:
         # First 2 years (oldest)
@@ -40,15 +40,120 @@ def check_eps_growth(df: pd.DataFrame, row_index: Enum, years_cols: list, min_gr
         last_two_avg = row.iloc[:2].mean()
 
         if first_two_avg == 0:
-            return False, f"**valid?**: False, first period average is 0, cannot calculate growth"
+            return None
 
         growth_percent = ((last_two_avg - first_two_avg) / first_two_avg) * 100
-        is_valid = growth_percent >= min_growth_percent
-
-        return is_valid, f"**valid?**: {is_valid}, EPS growth: {growth_percent:.2f}% (first 2yr avg: {first_two_avg:.2f}, last 2yr avg: {last_two_avg:.2f})"
+        return growth_percent
     except Exception as e:
         logger.error(e)
-        return False, f"**valid?**: False, error calculating growth: {str(e)}"
+        return None
+
+
+def check_eps_growth(df: pd.DataFrame, row_index: Enum, years_cols: list, min_growth_percent: float = 30) -> tuple[bool, str]:
+    """Check EPS growth: average of first 2 years vs last 2 years."""
+    growth_percent = calculate_eps_growth_percent(df, row_index, years_cols)
+    
+    if growth_percent is None:
+        # Re-derive error reason for message (simplified for now to avoid redundant logic)
+        # Or just check simple conditions again if needed for exact error msg
+        if len(years_cols) < 5:
+             return False, f"**valid?**: False, need at least 5 years of data, got {len(years_cols)}"
+        row = get_row_safe(df, row_index, years_cols)
+        if row is None:
+             return False, f"**valid?**: False, row '{row_index.value}' not found in data"
+        return False, "**valid?**: False, cannot calculate growth (avg is 0 or error)"
+
+    is_valid = growth_percent >= min_growth_percent
+    
+    # We need to re-fetch avgs just for the message, or return them from calc function. 
+    # To keep this clean without changing return signature too much, I'll calculate avgs inline just for display if needed, 
+    # or just trust the float.
+    # Let's just grab the row again for the message details to ensure 1:1 parity with old message
+    row = get_row_safe(df, row_index, years_cols)
+    first_two_avg = row.iloc[-2:].mean()
+    last_two_avg = row.iloc[:2].mean()
+
+    return is_valid, f"**valid?**: {is_valid}, EPS growth: {growth_percent:.2f}% (first 2yr avg: {first_two_avg:.2f}, last 2yr avg: {last_two_avg:.2f})"
+
+
+def calculate_earnings_volatility(df: pd.DataFrame, row_index: Enum, years_cols: list) -> float:
+    """
+    Calculate Coefficient of Variation (CV) for EPS over available years.
+    CV = Standard Deviation / Mean
+    Returns: Float CV value, or 0.0 if not calculable.
+    """
+    if len(years_cols) < 2:
+        return 0.0
+
+    row = get_row_safe(df, row_index, years_cols)
+    if row is None:
+        return 0.0
+    
+    try:
+        # Convert to float and drop NaNs
+        values = pd.to_numeric(row, errors='coerce').dropna()
+        if len(values) < 2:
+            return 0.0
+            
+        mean = values.mean()
+        if mean == 0:
+            return 0.0 # Avoid division by zero
+            
+        std = values.std()
+        cv = abs(std / mean)
+        return cv
+    except Exception as e:
+        logger.error(f"Error calculating volatility: {e}")
+        return 0.0
+
+
+def calculate_cagr(df: pd.DataFrame, row_index: Enum, years_cols: list, years: int = 3) -> float:
+    """
+    Calculate Compound Annual Growth Rate (CAGR) over n years.
+    Formula: (End / Start)^(1/n) - 1
+    
+    Args:
+        years_cols: List of year columns sorted descending (e.g., ['2024', '2023', ...])
+        years: Number of years to look back (default 3 means End vs End-3).
+    
+    Returns:
+        float: CAGR percent (e.g., 25.5 for 25.5%), or None if invalid.
+    """
+    if len(years_cols) <= years:
+        return None
+
+    try:
+        # years_cols is sorted desc (Newest first).
+        # End Value = years_cols[0]
+        # Start Value = years_cols[years]
+        
+        end_col = years_cols[0]
+        start_col = years_cols[years]
+        
+        end_val = get_cell_safe(df, row_index, end_col)
+        start_val = get_cell_safe(df, row_index, start_col)
+        
+        if end_val is None or start_val is None:
+            return None
+            
+        # CAGR is undefined if start value is negative or zero
+        if start_val <= 0:
+            return None
+            
+        # Determine sign of end value to handle direction? 
+        # Standard CAGR formula supports positive start only. 
+        # If end is negative, it's a -100% loss situation effectively or calculable if real numbers.
+        # But if start is positive and end is negative, standard formula (neg/pos)^(1/n) fails for real roots.
+        if end_val <= 0:
+             # Massive decline
+             return -100.0
+
+        cagr = ( (end_val / start_val) ** (1/years) ) - 1
+        return cagr * 100.0
+
+    except Exception as e:
+        logger.error(f"Error calculating CAGR: {e}")
+        return None
 
 
 def check_graham_number(ratios_df: pd.DataFrame, pe_index: Enum, pb_index: Enum, col, max_product: float = 22) -> tuple[bool, str]:

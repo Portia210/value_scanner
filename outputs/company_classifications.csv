@@ -1,0 +1,141 @@
+Symbol,Sector,Industry,EPS CAGR 3Y,Rev CAGR 3Y,Volatility (CV),Type,Valuation Method,Reasons
+AAON,Industrials,Building Products & Equipment,40.39,30.98,0.44,Cyclical,P/OCF,Cyclical Sector/Industry
+AIT,Industrials,Industrial Distribution,15.43,6.19,0.35,Cyclical,P/OCF,Cyclical Sector/Industry
+ALG,Industrials,Farm & Heavy Construction Machinery,12.57,6.89,0.31,Cyclical,P/OCF,Cyclical Sector/Industry
+ASR,Industrials,Airports & Air Services,31.31,18.59,0.53,Cyclical,P/OCF,Cyclical Sector/Industry
+ATAT,Consumer Discretionary,Lodging,97.04,49.99,1.20,Cyclical,P/OCF,Cyclical Sector/Industry
+AU,Materials,Gold,16.86,12.87,1.01,Cyclical,P/OCF,Cyclical Sector/Industry
+BCPC,Materials,Specialty Chemicals,10.16,6.08,0.15,Cyclical,P/OCF,Cyclical Sector/Industry
+BRC,Industrials,Security & Protection Services,10.70,5.16,0.20,Cyclical,P/OCF,Cyclical Sector/Industry
+BSM,Energy,Oil & Gas Exploration & Production,14.31,-4.58,0.55,Cyclical,P/OCF,Cyclical Sector/Industry
+CF,Materials,Agricultural Inputs,16.71,-3.17,0.77,Cyclical,P/OCF,Cyclical Sector/Industry
+COCO,Consumer Staples,Beverages - Non-Alcoholic,39.00,10.78,0.58,Cyclical,P/OCF,"Sector: Consumer Staples (Defensive), EPS CAGR > 20% (39.0%) but High Volatility (0.58) -> Trap"
+COLM,Consumer Discretionary,Apparel Manufacturing,-10.51,2.53,0.37,Cyclical,P/OCF,Cyclical Sector/Industry
+CPRT,Industrials,Specialty Business Services,12.06,9.90,0.19,Cyclical,P/OCF,Cyclical Sector/Industry
+CSW,Industrials,Specialty Industrial Machinery,25.89,11.92,0.40,Cyclical,P/OCF,Cyclical Sector/Industry
+CVCO,Consumer Discretionary,Residential Construction,-0.99,7.39,0.36,Cyclical,P/OCF,Cyclical Sector/Industry
+DCI,Industrials,Specialty Industrial Machinery,4.67,3.73,0.15,Cyclical,P/OCF,Cyclical Sector/Industry
+DECK,Consumer Discretionary,Footwear & Accessories,32.68,16.54,0.44,Cyclical,P/OCF,Cyclical Sector/Industry
+DHI,Consumer Discretionary,Residential Construction,-11.18,0.76,0.16,Cyclical,P/OCF,Cyclical Sector/Industry
+DORM,Consumer Discretionary,Auto Parts,14.22,14.31,0.25,Cyclical,P/OCF,Cyclical Sector/Industry
+DOV,Industrials,Specialty Industrial Machinery,35.93,-0.68,0.62,Cyclical,P/OCF,Cyclical Sector/Industry
+DRD,Materials,Gold,25.62,15.45,0.29,Cyclical,P/OCF,Cyclical Sector/Industry
+DRS,Industrials,Aerospace & Defense,3.10,3.95,0.64,Cyclical,P/OCF,Cyclical Sector/Industry
+EW,Healthcare,Medical Devices,43.07,1.30,0.72,Cyclical,P/OCF,High Growth (43.1%) but High Volatility (0.72) -> Trap
+EXPO,Industrials,Engineering & Construction,3.56,6.04,0.11,Cyclical,P/OCF,Cyclical Sector/Industry
+FAST,Industrials,Industrial Distribution,7.72,7.88,0.14,Cyclical,P/OCF,Cyclical Sector/Industry
+FELE,Industrials,Specialty Industrial Machinery,5.90,6.74,0.23,Cyclical,P/OCF,Cyclical Sector/Industry
+FSS,Industrials,Pollution & Treatment Controls,29.01,15.36,0.36,Cyclical,P/OCF,Cyclical Sector/Industry
+GGG,Industrials,Specialty Industrial Machinery,3.82,2.05,0.15,Cyclical,P/OCF,Cyclical Sector/Industry
+GNTX,Consumer Discretionary,Auto Parts,5.47,10.14,0.14,Cyclical,P/OCF,Cyclical Sector/Industry
+GRBK,Consumer Discretionary,Residential Construction,31.45,14.37,0.45,Cyclical,P/OCF,Cyclical Sector/Industry
+IEX,Industrials,Specialty Industrial Machinery,4.14,5.74,0.19,Cyclical,P/OCF,Cyclical Sector/Industry
+INGR,Consumer Staples,Packaged Foods,77.72,2.53,0.50,Cyclical,P/OCF,"Sector: Consumer Staples (Defensive), EPS CAGR > 20% (77.7%) but High Volatility (0.50) -> Trap"
+KAI,Industrials,Specialty Industrial Machinery,9.55,10.21,0.28,Cyclical,P/OCF,Cyclical Sector/Industry
+KFY,Industrials,Staffing & Employment Services,-8.37,1.29,0.37,Cyclical,P/OCF,Cyclical Sector/Industry
+LEN,Consumer Discretionary,Residential Construction,0.09,9.32,0.23,Cyclical,P/OCF,Cyclical Sector/Industry
+LEN.B,Consumer Discretionary,Residential Construction,0.09,9.32,0.23,Cyclical,P/OCF,Cyclical Sector/Industry
+LPX,Industrials,Building Products & Equipment,-25.23,-9.10,0.67,Cyclical,P/OCF,Cyclical Sector/Industry
+LULU,Consumer Discretionary,Apparel Retail,25.03,19.17,0.46,Cyclical,P/OCF,Cyclical Sector/Industry
+MGRC,Industrials,Rental & Leasing Services,37.09,19.44,0.42,Cyclical,P/OCF,Cyclical Sector/Industry
+MHO,Consumer Discretionary,Residential Construction,14.07,6.34,0.29,Cyclical,P/OCF,Cyclical Sector/Industry
+MLI,Industrials,Metal Fabrication,8.83,0.00,0.42,Cyclical,P/OCF,Cyclical Sector/Industry
+MTH,Consumer Discretionary,Residential Construction,3.60,7.55,0.29,Cyclical,P/OCF,Cyclical Sector/Industry
+MWA,Industrials,Specialty Industrial Machinery,36.47,4.67,0.47,Cyclical,P/OCF,Cyclical Sector/Industry
+NUE,Materials,Steel,-28.52,-5.56,0.67,Cyclical,P/OCF,Cyclical Sector/Industry
+NVR,Consumer Discretionary,Residential Construction,16.50,6.03,0.30,Cyclical,P/OCF,Cyclical Sector/Industry
+PHM,Consumer Discretionary,Residential Construction,25.51,9.32,0.37,Cyclical,P/OCF,Cyclical Sector/Industry
+POWL,Industrials,Electrical Equipment & Parts,134.66,27.51,1.01,Cyclical,P/OCF,Cyclical Sector/Industry
+RS,Materials,Steel,-10.86,-0.61,0.48,Cyclical,P/OCF,Cyclical Sector/Industry
+SKY,Consumer Discretionary,Residential Construction,-7.56,4.01,0.56,Cyclical,P/OCF,Cyclical Sector/Industry
+SNA,Industrials,Tools & Accessories,9.35,3.54,0.20,Cyclical,P/OCF,Cyclical Sector/Industry
+SSD,Materials,Lumber & Wood Production,7.49,12.37,0.24,Cyclical,P/OCF,Cyclical Sector/Industry
+STLD,Materials,Steel,-14.17,-1.60,0.54,Cyclical,P/OCF,Cyclical Sector/Industry
+TGS,Energy,Oil & Gas Integrated,108.62,91.64,1.12,Cyclical,P/OCF,Cyclical Sector/Industry
+TMHC,Consumer Discretionary,Residential Construction,16.88,2.88,0.46,Cyclical,P/OCF,Cyclical Sector/Industry
+TOL,Consumer Discretionary,Residential Construction,7.36,2.19,0.27,Cyclical,P/OCF,Cyclical Sector/Industry
+TPH,Consumer Discretionary,Residential Construction,5.44,4.11,0.32,Cyclical,P/OCF,Cyclical Sector/Industry
+TPL,Energy,Oil & Gas Exploration & Production,19.31,16.11,0.35,Cyclical,P/OCF,Cyclical Sector/Industry
+TSLA,Consumer Discretionary,Auto Manufacturers,7.77,21.98,0.69,Cyclical,P/OCF,Cyclical Sector/Industry
+UFPI,Materials,Lumber & Wood Production,-7.63,-8.33,0.33,Cyclical,P/OCF,Cyclical Sector/Industry
+USLM,Materials,Building Materials,42.49,18.85,0.55,Cyclical,P/OCF,Cyclical Sector/Industry
+WDFC,Materials,Specialty Chemicals,10.94,6.12,0.15,Cyclical,P/OCF,Cyclical Sector/Industry
+WHD,Energy,Oil & Gas Equipment & Services,49.44,37.09,0.55,Cyclical,P/OCF,Cyclical Sector/Industry
+WSO,Industrials,Industrial Distribution,7.25,6.65,0.27,Cyclical,P/OCF,Cyclical Sector/Industry
+WSO.B,Industrials,Industrial Distribution,7.25,6.65,0.27,Cyclical,P/OCF,Cyclical Sector/Industry
+WTS,Industrials,Specialty Industrial Machinery,21.21,7.57,0.35,Cyclical,P/OCF,Cyclical Sector/Industry
+WWD,Industrials,Aerospace & Defense,38.44,14.39,0.42,Cyclical,P/OCF,Cyclical Sector/Industry
+YETI,Consumer Discretionary,Leisure,-5.12,9.05,0.28,Cyclical,P/OCF,Cyclical Sector/Industry
+AFG,Financials,Insurance - Property & Casualty,-23.16,N/A,0.49,Defensive,Graham,"Sector: Financials (Defensive), Industry Hard-Lock: Insurance - Property & Casualty (No Growth Upgrade)"
+APAM,Financials,Asset Management,-10.41,-3.23,0.23,Defensive,Graham,Sector: Financials (Defensive Gravity)
+BLK,Financials,Asset Management,3.20,1.75,0.11,Defensive,Graham,Sector: Financials (Defensive Gravity)
+BRK.A,Financials,Insurance - Diversified,1.30,10.38,0.87,Defensive,Graham,"Sector: Financials (Defensive), Industry Hard-Lock: Insurance - Diversified (No Growth Upgrade)"
+BRK.B,Financials,Insurance - Diversified,1.30,10.38,0.87,Defensive,Graham,"Sector: Financials (Defensive), Industry Hard-Lock: Insurance - Diversified (No Growth Upgrade)"
+CNS,Financials,Asset Management,-11.67,-3.95,0.34,Defensive,Graham,Sector: Financials (Defensive Gravity)
+COIN,Financials,Financial Data & Stock Exchanges,-13.21,-7.05,3.61,Defensive,Graham,Sector: Financials (Defensive Gravity)
+ESNT,Financials,Insurance - Specialty,3.88,N/A,0.23,Defensive,Graham,"Sector: Financials (Defensive), Industry Hard-Lock: Insurance - Specialty (No Growth Upgrade)"
+FHI,Financials,Asset Management,5.51,7.88,0.11,Defensive,Graham,Sector: Financials (Defensive Gravity)
+FIZZ,Consumer Staples,Beverages - Non-Alcoholic,5.60,1.81,0.10,Defensive,Graham,Sector: Consumer Staples (Defensive Gravity)
+HLNE,Financials,Asset Management,10.77,24.67,0.27,Defensive,Graham,Sector: Financials (Defensive Gravity)
+KEN,Utilities,Utilities - Independent Power Producers,-13.08,15.49,1.02,Defensive,Graham,Sector: Utilities (Defensive Gravity)
+LOPE,Consumer Staples,Education & Training Services,9.30,4.84,0.15,Defensive,Graham,Sector: Consumer Staples (Defensive Gravity)
+MKL,Financials,Insurance - Property & Casualty,4.16,N/A,0.84,Defensive,Graham,"Sector: Financials (Defensive), Industry Hard-Lock: Insurance - Property & Casualty (No Growth Upgrade)"
+MNST,Consumer Staples,Beverages - Non-Alcoholic,4.92,10.58,0.12,Defensive,Graham,Sector: Consumer Staples (Defensive Gravity)
+MTG,Financials,Insurance - Specialty,16.03,N/A,0.30,Defensive,Graham,"Sector: Financials (Defensive), Industry Hard-Lock: Insurance - Specialty (No Growth Upgrade)"
+NMIH,Financials,Insurance - Specialty,18.68,N/A,0.28,Defensive,Graham,"Sector: Financials (Defensive), Industry Hard-Lock: Insurance - Specialty (No Growth Upgrade)"
+OLLI,Consumer Staples,Discount Stores,9.95,9.03,0.28,Defensive,Graham,Sector: Consumer Staples (Defensive Gravity)
+PIPR,Financials,Capital Markets,-14.58,-9.09,0.66,Defensive,Graham,Sector: Financials (Defensive Gravity)
+PJT,Financials,Capital Markets,7.23,14.58,0.18,Defensive,Graham,Sector: Financials (Defensive Gravity)
+RJF,Financials,Asset Management,13.85,8.98,0.20,Defensive,Graham,Sector: Financials (Defensive Gravity)
+SEIC,Financials,Asset Management,5.00,3.48,0.14,Defensive,Graham,Sector: Financials (Defensive Gravity)
+SII,Financials,Asset Management,14.27,2.76,0.37,Defensive,Graham,Sector: Financials (Defensive Gravity)
+TROW,Financials,Asset Management,-11.32,-2.58,0.26,Defensive,Graham,Sector: Financials (Defensive Gravity)
+UNM,Financials,Insurance - Life,25.46,N/A,0.34,Defensive,Graham,"Sector: Financials (Defensive), Industry Hard-Lock: Insurance - Life (No Growth Upgrade)"
+IPAR,Consumer Staples,Household & Personal Products,23.02,18.19,0.45,High Growth,P/OCF,"Sector: Consumer Staples (Defensive), High Growth Upgrade: EPS CAGR > 20% (23.0%)"
+LRN,Consumer Staples,Education & Training Services,33.16,12.55,0.48,High Growth,P/OCF,"Sector: Consumer Staples (Defensive), High Growth Upgrade: EPS CAGR > 20% (33.2%)"
+MZTI,Consumer Staples,Packaged Foods,23.15,4.43,0.24,High Growth,P/OCF,"Sector: Consumer Staples (Defensive), High Growth Upgrade: EPS CAGR > 20% (23.2%)"
+ACLS,Technology,Semiconductor Equipment & Materials,28.77,15.40,0.52,Tech/Pharma,P/OCF,Sector: Technology
+ACMR,Technology,Semiconductor Equipment & Materials,38.17,44.40,0.60,Tech/Pharma,P/OCF,Sector: Technology
+AMAT,Technology,Semiconductor Equipment & Materials,5.19,3.23,0.12,Tech/Pharma,P/OCF,Sector: Technology
+AMD,Technology,Semiconductors,-26.99,16.20,0.62,Tech/Pharma,P/OCF,Sector: Technology
+ANET,Technology,Computer Hardware,50.06,33.43,0.59,Tech/Pharma,P/OCF,Sector: Technology
+APPF,Technology,Software - Application,469.80,30.26,1.97,Tech/Pharma,P/OCF,Sector: Technology
+BELFB,Technology,Electronic Components,17.57,-0.54,0.57,Tech/Pharma,P/OCF,Sector: Technology
+BMI,Technology,Scientific & Technical Instruments,26.69,17.83,0.38,Tech/Pharma,P/OCF,Sector: Technology
+CDNS,Technology,Software - Application,15.48,15.81,0.25,Tech/Pharma,P/OCF,Sector: Technology
+CPRX,Healthcare,Biotechnology,52.41,51.71,0.46,Tech/Pharma,P/OCF,Industry: Biotechnology
+CRUS,Technology,Semiconductors,2.82,2.11,0.27,Tech/Pharma,P/OCF,Sector: Technology
+CTSH,Technology,Information Technology Services,3.65,2.17,0.20,Tech/Pharma,P/OCF,Sector: Technology
+DOCS,Healthcare,Health Information Services,16.61,18.41,0.49,Tech/Pharma,P/OCF,Industry: Health Information Services
+EPAM,Technology,Information Technology Services,-1.28,7.95,0.14,Tech/Pharma,P/OCF,Sector: Technology
+EXEL,Healthcare,Biotechnology,34.71,14.76,0.68,Tech/Pharma,P/OCF,Industry: Biotechnology
+EXLS,Technology,Information Technology Services,21.78,17.88,0.33,Tech/Pharma,P/OCF,Sector: Technology
+FN,Technology,Electronic Components,19.60,14.76,0.31,Tech/Pharma,P/OCF,Sector: Technology
+GMAB,Healthcare,Biotechnology,34.99,32.41,0.32,Tech/Pharma,P/OCF,Industry: Biotechnology
+GRMN,Technology,Scientific & Technical Instruments,9.17,8.11,0.17,Tech/Pharma,P/OCF,Sector: Technology
+INFY,Technology,Information Technology Services,2.78,5.73,0.09,Tech/Pharma,P/OCF,Sector: Technology
+ISRG,Healthcare,Medical Instruments & Supplies,11.27,13.51,0.29,Tech/Pharma,P/OCF,Industry: Medical Instruments & Supplies
+KEYS,Technology,Scientific & Technical Instruments,-7.51,-0.28,0.21,Tech/Pharma,P/OCF,Sector: Technology
+KSPI,Technology,Software - Infrastructure,34.70,42.16,0.50,Tech/Pharma,P/OCF,Sector: Technology
+LFUS,Technology,Electronic Components,-29.43,1.75,0.49,Tech/Pharma,P/OCF,Sector: Technology
+LOGI,Technology,Computer Hardware,3.00,-5.98,0.30,Tech/Pharma,P/OCF,Sector: Technology
+LRCX,Technology,Semiconductor Equipment & Materials,8.27,2.29,0.17,Tech/Pharma,P/OCF,Sector: Technology
+MPWR,Technology,Semiconductors,93.50,22.25,1.08,Tech/Pharma,P/OCF,Sector: Technology
+NBIX,Healthcare,Drug Manufacturers - Specialty & Generic,52.92,27.58,0.52,Tech/Pharma,P/OCF,Industry: Drug Manufacturers - Specialty & Generic
+NTES,Communication Services,Electronic Gaming & Multimedia,22.41,6.32,0.37,Tech/Pharma,P/OCF,Sector: Communication Services
+NVDA,Technology,Semiconductors,96.08,69.25,1.21,Tech/Pharma,P/OCF,Sector: Technology
+OLED,Technology,Electronic Components,6.31,5.38,0.18,Tech/Pharma,P/OCF,Sector: Technology
+ON,Technology,Semiconductors,16.94,1.66,0.55,Tech/Pharma,P/OCF,Sector: Technology
+PLAB,Technology,Semiconductor Equipment & Materials,5.53,0.99,0.30,Tech/Pharma,P/OCF,Sector: Technology
+PLUS,Technology,Software - Application,1.01,4.35,0.17,Tech/Pharma,P/OCF,Sector: Technology
+REGN,Healthcare,Biotechnology,-18.93,-4.04,0.39,Tech/Pharma,P/OCF,Industry: Biotechnology
+RMD,Healthcare,Medical Instruments & Supplies,21.52,12.88,0.37,Tech/Pharma,P/OCF,Industry: Medical Instruments & Supplies
+TSEM,Technology,Semiconductors,10.53,-1.62,0.68,Tech/Pharma,P/OCF,Sector: Technology
+TSM,Technology,Semiconductors,25.06,22.17,0.33,Tech/Pharma,P/OCF,Sector: Technology
+UMC,Technology,Semiconductors,-3.72,2.93,0.44,Tech/Pharma,P/OCF,Sector: Technology
+UTHR,Healthcare,Drug Manufacturers - Specialty & Generic,34.80,19.50,0.37,Tech/Pharma,P/OCF,Industry: Drug Manufacturers - Specialty & Generic
+VEEV,Healthcare,Health Information Services,17.99,14.06,0.24,Tech/Pharma,P/OCF,Industry: Health Information Services
+VRTX,Healthcare,Biotechnology,-100.00,13.31,0.73,Tech/Pharma,P/OCF,Industry: Biotechnology
+WIT,Technology,Information Technology Services,3.97,4.05,0.10,Tech/Pharma,P/OCF,Sector: Technology
+WST,Healthcare,Medical Instruments & Supplies,-8.28,0.71,0.22,Tech/Pharma,P/OCF,Industry: Medical Instruments & Supplies
+ZM,Technology,Software - Application,-10.65,4.40,0.62,Tech/Pharma,P/OCF,Sector: Technology

@@ -359,6 +359,14 @@
     "industry": "Semiconductors",
     "beta": 0.95
   },
+  "GMAB": {
+    "company_name": "Genmab A/S",
+    "symbol": "GMAB",
+    "href": "/stocks/gmab/",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "beta": 0.79
+  },
   "TPL": {
     "company_name": "Texas Pacific Land Corporation",
     "symbol": "TPL",
@@ -447,18 +455,18 @@
     "industry": "Specialty Industrial Machinery",
     "beta": 1.09
   },
-  "WSO.B": {
-    "company_name": "Watsco, Inc.",
-    "symbol": "WSO.B",
-    "href": "/stocks/wso.b/",
-    "sector": "Industrials",
-    "industry": "Industrial Distribution",
-    "beta": 1.01
-  },
   "WSO": {
     "company_name": "Watsco, Inc.",
     "symbol": "WSO",
     "href": "/stocks/wso/",
+    "sector": "Industrials",
+    "industry": "Industrial Distribution",
+    "beta": 1.01
+  },
+  "WSO.B": {
+    "company_name": "Watsco, Inc.",
+    "symbol": "WSO.B",
+    "href": "/stocks/wso.b/",
     "sector": "Industrials",
     "industry": "Industrial Distribution",
     "beta": 1.01

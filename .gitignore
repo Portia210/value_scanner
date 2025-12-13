@@ -21,7 +21,7 @@ screenshots/
 
 
 # Testing scripts
-/testing_scripts/
+# /testing_scripts/
 
 # Cookie files (keep .example files)
 cookies.txt
