@@ -95,14 +95,6 @@
     "industry": "Biotechnology",
     "beta": 0.32
   },
-  "CDNS": {
-    "company_name": "Cadence Design Systems, Inc.",
-    "symbol": "CDNS",
-    "href": "/stocks/cdns/",
-    "sector": "Technology",
-    "industry": "Software - Application",
-    "beta": 1.05
-  },
   "NTES": {
     "company_name": "NetEase, Inc.",
     "symbol": "NTES",
@@ -110,6 +102,14 @@
     "sector": "Communication Services",
     "industry": "Electronic Gaming & Multimedia",
     "beta": 0.91
+  },
+  "CDNS": {
+    "company_name": "Cadence Design Systems, Inc.",
+    "symbol": "CDNS",
+    "href": "/stocks/cdns/",
+    "sector": "Technology",
+    "industry": "Software - Application",
+    "beta": 1.05
   },
   "REGN": {
     "company_name": "Regeneron Pharmaceuticals, Inc.",
@@ -127,14 +127,6 @@
     "industry": "Information Technology Services",
     "beta": 0.33
   },
-  "COIN": {
-    "company_name": "Coinbase Global, Inc.",
-    "symbol": "COIN",
-    "href": "/stocks/coin/",
-    "sector": "Financials",
-    "industry": "Financial Data & Stock Exchanges",
-    "beta": 3.69
-  },
   "MNST": {
     "company_name": "Monster Beverage Corporation",
     "symbol": "MNST",
@@ -143,13 +135,13 @@
     "industry": "Beverages - Non-Alcoholic",
     "beta": 0.48
   },
-  "EW": {
-    "company_name": "Edwards Lifesciences Corporation",
-    "symbol": "EW",
-    "href": "/stocks/ew/",
-    "sector": "Healthcare",
-    "industry": "Medical Devices",
-    "beta": 0.97
+  "COIN": {
+    "company_name": "Coinbase Global, Inc.",
+    "symbol": "COIN",
+    "href": "/stocks/coin/",
+    "sector": "Financials",
+    "industry": "Financial Data & Stock Exchanges",
+    "beta": 3.69
   },
   "FAST": {
     "company_name": "Fastenal Company",
@@ -159,13 +151,13 @@
     "industry": "Industrial Distribution",
     "beta": 0.88
   },
-  "MPWR": {
-    "company_name": "Monolithic Power Systems, Inc.",
-    "symbol": "MPWR",
-    "href": "/stocks/mpwr/",
-    "sector": "Technology",
-    "industry": "Semiconductors",
-    "beta": 1.47
+  "EW": {
+    "company_name": "Edwards Lifesciences Corporation",
+    "symbol": "EW",
+    "href": "/stocks/ew/",
+    "sector": "Healthcare",
+    "industry": "Medical Devices",
+    "beta": 0.97
   },
   "DHI": {
     "company_name": "D.R. Horton, Inc.",
@@ -174,6 +166,14 @@
     "sector": "Consumer Discretionary",
     "industry": "Residential Construction",
     "beta": 1.38
+  },
+  "MPWR": {
+    "company_name": "Monolithic Power Systems, Inc.",
+    "symbol": "MPWR",
+    "href": "/stocks/mpwr/",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 1.47
   },
   "AU": {
     "company_name": "AngloGold Ashanti plc",
@@ -215,14 +215,6 @@
     "industry": "Specialty Business Services",
     "beta": 1.12
   },
-  "VEEV": {
-    "company_name": "Veeva Systems Inc.",
-    "symbol": "VEEV",
-    "href": "/stocks/veev/",
-    "sector": "Healthcare",
-    "industry": "Health Information Services",
-    "beta": 1.06
-  },
   "RMD": {
     "company_name": "ResMed Inc.",
     "symbol": "RMD",
@@ -230,6 +222,14 @@
     "sector": "Healthcare",
     "industry": "Medical Instruments & Supplies",
     "beta": 0.87
+  },
+  "VEEV": {
+    "company_name": "Veeva Systems Inc.",
+    "symbol": "VEEV",
+    "href": "/stocks/veev/",
+    "sector": "Healthcare",
+    "industry": "Health Information Services",
+    "beta": 1.06
   },
   "KEYS": {
     "company_name": "Keysight Technologies, Inc.",
@@ -271,14 +271,6 @@
     "industry": "Residential Construction",
     "beta": 1.4
   },
-  "DOV": {
-    "company_name": "Dover Corporation",
-    "symbol": "DOV",
-    "href": "/stocks/dov/",
-    "sector": "Industrials",
-    "industry": "Specialty Industrial Machinery",
-    "beta": 1.31
-  },
   "MKL": {
     "company_name": "Markel Group Inc.",
     "symbol": "MKL",
@@ -286,6 +278,14 @@
     "sector": "Financials",
     "industry": "Insurance - Property & Casualty",
     "beta": 0.81
+  },
+  "DOV": {
+    "company_name": "Dover Corporation",
+    "symbol": "DOV",
+    "href": "/stocks/dov/",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "beta": 1.31
   },
   "ZM": {
     "company_name": "Zoom Communications, Inc.",
@@ -351,14 +351,6 @@
     "industry": "Drug Manufacturers - Specialty & Generic",
     "beta": 0.86
   },
-  "TPL": {
-    "company_name": "Texas Pacific Land Corporation",
-    "symbol": "TPL",
-    "href": "/stocks/tpl/",
-    "sector": "Energy",
-    "industry": "Oil & Gas Exploration & Production",
-    "beta": 0.96
-  },
   "UMC": {
     "company_name": "United Microelectronics Corporation",
     "symbol": "UMC",
@@ -366,6 +358,14 @@
     "sector": "Technology",
     "industry": "Semiconductors",
     "beta": 0.95
+  },
+  "TPL": {
+    "company_name": "Texas Pacific Land Corporation",
+    "symbol": "TPL",
+    "href": "/stocks/tpl/",
+    "sector": "Energy",
+    "industry": "Oil & Gas Exploration & Production",
+    "beta": 0.96
   },
   "WST": {
     "company_name": "West Pharmaceutical Services, Inc.",
@@ -391,14 +391,6 @@
     "industry": "Aerospace & Defense",
     "beta": 1.02
   },
-  "LOGI": {
-    "company_name": "Logitech International S.A.",
-    "symbol": "LOGI",
-    "href": "/stocks/logi/",
-    "sector": "Technology",
-    "industry": "Computer Hardware",
-    "beta": 0.81
-  },
   "FN": {
     "company_name": "Fabrinet",
     "symbol": "FN",
@@ -406,6 +398,14 @@
     "sector": "Technology",
     "industry": "Electronic Components",
     "beta": 1.05
+  },
+  "LOGI": {
+    "company_name": "Logitech International S.A.",
+    "symbol": "LOGI",
+    "href": "/stocks/logi/",
+    "sector": "Technology",
+    "industry": "Computer Hardware",
+    "beta": 0.81
   },
   "RS": {
     "company_name": "Reliance, Inc.",
@@ -447,26 +447,18 @@
     "industry": "Specialty Industrial Machinery",
     "beta": 1.09
   },
-  "TSEM": {
-    "company_name": "Tower Semiconductor Ltd.",
-    "symbol": "TSEM",
-    "href": "/stocks/tsem/",
-    "sector": "Technology",
-    "industry": "Semiconductors",
-    "beta": 0.88
+  "WSO.B": {
+    "company_name": "Watsco, Inc.",
+    "symbol": "WSO.B",
+    "href": "/stocks/wso.b/",
+    "sector": "Industrials",
+    "industry": "Industrial Distribution",
+    "beta": 1.01
   },
   "WSO": {
     "company_name": "Watsco, Inc.",
     "symbol": "WSO",
     "href": "/stocks/wso/",
-    "sector": "Industrials",
-    "industry": "Industrial Distribution",
-    "beta": 1.01
-  },
-  "WSO.B": {
-    "company_name": "Watsco, Inc.",
-    "symbol": "WSO.B",
-    "href": "/stocks/wso.b/",
     "sector": "Industrials",
     "industry": "Industrial Distribution",
     "beta": 1.01
@@ -478,6 +470,14 @@
     "sector": "Industrials",
     "industry": "Specialty Industrial Machinery",
     "beta": 1.0
+  },
+  "TSEM": {
+    "company_name": "Tower Semiconductor Ltd.",
+    "symbol": "TSEM",
+    "href": "/stocks/tsem/",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "beta": 0.88
   },
   "TOL": {
     "company_name": "Toll Brothers, Inc.",
@@ -607,13 +607,13 @@
     "industry": "Asset Management",
     "beta": 1.34
   },
-  "OLLI": {
-    "company_name": "Ollie's Bargain Outlet Holdings, Inc.",
-    "symbol": "OLLI",
-    "href": "/stocks/olli/",
+  "INGR": {
+    "company_name": "Ingredion Incorporated",
+    "symbol": "INGR",
+    "href": "/stocks/ingr/",
     "sector": "Consumer Staples",
-    "industry": "Discount Stores",
-    "beta": 0.45
+    "industry": "Packaged Foods",
+    "beta": 0.71
   },
   "SSD": {
     "company_name": "Simpson Manufacturing Co., Inc.",
@@ -623,13 +623,13 @@
     "industry": "Lumber & Wood Production",
     "beta": 1.36
   },
-  "INGR": {
-    "company_name": "Ingredion Incorporated",
-    "symbol": "INGR",
-    "href": "/stocks/ingr/",
+  "OLLI": {
+    "company_name": "Ollie's Bargain Outlet Holdings, Inc.",
+    "symbol": "OLLI",
+    "href": "/stocks/olli/",
     "sector": "Consumer Staples",
-    "industry": "Packaged Foods",
-    "beta": 0.71
+    "industry": "Discount Stores",
+    "beta": 0.45
   },
   "PJT": {
     "company_name": "PJT Partners Inc.",
@@ -647,14 +647,6 @@
     "industry": "Pollution & Treatment Controls",
     "beta": 1.34
   },
-  "LFUS": {
-    "company_name": "Littelfuse, Inc.",
-    "symbol": "LFUS",
-    "href": "/stocks/lfus/",
-    "sector": "Technology",
-    "industry": "Electronic Components",
-    "beta": 1.43
-  },
   "EXLS": {
     "company_name": "ExlService Holdings, Inc.",
     "symbol": "EXLS",
@@ -663,13 +655,13 @@
     "industry": "Information Technology Services",
     "beta": 0.91
   },
-  "AAON": {
-    "company_name": "AAON, Inc.",
-    "symbol": "AAON",
-    "href": "/stocks/aaon/",
-    "sector": "Industrials",
-    "industry": "Building Products & Equipment",
-    "beta": 1.06
+  "LFUS": {
+    "company_name": "Littelfuse, Inc.",
+    "symbol": "LFUS",
+    "href": "/stocks/lfus/",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "beta": 1.43
   },
   "MTG": {
     "company_name": "MGIC Investment Corporation",
@@ -678,6 +670,14 @@
     "sector": "Financials",
     "industry": "Insurance - Specialty",
     "beta": 0.84
+  },
+  "AAON": {
+    "company_name": "AAON, Inc.",
+    "symbol": "AAON",
+    "href": "/stocks/aaon/",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment",
+    "beta": 1.06
   },
   "PIPR": {
     "company_name": "Piper Sandler Companies",
@@ -735,14 +735,6 @@
     "industry": "Electronic Components",
     "beta": 1.62
   },
-  "UFPI": {
-    "company_name": "UFP Industries, Inc.",
-    "symbol": "UFPI",
-    "href": "/stocks/ufpi/",
-    "sector": "Materials",
-    "industry": "Lumber & Wood Production",
-    "beta": 1.49
-  },
   "BMI": {
     "company_name": "Badger Meter, Inc.",
     "symbol": "BMI",
@@ -750,6 +742,14 @@
     "sector": "Technology",
     "industry": "Scientific & Technical Instruments",
     "beta": 0.93
+  },
+  "UFPI": {
+    "company_name": "UFP Industries, Inc.",
+    "symbol": "UFPI",
+    "href": "/stocks/ufpi/",
+    "sector": "Materials",
+    "industry": "Lumber & Wood Production",
+    "beta": 1.49
   },
   "CSW": {
     "company_name": "CSW Industrials, Inc.",
@@ -911,14 +911,6 @@
     "industry": "Residential Construction",
     "beta": 1.72
   },
-  "YETI": {
-    "company_name": "YETI Holdings, Inc.",
-    "symbol": "YETI",
-    "href": "/stocks/yeti/",
-    "sector": "Consumer Discretionary",
-    "industry": "Leisure",
-    "beta": 1.79
-  },
   "KAI": {
     "company_name": "Kadant Inc.",
     "symbol": "KAI",
@@ -926,6 +918,14 @@
     "sector": "Industrials",
     "industry": "Specialty Industrial Machinery",
     "beta": 1.26
+  },
+  "YETI": {
+    "company_name": "YETI Holdings, Inc.",
+    "symbol": "YETI",
+    "href": "/stocks/yeti/",
+    "sector": "Consumer Discretionary",
+    "industry": "Leisure",
+    "beta": 1.79
   },
   "APAM": {
     "company_name": "Artisan Partners Asset Management Inc.",
@@ -943,14 +943,6 @@
     "industry": "Asset Management",
     "beta": 1.28
   },
-  "FIZZ": {
-    "company_name": "National Beverage Corp.",
-    "symbol": "FIZZ",
-    "href": "/stocks/fizz/",
-    "sector": "Consumer Staples",
-    "industry": "Beverages - Non-Alcoholic",
-    "beta": 0.48
-  },
   "KEN": {
     "company_name": "Kenon Holdings Ltd.",
     "symbol": "KEN",
@@ -959,13 +951,13 @@
     "industry": "Utilities - Independent Power Producers",
     "beta": 0.49
   },
-  "COLM": {
-    "company_name": "Columbia Sportswear Company",
-    "symbol": "COLM",
-    "href": "/stocks/colm/",
-    "sector": "Consumer Discretionary",
-    "industry": "Apparel Manufacturing",
-    "beta": 0.91
+  "FIZZ": {
+    "company_name": "National Beverage Corp.",
+    "symbol": "FIZZ",
+    "href": "/stocks/fizz/",
+    "sector": "Consumer Staples",
+    "industry": "Beverages - Non-Alcoholic",
+    "beta": 0.48
   },
   "COCO": {
     "company_name": "The Vita Coco Company, Inc.",
@@ -983,6 +975,14 @@
     "industry": "Oil & Gas Exploration & Production",
     "beta": 0.09
   },
+  "COLM": {
+    "company_name": "Columbia Sportswear Company",
+    "symbol": "COLM",
+    "href": "/stocks/colm/",
+    "sector": "Consumer Discretionary",
+    "industry": "Apparel Manufacturing",
+    "beta": 0.91
+  },
   "NMIH": {
     "company_name": "NMI Holdings, Inc.",
     "symbol": "NMIH",
@@ -999,14 +999,6 @@
     "industry": "Residential Construction",
     "beta": 2.0
   },
-  "TPH": {
-    "company_name": "Tri Pointe Homes, Inc.",
-    "symbol": "TPH",
-    "href": "/stocks/tph/",
-    "sector": "Consumer Discretionary",
-    "industry": "Residential Construction",
-    "beta": 1.33
-  },
   "CPRX": {
     "company_name": "Catalyst Pharmaceuticals, Inc.",
     "symbol": "CPRX",
@@ -1014,6 +1006,14 @@
     "sector": "Healthcare",
     "industry": "Biotechnology",
     "beta": 0.68
+  },
+  "TPH": {
+    "company_name": "Tri Pointe Homes, Inc.",
+    "symbol": "TPH",
+    "href": "/stocks/tph/",
+    "sector": "Consumer Discretionary",
+    "industry": "Residential Construction",
+    "beta": 1.33
   },
   "LRN": {
     "company_name": "Stride, Inc.",
@@ -1023,14 +1023,6 @@
     "industry": "Education & Training Services",
     "beta": 0.03
   },
-  "DRD": {
-    "company_name": "DRDGOLD Limited",
-    "symbol": "DRD",
-    "href": "/stocks/drd/",
-    "sector": "Materials",
-    "industry": "Gold",
-    "beta": 0.47
-  },
   "WDFC": {
     "company_name": "WD-40 Company",
     "symbol": "WDFC",
@@ -1039,13 +1031,13 @@
     "industry": "Specialty Chemicals",
     "beta": 0.15
   },
-  "MGRC": {
-    "company_name": "McGrath RentCorp",
-    "symbol": "MGRC",
-    "href": "/stocks/mgrc/",
-    "sector": "Industrials",
-    "industry": "Rental & Leasing Services",
-    "beta": 0.51
+  "DRD": {
+    "company_name": "DRDGOLD Limited",
+    "symbol": "DRD",
+    "href": "/stocks/drd/",
+    "sector": "Materials",
+    "industry": "Gold",
+    "beta": 0.47
   },
   "IPAR": {
     "company_name": "Interparfums, Inc.",
@@ -1063,6 +1055,14 @@
     "industry": "Semiconductor Equipment & Materials",
     "beta": 1.72
   },
+  "MGRC": {
+    "company_name": "McGrath RentCorp",
+    "symbol": "MGRC",
+    "href": "/stocks/mgrc/",
+    "sector": "Industrials",
+    "industry": "Rental & Leasing Services",
+    "beta": 0.51
+  },
   "ACMR": {
     "company_name": "ACM Research, Inc.",
     "symbol": "ACMR",
@@ -1070,14 +1070,6 @@
     "sector": "Technology",
     "industry": "Semiconductor Equipment & Materials",
     "beta": 1.45
-  },
-  "PLUS": {
-    "company_name": "ePlus inc.",
-    "symbol": "PLUS",
-    "href": "/stocks/plus/",
-    "sector": "Technology",
-    "industry": "Software - Application",
-    "beta": 1.01
   },
   "SII": {
     "company_name": "Sprott Inc.",
@@ -1087,13 +1079,21 @@
     "industry": "Asset Management",
     "beta": 1.22
   },
-  "PLAB": {
-    "company_name": "Photronics, Inc.",
-    "symbol": "PLAB",
-    "href": "/stocks/plab/",
+  "PLUS": {
+    "company_name": "ePlus inc.",
+    "symbol": "PLUS",
+    "href": "/stocks/plus/",
     "sector": "Technology",
-    "industry": "Semiconductor Equipment & Materials",
-    "beta": 1.54
+    "industry": "Software - Application",
+    "beta": 1.01
+  },
+  "ALG": {
+    "company_name": "Alamo Group Inc.",
+    "symbol": "ALG",
+    "href": "/stocks/alg/",
+    "sector": "Industrials",
+    "industry": "Farm & Heavy Construction Machinery",
+    "beta": 1.13
   },
   "BELFB": {
     "company_name": "Bel Fuse Inc.",
@@ -1103,12 +1103,12 @@
     "industry": "Electronic Components",
     "beta": 1.21
   },
-  "ALG": {
-    "company_name": "Alamo Group Inc.",
-    "symbol": "ALG",
-    "href": "/stocks/alg/",
-    "sector": "Industrials",
-    "industry": "Farm & Heavy Construction Machinery",
-    "beta": 1.13
+  "PLAB": {
+    "company_name": "Photronics, Inc.",
+    "symbol": "PLAB",
+    "href": "/stocks/plab/",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "beta": 1.54
   }
 }

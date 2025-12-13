@@ -2,6 +2,7 @@ import asyncio
 import os
 import json
 from pathlib import Path
+import pandas as pd
 
 # Now import fresh
 from playwright_utils import BrowserManager, load_cookies_from_file
@@ -31,8 +32,8 @@ async def process_company(semaphore: asyncio.Semaphore, fetcher: HttpReportsFetc
     async with semaphore:
         try:
             report_path = f"data/{symbol}/report.md"
-            if os.path.exists(report_path):
-                return
+            # if os.path.exists(report_path):
+            #     return
 
             await fetcher.fetch_all_reports(symbol, company_info['href'])
             generate_report(symbol)
@@ -69,6 +70,23 @@ async def main():
             logger.info("No stocks loaded from file. Run with 'y' to fetch.")
             return
 
+    # Cleanup stale data folders
+    if companies_dict:
+        import shutil
+        data_dir = "data"
+        if os.path.exists(data_dir):
+            valid_symbols = set(companies_dict.keys())
+            existing_folders = set(f for f in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, f)))
+            
+            stale_folders = existing_folders - valid_symbols
+            for folder in stale_folders:
+                folder_path = os.path.join(data_dir, folder)
+                try:
+                    shutil.rmtree(folder_path)
+                    logger.info(f"Removed stale data folder: {folder}")
+                except Exception as e:
+                    logger.error(f"Error removing {folder}: {e}")
+
     # HTTP fetching phase
     # Increase concurrency since HTTP is lighter than browser pages
     sem = asyncio.Semaphore(2)  # Reduced to 2 to respect rate limits 
@@ -82,6 +100,20 @@ async def main():
             tasks.append(process_company(sem, http_fetcher, symbol, company_info))
         
         await asyncio.gather(*tasks)
+        
+        # Sort the results CSV
+        try:
+            results_file = "filters_results.csv"
+            if os.path.exists(results_file):
+                logger.info("Sorting filters_results.csv...")
+                df_results = pd.read_csv(results_file)
+                # Ensure no duplicates if any
+                df_results.drop_duplicates(subset=['Symbol'], keep='last', inplace=True)
+                df_results.sort_values(by='Symbol', inplace=True)
+                df_results.to_csv(results_file, index=False)
+                logger.info("Sorted filters_results.csv successfully.")
+        except Exception as e:
+            logger.error(f"Error sorting results CSV: {e}")
 
 if __name__ == "__main__":
     try:

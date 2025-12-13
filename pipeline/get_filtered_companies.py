@@ -36,6 +36,9 @@ async def get_filtered_companies_from_screener(page: Page) -> dict:
             await button.click()
             break
 
+    print("Waiting 3 seconds for filters to load...")
+    await asyncio.sleep(3)
+
     while True:
         await close_popup(page)
 

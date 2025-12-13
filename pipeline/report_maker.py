@@ -39,8 +39,16 @@ def validate_all_dfs(income_df, balance_df, ratios_df):
     missing_balance = find_missing_rows(balance_df, balance_index_rows, "balance df")
     missing_ratios = find_missing_rows(ratios_df, ratio_index_rows, "ratios df")
     full_missing_rows = missing_income + missing_balance + missing_ratios
-    if len(full_missing_rows) == 0:
+    
+    # Graceful Degradation: Allow specific rows to be missing
+    ALLOWED_MISSING = {"Revenue", "Working Capital", "Operating Margin (%)"}
+    missing_set = set(full_missing_rows)
+    
+    # Check if all missing rows are in the allowed set
+    if missing_set.issubset(ALLOWED_MISSING):
         return True
+        
+    logger.error(f"Missing critical data: {missing_set - ALLOWED_MISSING}. Skipping report.")
     return False
 
     
@@ -50,6 +58,7 @@ def generate_report(symbol):
     csvs_paths = get_symbol_csvs_paths(symbol)
     if csvs_paths == None:
         logger.warning(f"not all the csvs exists for {symbol}, skipping")
+        return # Added return to stop execution if CSVs are missing completely
         
     company_secotr = get_symbol_sector(symbol)
     paths = get_symbol_csvs_paths(symbol)
@@ -57,8 +66,9 @@ def generate_report(symbol):
     balance_df = pd.read_csv(paths["balance-sheet"], index_col=0)
     ratios_df = pd.read_csv(paths["ratios"], index_col=0)
     
-    # Continue even with missing data - check functions will show failures
-    validate_all_dfs(income_df, balance_df, ratios_df)
+    # Enforce validation with graceful degradation
+    if not validate_all_dfs(income_df, balance_df, ratios_df):
+        return
     
 
     # sort years cols to filter only FY 20{/d/d}
@@ -84,10 +94,33 @@ def generate_report(symbol):
 \n\n**ratios statment**\n{ratios_df_sub.to_markdown()}
 """
     # Add basic reports check
-    md_file_txt += basic_reports_check(symbol, income_df, balance_df, ratios_df, last_5_years_cols)
+    basic_report_str, basic_passed = basic_reports_check(symbol, income_df, balance_df, ratios_df, last_5_years_cols, company_secotr)
+    md_file_txt += basic_report_str
 
     # Add Benjamin Graham investment criteria check
-    md_file_txt += benjamin_graham_check(symbol, income_df, balance_df, ratios_df, last_5_years_cols, company_secotr)
+    graham_report_str, graham_passed = benjamin_graham_check(symbol, income_df, balance_df, ratios_df, last_5_years_cols, company_secotr)
+    md_file_txt += graham_report_str
+    
+    # Log results to CSV
+    try:
+        results_file = "filters_results.csv"
+        file_exists = False
+        try:
+             with open(results_file, "r") as f:
+                 file_exists = True
+        except FileNotFoundError:
+             pass
+             
+        with open(results_file, "a") as f:
+            if not file_exists:
+                f.write("Symbol,Basic Reports Check,Benjamin Graham Check\n")
+            
+            basic_res = "🟢" if basic_passed else "🔴"
+            graham_res = "🟢" if graham_passed else "🔴"
+            
+            f.write(f"{symbol},{basic_res},{graham_res}\n")
+    except Exception as e:
+        logger.error(f"Failed to write to {results_file} for {symbol}: {e}")
 
     with open(f"data/{symbol}/report.md", "w") as f:
         f.write(md_file_txt)

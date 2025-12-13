@@ -15,8 +15,10 @@ def check_cell_range(df: pd.DataFrame, row_index: Enum, col, min_value: float, m
         return False, f"**valid?**: False, row '{row_index.value}' not found in data"
 
     try:
-        cell_valid = min_value < cell < max_value
-        return cell_valid, f"**valid?**: {cell_valid}, {row_index.value} value ({cell:.2f}) should be between {min_value} and {max_value}"
+        # User requirement: "not smaller than 5" (>=) and "lower than 15" (<)
+        # So: min_value <= cell < max_value
+        cell_valid = min_value <= cell < max_value
+        return cell_valid, f"**valid?**: {cell_valid}, {row_index.value} value ({cell:.2f}) should be between {min_value} (inclusive) and {max_value} (exclusive)"
     except Exception as e:
         logger.error(e)
         return False, f"**valid?**: False, error reading '{row_index.value}': {str(e)}"
