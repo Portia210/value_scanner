@@ -10,8 +10,18 @@ from utils.logger import get_logger
 
 logger = get_logger()
 
-def test_modular_classification():
+def generate_classification_csv():
+    """
+    Batches process all companies, runs advanced classification, and exports to CSV.
+    This CSV acts as the Source of Truth for the Report Maker.
+    """
+    logger.info("Starting Batch Classification Generation...")
+    
     try:
+        if not EXISTING_STOCKS_FILE_PATH.exists():
+            logger.error(f"Stocks file not found: {EXISTING_STOCKS_FILE_PATH}")
+            return
+
         with open(EXISTING_STOCKS_FILE_PATH, 'r') as f:
             companies = json.load(f)
     except Exception as e:
@@ -19,8 +29,7 @@ def test_modular_classification():
         return
 
     results = []
-    print(f"Processing {len(companies)} companies with Final Advanced Logic...")
-
+    
     for symbol, data in companies.items():
         sector = data.get("sector", "Unknown")
         industry = data.get("industry", "Unknown")
@@ -45,7 +54,7 @@ def test_modular_classification():
                 rev_cagr = calculate_cagr(income_df, IncomeIndex.REVENUE, last_5_years_cols, years=3)
                 volatility = calculate_earnings_volatility(income_df, IncomeIndex.EPS_DILUTED, last_5_years_cols)
             except Exception as e:
-                logger.error(f"Error processing {symbol} data: {e}")
+                logger.warning(f"Error calculating metrics for {symbol}: {e}")
 
         # Run Modular Classification
         classification = classify_company(
@@ -70,24 +79,19 @@ def test_modular_classification():
         })
 
     # Export to CSV
+    if not OUTPUT_DIR.exists():
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        
     output_path = OUTPUT_DIR / "company_classifications.csv"
     df = pd.DataFrame(results)
     
     # Sort by Type then Symbol
-    df.sort_values(by=["Type", "Symbol"], ascending=[True, True], inplace=True)
-    
-    df.to_csv(output_path, index=False)
-    print(f"\nFinal Results saved to {output_path}")
-    
-    # Print Summary
-    print("\n--- Final Classification Summary ---")
-    print(df['Type'].value_counts().to_markdown())
-    
-    # Print Sample of each type
-    print("\n--- Sample: Defensive (Insurance Lock Check) ---")
-    ins = df[df['Industry'].str.contains('Insurance', na=False)].head(5)
-    if not ins.empty:
-        print(ins[['Symbol', 'Industry', 'Type', 'Reasons']].to_markdown(index=False))
+    if not df.empty:
+        df.sort_values(by=["Type", "Symbol"], ascending=[True, True], inplace=True)
+        df.to_csv(output_path, index=False)
+        logger.info(f"Classification CSV generated at {output_path} ({len(df)} companies)")
+    else:
+        logger.warning("No classification results generated.")
 
 if __name__ == "__main__":
-    test_modular_classification()
+    generate_classification_csv()

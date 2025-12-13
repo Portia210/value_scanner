@@ -5,6 +5,7 @@ import pandas as pd
 from config import DATA_DIR, FILTERS_CSV_PATH
 from pipeline.update_stock_list import update_stock_list_interactive
 from pipeline.batch_processor import batch_process_companies
+from company_classifiers.generate_classifications import generate_classification_csv
 from utils.logger import get_logger
 
 logger = get_logger()
@@ -60,10 +61,13 @@ async def main():
     # 2. Cleanup
     cleanup_stale_data(companies_dict)
 
-    # 3. Batch Process (Fetch & Report)
+    # 3. Generate Classifications (Source of Truth)
+    generate_classification_csv()
+
+    # 4. Batch Process (Fetch & Report)
     await batch_process_companies(companies_dict)
     
-    # 4. Final Sorting
+    # 5. Final Sorting
     sort_results_csv()
 
 if __name__ == "__main__":
