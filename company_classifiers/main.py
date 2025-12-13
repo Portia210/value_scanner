@@ -27,7 +27,9 @@ def classify_company(sector: str, industry: str, cagr_3yr: float, revenue_cagr_3
         return {
             "type": classification,
             "valuation_method": "P/OCF",
-            "reasons": reasons
+            "reasons": reasons,
+            "sector": sector,
+            "industry": industry
         }
 
     # Revenue Fallback Logic
@@ -58,7 +60,9 @@ def classify_company(sector: str, industry: str, cagr_3yr: float, revenue_cagr_3
             return {
                 "type": "Defensive",
                 "valuation_method": "Graham",
-                "reasons": reasons
+                "reasons": reasons,
+                "sector": sector,
+                "industry": industry
             }
 
         if is_high_cagr:
@@ -70,7 +74,9 @@ def classify_company(sector: str, industry: str, cagr_3yr: float, revenue_cagr_3
                  return {
                      "type": "Cyclical",
                      "valuation_method": "P/OCF",
-                     "reasons": reasons
+                     "reasons": reasons,
+                     "sector": sector,
+                     "industry": industry
                  }
             else:
                  # True High Growth
@@ -79,7 +85,9 @@ def classify_company(sector: str, industry: str, cagr_3yr: float, revenue_cagr_3
                  return {
                      "type": "High Growth",
                      "valuation_method": "P/OCF",
-                     "reasons": reasons
+                     "reasons": reasons,
+                     "sector": sector,
+                     "industry": industry
                  }
         else:
             # Default Gravity -> Defensive
@@ -87,7 +95,9 @@ def classify_company(sector: str, industry: str, cagr_3yr: float, revenue_cagr_3
             return {
                 "type": "Defensive",
                 "valuation_method": "Graham",
-                "reasons": reasons
+                "reasons": reasons,
+                "sector": sector,
+                "industry": industry
             }
 
     # Tier 3: Cyclical Sectors
@@ -96,7 +106,9 @@ def classify_company(sector: str, industry: str, cagr_3yr: float, revenue_cagr_3
         return {
              "type": "Cyclical",
              "valuation_method": "P/OCF",
-             "reasons": reasons
+             "reasons": reasons,
+             "sector": sector,
+             "industry": industry
         }
 
     # Tier 4: The Rest (Industrials, Consumer Discretionary, etc.)
@@ -107,19 +119,25 @@ def classify_company(sector: str, industry: str, cagr_3yr: float, revenue_cagr_3
             return {
                 "type": "Cyclical",
                 "valuation_method": "P/OCF",
-                "reasons": reasons
+                "reasons": reasons,
+                "sector": sector,
+                "industry": industry
             }
         else:
             reasons.append(f"High Growth: {metric_used} > 20% ({cagr_to_use:.1f}%)")
             return {
                 "type": "High Growth",
                 "valuation_method": "P/OCF",
-                "reasons": reasons
+                "reasons": reasons,
+                "sector": sector,
+                "industry": industry
             }
     
     # Default Fallback
     return {
         "type": "Defensive",
         "valuation_method": "Graham",
-        "reasons": ["Standard Value Profile (Low Growth, Non-Cyclical)"]
+        "reasons": ["Standard Value Profile (Low Growth, Non-Cyclical)"],
+        "sector": sector,
+        "industry": industry
     }

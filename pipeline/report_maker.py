@@ -9,6 +9,8 @@ from config import FILTERS_CSV_PATH, EXISTING_STOCKS_FILE_PATH, DATA_DIR
 from reports_checks.basic_reports_check import basic_reports_check
 from reports_checks.benjamin_graham_check import benjamin_graham_check
 from utils.pd_helpers import validate_cell_bounds, find_missing_rows, validate_row_thresholds
+from company_classifiers.main import classify_company
+from reports_checks.formula_helpers import calculate_cagr, calculate_earnings_volatility
 
 logger = get_logger()
 
@@ -16,18 +18,17 @@ income_index_rows = [i.value for i in [IncomeIndex.REVENUE, IncomeIndex.NET_INCO
 balance_index_rows =  [i.value for i in [BalanceSheetIndex.WORKING_CAPITAL, BalanceSheetIndex.LONG_TERM_DEBT]]
 ratio_index_rows = [i.value for i in [RatiosIndex.MARKET_CAPITALIZATION, RatiosIndex.CURRENT_RATIO, RatiosIndex.RETURN_ON_EQUITY_ROE_PERCENT, RatiosIndex.PE_RATIO, RatiosIndex.PB_RATIO, RatiosIndex.P_OCF_RATIO]]
 
-def get_symbol_sector(symbol):
+def get_company_info(symbol):
     companies_json = load_json_file(EXISTING_STOCKS_FILE_PATH)
     if not companies_json:
         logger.warning("cannot read companies json")
+        return {}
     
-    if not symbol in companies_json:
+    if symbol not in companies_json:
         logger.info(f"{symbol} not found in list")
+        return {}
     
-    try:
-        return companies_json[symbol]["sector"]
-    except Exception as e:
-        logger.error(e)
+    return companies_json[symbol]
 
 
 def validate_all_dfs(income_df, balance_df, ratios_df):
@@ -56,7 +57,11 @@ def generate_report(symbol):
         logger.warning(f"not all the csvs exists for {symbol}, skipping")
         return # Added return to stop execution if CSVs are missing completely
         
-    company_secotr = get_symbol_sector(symbol)
+    company_info = get_company_info(symbol)
+    sector = company_info.get("sector", "Unknown")
+    industry = company_info.get("industry", "Unknown")
+    beta = company_info.get("beta")
+
     paths = get_symbol_csvs_paths(symbol)
     income_df = pd.read_csv(paths["income"], index_col=0)
     balance_df = pd.read_csv(paths["balance-sheet"], index_col=0)
@@ -80,8 +85,29 @@ def generate_report(symbol):
     balance_df_sub = balance_df_sub.fillna('-')
     ratios_df_sub = ratios_df_sub.fillna('-')
 
+    # Run Classification
+    # Calculate Metrics for Classification
+    cagr_3yr = calculate_cagr(income_df, IncomeIndex.EPS_DILUTED, last_5_years_cols, years=3)
+    rev_cagr_3yr = calculate_cagr(income_df, IncomeIndex.REVENUE, last_5_years_cols, years=3)
+    volatility = calculate_earnings_volatility(income_df, IncomeIndex.EPS_DILUTED, last_5_years_cols)
+
+    classification_res = classify_company(
+        sector=sector,
+        industry=industry,
+        cagr_3yr=cagr_3yr,
+        revenue_cagr_3yr=rev_cagr_3yr,
+        volatility=volatility,
+        beta=beta
+    )
+    
+    company_type = classification_res['type']
+    valuation_method = classification_res['valuation_method']
+    reasons = ", ".join(classification_res['reasons'])
+
     md_file_txt = f"""# {symbol}
-**Sector:** {company_secotr or 'Unknown'}
+**Sector:** {sector} | **Industry:** {industry}
+**Type:** {company_type} ({valuation_method})
+**Reasoning:** {reasons}
 
 ---
 
@@ -90,12 +116,12 @@ def generate_report(symbol):
 \n\n**balance statment**\n{balance_df_sub.to_markdown()}
 \n\n**ratios statment**\n{ratios_df_sub.to_markdown()}
 """
-    # Add basic reports check
-    basic_report_str, basic_passed = basic_reports_check(symbol, income_df, balance_df, ratios_df, last_5_years_cols, company_secotr)
+    # Add basic reports check (passing classification result)
+    basic_report_str, basic_passed = basic_reports_check(symbol, income_df, balance_df, ratios_df, last_5_years_cols, classification_res)
     md_file_txt += basic_report_str
 
-    # Add Benjamin Graham investment criteria check
-    graham_report_str, graham_passed = benjamin_graham_check(symbol, income_df, balance_df, ratios_df, last_5_years_cols, company_secotr)
+    # Add Benjamin Graham investment criteria check (passing classification result)
+    graham_report_str, graham_passed = benjamin_graham_check(symbol, income_df, balance_df, ratios_df, last_5_years_cols, classification_res)
     md_file_txt += graham_report_str
     
     # Log results to CSV

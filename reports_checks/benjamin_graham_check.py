@@ -12,7 +12,7 @@ from .formula_helpers import (
 
 logger = get_logger()
 
-def benjamin_graham_check(symbol: str, income_df: pd.DataFrame, balance_df: pd.DataFrame, ratios_df: pd.DataFrame, last_5_years_cols: list, company_sector: str = None):
+def benjamin_graham_check(symbol: str, income_df: pd.DataFrame, balance_df: pd.DataFrame, ratios_df: pd.DataFrame, last_5_years_cols: list, classification_res: dict = None):
 
     """
     Benjamin Graham Investment Criteria Check
@@ -26,13 +26,20 @@ def benjamin_graham_check(symbol: str, income_df: pd.DataFrame, balance_df: pd.D
 
     Note: Current Ratio check is handled in basic_reports_check
     """
-
-    # Determine if this is a tech company (sector-based check)
-    TECH_SECTORS = {'Technology', 'Communication Services'}
-    is_tech_company = company_sector in TECH_SECTORS if company_sector else False
+    # Use Classification Result logic
+    company_type = classification_res.get("type", "Defensive")
+    valuation_method = classification_res.get("valuation_method", "Graham")
+    
+    # "Tech Logic" in Graham Check basically means "Growth/Cyclical" logic (P/OCF Check)
+    # So if valuation_method is P/OCF, we treat it as "Tech" for the sake of branching
+    is_growth_mode = valuation_method == "P/OCF"
+    is_tech_company = is_growth_mode # Map to existing variable name to minimize diff, or rename if cleaner. 
+    # Let's keep is_tech_company variable name but assign it based on method.
+    
+    company_sector = classification_res.get("sector", "Unknown") # For legacy usage if any
 
     most_recent_year = last_5_years_cols[0]
-    company_type = "Tech" if is_tech_company else "Regular"
+    # company_type is already set from classification_res['type']
 
     # 1. Market Cap > $2B
     market_cap = get_cell_safe(ratios_df, RatiosIndex.MARKET_CAPITALIZATION, most_recent_year)

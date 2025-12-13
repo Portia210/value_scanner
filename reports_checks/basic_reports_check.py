@@ -5,8 +5,10 @@ from utils.formatting import format_valid
 from utils.logger import get_logger
 logger = get_logger()
 
-def basic_reports_check(symbol, income_df: pd.DataFrame, balance_df: pd.DataFrame, ratios_df: pd.DataFrame, last_5_years_cols: list, company_sector: str = None):
+def basic_reports_check(symbol, income_df: pd.DataFrame, balance_df: pd.DataFrame, ratios_df: pd.DataFrame, last_5_years_cols: list, classification_res: dict = None):
     most_recent_year = last_5_years_cols[0]
+    
+    company_sector = classification_res.get("sector") if classification_res else None
 
     # Define requirements
     current_ratio_min = 2
@@ -101,5 +103,6 @@ def basic_reports_check(symbol, income_df: pd.DataFrame, balance_df: pd.DataFram
 - profit margin (avg ≥ {profit_margin_min_avg}%):  {profit_margin_check}
 - working capital vs long-term debt (WC ≥ debt):  {capital_vs_debt_msg}
 - ROE (avg ≥ {roe_min_avg}%):  {roe_check}
+- **Classification Used**: {classification_res.get('type') if classification_res else 'N/A'}
     """
     return report_str, all_passed
