@@ -1,119 +1,70 @@
 import asyncio
 import os
-import json
-from pathlib import Path
+import shutil
 import pandas as pd
-
-# Now import fresh
-from playwright_utils import BrowserManager, load_cookies_from_file
-from pipeline.reports_fetcher import ReportsFetcher
-from pipeline.get_filtered_companies import load_filtered_companies
-from pipeline.report_maker import generate_report
+from config import DATA_DIR, FILTERS_CSV_PATH
+from pipeline.update_stock_list import update_stock_list_interactive
+from pipeline.batch_processor import batch_process_companies
 from utils.logger import get_logger
 
 logger = get_logger()
 
+def cleanup_stale_data(companies_dict: dict):
+    """
+    Remove data folders for symbols not in the current companies list.
+    """
+    if not companies_dict:
+        return
 
-FINANTIAL_ROUTES = {
-    "income-statement": "/financials/",
-    "balance-sheet": "/financials/balance-sheet/",
-    "cash-flow": "/financials/cash-flow-statement/",
-}
+    if DATA_DIR.exists():
+        valid_symbols = set(companies_dict.keys())
+        existing_folders = set(f.name for f in DATA_DIR.iterdir() if f.is_dir())
+        
+        stale_folders = existing_folders - valid_symbols
+        for folder in stale_folders:
+            folder_path = DATA_DIR / folder
+            try:
+                shutil.rmtree(folder_path)
+                logger.info(f"Removed stale data folder: {folder}")
+            except Exception as e:
+                logger.error(f"Error removing {folder}: {e}")
 
-
-            
-
-
-
-import httpx
-from pipeline.http_reports_fetcher import HttpReportsFetcher
-
-async def process_company(semaphore: asyncio.Semaphore, fetcher: HttpReportsFetcher, symbol: str, company_info: dict):
-    async with semaphore:
-        try:
-            report_path = f"data/{symbol}/report.md"
-            # if os.path.exists(report_path):
-            #     return
-
-            await fetcher.fetch_all_reports(symbol, company_info['href'])
-            generate_report(symbol)
-        except Exception as e:
-            logger.info(f"Error processing stock {symbol}: {e}")
+def sort_results_csv():
+    """
+    Sort the results CSV alphabetically by Symbol.
+    """
+    try:
+        if FILTERS_CSV_PATH.exists():
+            logger.info("Sorting filters_results.csv...")
+            df_results = pd.read_csv(FILTERS_CSV_PATH)
+            # Ensure no duplicates if any
+            df_results.drop_duplicates(subset=['Symbol'], keep='last', inplace=True)
+            df_results.sort_values(by='Symbol', inplace=True)
+            df_results.to_csv(FILTERS_CSV_PATH, index=False)
+            logger.info("Sorted filters_results.csv successfully.")
+    except Exception as e:
+        logger.error(f"Error sorting results CSV: {e}")
 
 async def main():
+    # 1. Update Stock List
     # Ask for update first
-    update_list = True if input("do you want to update stock symbols? type y or any other key: ") == "y" else False
+    user_input = input("do you want to update stock symbols? type y or any other key: ")
+    update_list = True if user_input.lower() == "y" else False
     
-    companies_dict = {}
+    companies_dict = await update_stock_list_interactive(update_list)
     
-    if update_list:
-        # Advanced interactions example
-        async with BrowserManager(headless=False, slow_mo=100) as manager:
-            async with manager.new_context() as context:
-                # Load cookies into the context
-                cookies = load_cookies_from_file("cookies.txt", domain="stockanalysis.com")
-                await context.add_cookies(cookies)
-                page = await context.new_page()
-                
-                companies_dict = await load_filtered_companies(page, update_list)
-                if not companies_dict:
-                    logger.info("No stocks found after filtering. Exiting.")
-                    await page.close()
-                    return
-                await page.close()
-    else:
-        # Load directly from file without browser
-        from config import EXISTING_STOCKS_FILE_PATH
-        from utils.file_handler import load_json_file
-        companies_dict = load_json_file(EXISTING_STOCKS_FILE_PATH)
-        if not companies_dict:
-            logger.info("No stocks loaded from file. Run with 'y' to fetch.")
-            return
+    if not companies_dict:
+        logger.warning("No companies found or loaded. Exiting.")
+        return
 
-    # Cleanup stale data folders
-    if companies_dict:
-        import shutil
-        data_dir = "data"
-        if os.path.exists(data_dir):
-            valid_symbols = set(companies_dict.keys())
-            existing_folders = set(f for f in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, f)))
-            
-            stale_folders = existing_folders - valid_symbols
-            for folder in stale_folders:
-                folder_path = os.path.join(data_dir, folder)
-                try:
-                    shutil.rmtree(folder_path)
-                    logger.info(f"Removed stale data folder: {folder}")
-                except Exception as e:
-                    logger.error(f"Error removing {folder}: {e}")
+    # 2. Cleanup
+    cleanup_stale_data(companies_dict)
 
-    # HTTP fetching phase
-    # Increase concurrency since HTTP is lighter than browser pages
-    sem = asyncio.Semaphore(2)  # Reduced to 2 to respect rate limits 
+    # 3. Batch Process (Fetch & Report)
+    await batch_process_companies(companies_dict)
     
-    # Create a shared httpx client
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        http_fetcher = HttpReportsFetcher(client)
-        
-        tasks = []
-        for symbol, company_info in companies_dict.items():
-            tasks.append(process_company(sem, http_fetcher, symbol, company_info))
-        
-        await asyncio.gather(*tasks)
-        
-        # Sort the results CSV
-        try:
-            results_file = "filters_results.csv"
-            if os.path.exists(results_file):
-                logger.info("Sorting filters_results.csv...")
-                df_results = pd.read_csv(results_file)
-                # Ensure no duplicates if any
-                df_results.drop_duplicates(subset=['Symbol'], keep='last', inplace=True)
-                df_results.sort_values(by='Symbol', inplace=True)
-                df_results.to_csv(results_file, index=False)
-                logger.info("Sorted filters_results.csv successfully.")
-        except Exception as e:
-            logger.error(f"Error sorting results CSV: {e}")
+    # 4. Final Sorting
+    sort_results_csv()
 
 if __name__ == "__main__":
     try:

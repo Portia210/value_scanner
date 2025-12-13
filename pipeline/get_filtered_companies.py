@@ -6,15 +6,23 @@ import pandas as pd
 from playwright_utils.close_popup import close_popup
 from utils.file_handler import load_json_file, append_to_markdown_file
 from config import EXISTING_STOCKS_FILE_PATH, NEW_COMPANIES_FILE_PATH
+from utils.file_handler import load_json_file, save_json_file
 from utils.pd_helpers import extract_html_table_to_df
+from utils.logger import get_logger
+
+logger = get_logger()
 
 
-
-async def load_filtered_companies(page: Page, update_list: bool = False) -> dict:
-    companies_dict = load_json_file(EXISTING_STOCKS_FILE_PATH)
-    # update_filtered_stocks = False
-    if update_list or not companies_dict:
-        companies_dict = await get_filtered_companies_from_screener(page)
+async def load_filtered_companies(page: Page, update_list: bool) -> dict:
+    """
+    Load companies mapping.
+    If update_list is True, fetch fresh from browser, save to json, calculate diff.
+    """
+    if not update_list:
+        return load_json_file(EXISTING_STOCKS_FILE_PATH)
+    
+    # If update_list is True, we always fetch from screener
+    companies_dict = await get_filtered_companies_from_screener(page)
     return companies_dict
 
 async def get_filtered_companies_from_screener(page: Page) -> dict:

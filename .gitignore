@@ -19,6 +19,10 @@ screenshots/
 *.jpeg
 *.pdf
 
+
+# Testing scripts
+/testing_scripts/
+
 # Cookie files (keep .example files)
 cookies.txt
 *cookies*.txt

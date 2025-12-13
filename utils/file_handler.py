@@ -21,3 +21,12 @@ def append_to_markdown_file(file_path: str, content: str):
             f.write(content)
     except Exception as e:
         logger.error(f"Error appending to markdown file {file_path}: {e}")
+
+def save_json_file(file_path: str, data: dict):
+    """Save data to a JSON file."""
+    try:
+        with open(file_path, "w") as f:
+            json.dump(data, f, indent=4)
+        logger.info(f"Successfully saved data to {file_path}")
+    except Exception as e:
+        logger.error(f"Error saving JSON file {file_path}: {e}")
