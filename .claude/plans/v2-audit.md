@@ -23,6 +23,8 @@
 | P8 | 🟠 | שגיאות לכל מניה נבלעות ב-`logger.info` — אין סיכום כמה מניות נכשלו. | `pipeline/batch_processor.py:17` | קריאת קוד |
 | P9 | 🟡 | זרימת login/בדיקת עוגייה כפולה (`main.ensure_valid_cookies` ו-`update_stock_list`). | `main.py:20`, `pipeline/update_stock_list.py:22-35` | קריאת קוד |
 | P10 | 🟡 | `validate_cookie` בודק תוקף ה-`access_token` (קצר-מועד) — כנראה יגרום ל-login בכל ריצה. לא מזיק, אבל צריך לדעת. | `playwright_utils/cookie_utils.py:144-155` | קריאת קוד |
+| P12 | 🔴 | **מטבע הדיווח של חברות זרות.** אצל ADR כמו ASR (מקסיקו) ו-ATAT (סין) הדוחות במטבע מקומי ושווי השוק בדולר. כל השוואה של סכום לסף בדולרים (הכנסות >350M$, שווי שוק/מו"פ) שגויה אצלן; מכפיל שמחושב ידנית יוצא שגוי ב-86–95%. המכפילים של האתר עצמם (P/E, P/S...) תקינים כי הם חסרי יחידות. | `benjamin_graham_check.py:57-63`, `ken_fisher_check.py:147-166` | סקריפט: השוואת מכפילים מחושבים מול האתר ל-140 מניות |
+| P13 | 🟠 | **"חריגת קצב" היא בפועל אתגר Cloudflare** (`cf-mitigated: challenge`, דף "Just a moment"), לא 429 עם Retry-After. הקוד מתייחס לזה כ"אין טבלה" ויוצא בלי קובץ (→ P2). | `698c499:rate_limit_debug.txt` | קריאת ה-headers מההיסטוריה |
 | P11 | 🟡 | כפילות מניה: `BRK.A` ו-`BRK.B` (אותה חברה, שתי סדרות). | `outputs/filtered_companies.json` | סקריפט |
 
 ## 2. בדיקות הגורואים (reports_checks)
