@@ -1,16 +1,20 @@
-import { Anchor, Badge, Card, Grid, Group, RingProgress, SimpleGrid, Stack, Tabs, Text, Title } from "@mantine/core";
+import { Alert, Anchor, Badge, Card, Grid, Group, Loader, RingProgress, SimpleGrid, Stack, Table, Tabs, Text, Title } from "@mantine/core";
 import { IconArrowRight } from "@tabler/icons-react";
 import ReactECharts from "echarts-for-react";
 import { Link, useParams } from "react-router-dom";
 import { CriterionGauge } from "../components/CriterionGauge";
 import { GuruBadge } from "../components/GuruBadge";
-import { demoDetail } from "../mock/demo";
-import { dirOf, GURU_LABELS, GURU_ORDER, pct, score100, TYPE_LABELS } from "../format";
+import { useStock } from "../api/hooks";
+import { ApiError } from "../api/client";
+import { date, dateTime, dirOf, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
 
 export function StockPage() {
   const { symbol = "" } = useParams();
-  const d = demoDetail(symbol.toUpperCase());
-  if (!d) return <Text>המניה {symbol} לא נמצאה בריצה האחרונה.</Text>;
+  const { data: d, isLoading, error } = useStock(symbol.toUpperCase());
+  if (isLoading) return <Loader />;
+  if (error instanceof ApiError && error.status === 404)
+    return <Stack><Anchor component={Link} to="/">חזרה לדשבורד</Anchor><Text>המניה {symbol} לא נותחה בריצה האחרונה (היא לא עברה את הסינון הראשוני).</Text></Stack>;
+  if (error || !d) return <Alert color="red">לא הצלחתי לטעון את המניה.</Alert>;
 
   const trend = {
     textStyle: { fontFamily: "Heebo" },
@@ -21,10 +25,13 @@ export function StockPage() {
     yAxis: [{ type: "value", name: "EPS $" }, { type: "value", name: "%", splitLine: { show: false } }],
     series: [
       { name: "EPS", type: "bar", data: d.series.eps, itemStyle: { color: "#1f6de2", borderRadius: [4, 4, 0, 0] } },
-      { name: "שולי רווח נקי", type: "line", yAxisIndex: 1, smooth: true, data: d.series.netMargin, itemStyle: { color: "#12b886" } },
-      { name: "תשואה להון", type: "line", yAxisIndex: 1, smooth: true, data: d.series.roe, itemStyle: { color: "#fab005" } },
+      { name: "שולי רווח נקי", type: "line", yAxisIndex: 1, smooth: true, data: d.series.net_margin, itemStyle: { color: "#12b886" } },
+      { name: "ROE", type: "line", yAxisIndex: 1, smooth: true, data: d.series.roe, itemStyle: { color: "#fab005" } },
     ],
   };
+  const qHistory = d.history.quality ?? [];
+  const oHistory = d.history.opportunity ?? [];
+  const snap = d.snapshot;
 
   return (
     <Stack gap="lg">
@@ -33,11 +40,12 @@ export function StockPage() {
         <div>
           <Group gap="sm">
             <Title order={1} ff="monospace">{d.symbol}</Title>
-            <Badge variant="default">{TYPE_LABELS[d.ctype]}</Badge>
+            {d.labels.map((l) => <Badge key={l.label} variant="default" title={l.reason ?? undefined}>{TYPE_LABELS[l.label] ?? l.label}</Badge>)}
+            {d.candidate && <Badge color="teal">מועמדת לקנייה</Badge>}
             <Badge variant="light" color="gray" dir="ltr">{d.sector}</Badge>
           </Group>
-          <Text c="dimmed" dir="ltr" ta="right">{d.name} · {d.industry}</Text>
-          <Text size="xs" c="dimmed">נתונים נכון ל-{d.dataAsOf}</Text>
+          <Text c="dimmed" dir="ltr" ta="right">{d.name} · {d.industry}{d.country ? ` · ${d.country}` : ""}</Text>
+          <Text size="xs" c="dimmed">ריצה #{d.run.id} · מחיר נכון ל-{date(snap?.price_date)} · דוחות אחרונים: {date(snap?.last_earnings_date)}</Text>
         </div>
         <Group gap="xl">
           <Stack align="center" gap={0}>
@@ -59,6 +67,7 @@ export function StockPage() {
               <Text fw={600}>{GURU_LABELS[g]}</Text>
               <GuruBadge value={d.gurus[g]} label={GURU_LABELS[g]} />
             </Group>
+            <Text size="xs" c="dimmed" mt={4}>ציון {score100(d.gurus[g].score)} · כיסוי {score100(d.gurus[g].coverage)}%</Text>
           </Card>
         ))}
       </SimpleGrid>
@@ -83,24 +92,68 @@ export function StockPage() {
           <Stack>
             <Card>
               <Title order={4} mb="sm">ממה מורכב מרווח הביטחון</Title>
-              {d.mos.map((m) => (
+              {d.components.map((m) => (
                 <Group key={m.id} justify="space-between" py="xs" style={{ borderTop: "1px solid var(--mantine-color-default-border)" }} wrap="nowrap">
                   <div>
-                    <Text size="sm">{m.title}</Text>
+                    <Text size="sm" dir="ltr" ta="right">{m.title}</Text>
                     <Text size="xs" c="dimmed" ff="monospace" dir={dirOf(m.formula)} ta="right">{m.formula}</Text>
                   </div>
-                  <Text ff="monospace" fw={600} dir="ltr" c={m.mos === null ? "dimmed" : m.mos >= 0.2 ? "teal" : m.mos < 0 ? "red" : undefined}>{pct(m.mos)}</Text>
+                  <Text ff="monospace" fw={600} dir="ltr" style={{ whiteSpace: "nowrap" }} c={m.value === null ? "dimmed" : m.value >= 0.2 ? "teal" : m.value < 0 ? "red" : undefined}>
+                    {m.value === null ? "לא חל" : pct(m.value)}
+                  </Text>
                 </Group>
               ))}
-              <Text size="xs" c="dimmed" mt="xs">הציון הוא החציון של הרכיבים שרלוונטיים לסוג החברה.</Text>
+              <Text size="xs" c="dimmed" mt="xs">הציון הוא החציון של הרכיבים שחלים על המניה.</Text>
+              {snap && (
+                <Text size="xs" c="dimmed" mt="xs" dir="ltr" ta="right">
+                  P/E {num(snap.pe_ratio)} · P/B {num(snap.pb_ratio)} · P/S {num(snap.ps_ratio)} · P/E 5Y {num(snap.pe_ratio_5y)} · mkt cap {num(snap.market_cap)}
+                </Text>
+              )}
             </Card>
             <Card>
-              <Title order={4} mb="sm">מגמות 5 שנים</Title>
+              <Title order={4} mb="sm">מגמות (שנות FY)</Title>
               <ReactECharts option={trend} style={{ height: 260 }} />
             </Card>
+            {(qHistory.length > 1 || oHistory.length > 1) && (
+              <Card>
+                <Title order={4} mb="sm">ציון לאורך ריצות</Title>
+                <ReactECharts style={{ height: 200 }} option={{
+                  textStyle: { fontFamily: "Heebo" }, legend: { top: 0 }, tooltip: { trigger: "axis" },
+                  grid: { left: 40, right: 20, top: 36, bottom: 24 },
+                  xAxis: { type: "category", data: qHistory.map((h) => `#${h.run_id}`) },
+                  yAxis: { type: "value" },
+                  series: [
+                    { name: "איכות", type: "line", data: qHistory.map((h) => h.score) },
+                    { name: "הזדמנות", type: "line", data: oHistory.map((h) => h.score) },
+                  ],
+                }} />
+              </Card>
+            )}
           </Stack>
         </Grid.Col>
       </Grid>
+
+      <Card p={0}>
+        <Title order={4} p="lg" pb="sm">כניסות ויציאות מהמעקב</Title>
+        {d.events.length === 0 ? <Text c="dimmed" size="sm" px="lg" pb="lg">אין אירועים רשומים למניה הזו (היא במעקב מהריצה הראשונה).</Text> : (
+          <Table verticalSpacing="xs" horizontalSpacing="lg">
+            <Table.Tbody>
+              {d.events.map((e) => (
+                <Table.Tr key={e.id}>
+                  <Table.Td>{dateTime(e.created_at)}</Table.Td>
+                  <Table.Td><Badge color={e.direction === "enter" ? "teal" : "red"} variant="light">{e.direction === "enter" ? "נכנסה" : "יצאה"}</Badge></Table.Td>
+                  <Table.Td>{REASON_LABELS[e.reason_type] ?? e.reason_type}</Table.Td>
+                  <Table.Td dir="ltr" ta="right">
+                    {Object.entries((e.detail ?? {}) as Record<string, { before: number | null; after: number | null }>)
+                      .filter(([, v]) => v && typeof v === "object" && "after" in v)
+                      .map(([k, v]) => `${FILTER_LABELS[k] ?? k}: ${num(v.before)} → ${num(v.after)}`).join(" · ")}
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        )}
+      </Card>
     </Stack>
   );
 }

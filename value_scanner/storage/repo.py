@@ -427,6 +427,37 @@ class Repository:
                 }
         return list(stocks.values())
 
+    def result_counts(self, run_id: int) -> dict[str, dict[str, tuple[int, int, int]]]:
+        """symbol -> guru -> (passed, computed, total) over the run's criteria results."""
+        counts: dict[str, dict[str, tuple[int, int, int]]] = {}
+        for r in self.conn.execute(
+            """SELECT symbol, guru,
+                      SUM(status = 'PASS') AS passed,
+                      SUM(status <> 'NA') AS computed,
+                      COUNT(*) AS total
+               FROM results WHERE run_id = ? GROUP BY symbol, guru""",
+            (run_id,),
+        ):
+            counts.setdefault(r["symbol"], {})[r["guru"]] = (
+                int(r["passed"]),
+                int(r["computed"]),
+                int(r["total"]),
+            )
+        return counts
+
+    def membership_history(self, limit: int = 500) -> list[sqlite3.Row]:
+        """Newest membership events first, with the company name."""
+        return self.conn.execute(
+            "SELECT e.*, c.name FROM membership_events e LEFT JOIN companies c "
+            "ON c.symbol = e.symbol ORDER BY e.created_at DESC, e.id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+
+    def snapshot_for(self, run_id: int, symbol: str) -> sqlite3.Row | None:
+        return self.conn.execute(
+            "SELECT * FROM screener_snapshots WHERE run_id = ? AND symbol = ?", (run_id, symbol)
+        ).fetchone()
+
     def recent_runs(self, limit: int = 50) -> list[sqlite3.Row]:
         return self.conn.execute(
             "SELECT * FROM runs ORDER BY started_at DESC, id DESC LIMIT ?", (limit,)

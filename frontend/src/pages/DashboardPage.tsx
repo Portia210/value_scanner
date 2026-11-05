@@ -1,15 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Avatar, Badge, Card, Grid, Group, Progress, SegmentedControl, Select, SimpleGrid, Slider, Stack,
+  Alert, Avatar, Badge, Box, Card, Grid, Group, Loader, Progress, SegmentedControl, Select, SimpleGrid, Slider, Stack,
   Table, Text, TextInput, Title, UnstyledButton,
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
-import { demoSettings, demoStocks } from "../mock/demo";
 import { GuruBadge } from "../components/GuruBadge";
 import { QualityOpportunityScatter } from "../components/QualityOpportunityScatter";
-import { GURU_LABELS, GURU_ORDER, pct, score100, TYPE_LABELS } from "../format";
-import type { CompanyType } from "../types";
+import { useStocks } from "../api/hooks";
+import { dateTime, GURU_LABELS, GURU_ORDER, pct, primaryType, score100, TYPE_LABELS } from "../format";
 
 function Kpi({ label, value, hint, accent }: { label: string; value: string; hint: string; accent?: boolean }) {
   return (
@@ -22,42 +21,55 @@ function Kpi({ label, value, hint, accent }: { label: string; value: string; hin
 }
 
 export function DashboardPage() {
-  const [qualityMin, setQualityMin] = useState(demoSettings.qualityMin);
-  const [mosMin, setMosMin] = useState(demoSettings.mosMin);
+  const { data, isLoading, error } = useStocks();
+  const [qualityMin, setQualityMin] = useState(0.7);
+  const [mosMin, setMosMin] = useState(0.2);
   const [sector, setSector] = useState<string | null>(null);
   const [ctype, setCtype] = useState<string>("all");
   const [query, setQuery] = useState("");
 
-  const sectors = useMemo(() => [...new Set(demoStocks.map((s) => s.sector))].sort(), []);
-  const filtered = demoStocks.filter((s) =>
+  useEffect(() => {
+    if (data) { setQualityMin(data.quality_min); setMosMin(data.opportunity_min); }
+  }, [data?.quality_min, data?.opportunity_min]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const all = data?.stocks ?? [];
+  const sectors = useMemo(() => [...new Set(all.map((s) => s.sector).filter((x): x is string => !!x))].sort(), [all]);
+
+  if (isLoading) return <Loader />;
+  if (error) return <Alert color="red">לא הצלחתי לטעון את הנתונים: {String(error)}</Alert>;
+  if (!data?.run) return <Alert color="blue" title="אין עדיין נתונים">עוד לא הושלמה ריצה. אפשר להתחיל אחת במסך "ריצות".</Alert>;
+
+  const filtered = all.filter((s) =>
     (!sector || s.sector === sector) &&
-    (ctype === "all" || s.ctype === ctype) &&
-    (!query || s.symbol.toLowerCase().includes(query.toLowerCase()) || s.name.toLowerCase().includes(query.toLowerCase())));
+    (ctype === "all" || s.labels.includes(ctype) || (ctype === "regular" && s.labels.includes("regular"))) &&
+    (!query || s.symbol.toLowerCase().includes(query.toLowerCase()) || (s.name ?? "").toLowerCase().includes(query.toLowerCase())));
   const isCandidate = (q: number | null, m: number | null) => q !== null && m !== null && q >= qualityMin && m >= mosMin;
   const candidates = filtered.filter((s) => isCandidate(s.quality, s.opportunity)).sort((a, b) => b.opportunity! - a.opportunity!);
-  const ranked = [...filtered].sort((a, b) => (b.quality ?? 0) - (a.quality ?? 0));
+  const ranked = [...filtered].sort((a, b) => (b.quality ?? -1) - (a.quality ?? -1));
+  const unranked = all.filter((s) => s.quality === null).length;
 
   return (
     <Stack gap="lg">
       <Group justify="space-between" align="end">
         <div>
-          <Text size="xs" c="dimmed">ריצה #42 · 110 מניות · נתונים נכון ל-03.11.2026 · מחירים עודכנו היום</Text>
+          <Text size="xs" c="dimmed">ריצה #{data.run.id} · {all.length} מניות במעקב · {dateTime(data.run.started_at)}</Text>
           <Title order={2}>מי עומדת בהכי הרבה קריטריונים, ובכמה היא זולה</Title>
         </div>
-        <Group gap="xs">
+        <Group gap="xs" maw="100%">
           <Select placeholder="כל הסקטורים" data={sectors} value={sector} onChange={setSector} clearable w={200} />
+          <Box maw="100%" style={{ overflowX: "auto" }}>
           <SegmentedControl
             value={ctype} onChange={setCtype}
-            data={[{ value: "all", label: "הכול" }, ...(["tech", "pharma", "cyclical", "regular", "financial"] as CompanyType[])
-              .map((t) => ({ value: t, label: TYPE_LABELS[t] }))]}
+            data={[{ value: "all", label: "הכול" }, ...["tech", "pharma", "cyclical", "regular", "financial"].map((t) => ({ value: t, label: TYPE_LABELS[t] }))]}
           />
+          </Box>
         </Group>
       </Group>
 
       <SimpleGrid cols={{ base: 2, md: 4 }}>
-        <Kpi label="מניות שנסרקו" value="110" hint="2 נכשלו בהורדה" />
-        <Kpi label={`איכות ≥ ${score100(qualityMin)}`} value={String(filtered.filter((s) => (s.quality ?? 0) >= qualityMin).length)} hint="ציון ממוצע על 4 הגורואים" />
-        <Kpi label={`מרווח ביטחון ≥ ${pct(mosMin, false)}`} value={String(filtered.filter((s) => (s.opportunity ?? -1) >= mosMin).length)} hint="חציון רכיבי ההזדמנות" />
+        <Kpi label="מניות במעקב" value={String(all.length)} hint={unranked ? `${unranked} בלי ציון איכות` : "כולן עם ציון איכות"} />
+        <Kpi label={`איכות לפחות ${score100(qualityMin)}`} value={String(filtered.filter((s) => (s.quality ?? 0) >= qualityMin).length)} hint="ממוצע ציוני הגורואים" />
+        <Kpi label={`מרווח ביטחון לפחות ${pct(mosMin, false)}`} value={String(filtered.filter((s) => (s.opportunity ?? -9) >= mosMin).length)} hint="חציון רכיבי ההזדמנות" />
         <Kpi label="מועמדות לקנייה" value={String(candidates.length)} hint="שני התנאים יחד" accent />
       </SimpleGrid>
 
@@ -72,11 +84,11 @@ export function DashboardPage() {
             <SimpleGrid cols={2} mt="sm" spacing="xl">
               <Stack gap={4}>
                 <Text size="xs" c="dimmed">סף איכות: <b>{score100(qualityMin)}</b></Text>
-                <Slider min={0.5} max={0.95} step={0.05} value={qualityMin} onChange={setQualityMin} label={(v) => score100(v)} />
+                <Slider min={0.3} max={0.95} step={0.05} value={qualityMin} onChange={setQualityMin} label={(v) => score100(v)} />
               </Stack>
               <Stack gap={4}>
                 <Text size="xs" c="dimmed">סף מרווח ביטחון: <b dir="ltr">{pct(mosMin, false)}</b></Text>
-                <Slider min={0} max={0.4} step={0.05} value={mosMin} onChange={setMosMin} label={(v) => pct(v, false)} />
+                <Slider min={0} max={0.6} step={0.05} value={mosMin} onChange={setMosMin} label={(v) => pct(v, false)} />
               </Stack>
             </SimpleGrid>
           </Card>
@@ -84,7 +96,7 @@ export function DashboardPage() {
         <Grid.Col span={{ base: 12, lg: 4 }}>
           <Card h="100%" p={0}>
             <Title order={4} p="lg" pb="xs">מועמדות לקנייה</Title>
-            {candidates.length === 0 && <Text c="dimmed" size="sm" px="lg">אין מניות שעומדות בשני הספים. נסה להוריד את אחד מהם.</Text>}
+            {candidates.length === 0 && <Text c="dimmed" size="sm" px="lg" pb="lg">אין מניות שעומדות בשני הספים. נסה להוריד את אחד מהם.</Text>}
             {candidates.map((s) => (
               <UnstyledButton key={s.symbol} component={Link} to={`/stocks/${s.symbol}`} px="lg" py="sm"
                 style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}>
@@ -93,7 +105,7 @@ export function DashboardPage() {
                     <Avatar color="teal" radius="md" ff="monospace">{s.symbol.slice(0, 2)}</Avatar>
                     <div>
                       <Text fw={600} ff="monospace">{s.symbol}</Text>
-                      <Text size="xs" c="dimmed">{TYPE_LABELS[s.ctype]} · <span dir="ltr">{s.sector}</span></Text>
+                      <Text size="xs" c="dimmed">{TYPE_LABELS[primaryType(s.labels)]} · <span dir="ltr">{s.sector}</span></Text>
                     </div>
                   </Group>
                   <div style={{ textAlign: "left" }}>
@@ -130,16 +142,20 @@ export function DashboardPage() {
                     <Text component={Link} to={`/stocks/${s.symbol}`} fw={600} ff="monospace" c="brand">{s.symbol}</Text>
                     <Text size="xs" c="dimmed" dir="ltr" ta="right">{s.name}</Text>
                   </Table.Td>
-                  <Table.Td><Badge variant="default" radius="sm">{TYPE_LABELS[s.ctype]}</Badge></Table.Td>
+                  <Table.Td>
+                    <Group gap={4}>{s.labels.map((l) => <Badge key={l} variant="default" radius="sm">{TYPE_LABELS[l] ?? l}</Badge>)}</Group>
+                  </Table.Td>
                   {GURU_ORDER.map((g) => <Table.Td key={g} ta="center"><GuruBadge value={s.gurus[g]} label={GURU_LABELS[g]} /></Table.Td>)}
                   <Table.Td>
-                    <Group gap="xs" wrap="nowrap">
-                      <Progress value={(s.quality ?? 0) * 100} color={(s.quality ?? 0) >= qualityMin ? "teal" : "gray"} flex={1} size="sm" />
-                      <Text size="sm" ff="monospace" w={24}>{score100(s.quality)}</Text>
-                    </Group>
+                    {s.quality === null ? <Text size="sm" c="dimmed">אין מספיק נתונים</Text> : (
+                      <Group gap="xs" wrap="nowrap">
+                        <Progress value={s.quality * 100} color={s.quality >= qualityMin ? "teal" : "gray"} flex={1} size="sm" />
+                        <Text size="sm" ff="monospace" w={24}>{score100(s.quality)}</Text>
+                      </Group>
+                    )}
                   </Table.Td>
                   <Table.Td ta="left">
-                    <Text ff="monospace" fw={600} dir="ltr" c={(s.opportunity ?? 0) >= mosMin ? "teal" : (s.opportunity ?? 0) < 0 ? "red" : undefined}>
+                    <Text ff="monospace" fw={600} dir="ltr" c={s.opportunity === null ? "dimmed" : s.opportunity >= mosMin ? "teal" : s.opportunity < 0 ? "red" : undefined}>
                       {pct(s.opportunity)}
                     </Text>
                   </Table.Td>

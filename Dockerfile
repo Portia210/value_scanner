@@ -1,3 +1,12 @@
+# Stage 1: build the dashboard (Node is only needed here, not in the final image)
+FROM node:20-slim AS frontend
+RUN corepack enable
+WORKDIR /frontend
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY frontend/ ./
+RUN pnpm build
+
 FROM python:3.11-slim
 
 COPY --from=ghcr.io/astral-sh/uv:0.5 /uv /usr/local/bin/uv
@@ -11,6 +20,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 COPY value_scanner ./value_scanner
 COPY docs ./docs
+COPY --from=frontend /frontend/dist ./frontend/dist
 
 # Railway mounts the volume at /data and sets PORT
 VOLUME /data

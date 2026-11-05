@@ -16,7 +16,8 @@ LOGIN_WINDOW = 15 * 60
 
 SECURITY_HEADERS = {
     "Content-Security-Policy": (
-        "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+        "default-src 'self'; img-src 'self' data:; font-src 'self' data:; "
+        "style-src 'self' 'unsafe-inline'; "
         "frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     ),
     "X-Frame-Options": "DENY",

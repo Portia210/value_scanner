@@ -1,7 +1,8 @@
 import ReactECharts from "echarts-for-react";
 import { useComputedColorScheme, useMantineTheme } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
-import type { StockRow } from "../types";
+import type { StockRow } from "../api/client";
+import { marketCapB } from "../format";
 
 interface Props {
   stocks: StockRow[];
@@ -24,7 +25,7 @@ export function QualityOpportunityScatter({ stocks, qualityMin, mosMin, height =
   const points = stocks
     .filter((s) => s.quality !== null && s.opportunity !== null)
     .map((s) => ({
-      value: [s.quality!, s.opportunity!, s.marketCapB],
+      value: [s.quality!, s.opportunity!, marketCapB(s.market_cap)],
       name: s.symbol,
       inQuadrant: s.quality! >= qualityMin && s.opportunity! >= mosMin,
     }));
@@ -37,15 +38,15 @@ export function QualityOpportunityScatter({ stocks, qualityMin, mosMin, height =
         `<b>${p.name}</b><br/>איכות ${Math.round(p.value[0] * 100)} · מרווח ביטחון ${Math.round(p.value[1] * 100)}%`,
     },
     xAxis: {
-      name: "איכות (ציון קריטריונים)", nameLocation: "middle", nameGap: 30, min: 0.3, max: 1,
+      name: "איכות (ציון קריטריונים)", nameLocation: "middle", nameGap: 30, min: 0, max: 1,
       nameTextStyle: { color: muted },
       axisLabel: { color: muted, formatter: (v: number) => Math.round(v * 100) },
       splitLine: { lineStyle: { color: grid } },
     },
     yAxis: {
-      name: "מרווח ביטחון", nameLocation: "middle", nameGap: 40, min: -0.6, max: 0.5,
+      name: "מרווח ביטחון", nameLocation: "middle", nameGap: 40, min: -1, max: 1,
       nameTextStyle: { color: muted },
-      axisLabel: { color: muted, formatter: (v: number) => `${Math.round(v * 100)}%` },
+      axisLabel: { color: muted, formatter: (v: number) => `\u200E${Math.round(v * 100)}%` },
       splitLine: { lineStyle: { color: grid } },
     },
     series: [{
@@ -55,14 +56,14 @@ export function QualityOpportunityScatter({ stocks, qualityMin, mosMin, height =
         itemStyle: { color: p.inQuadrant ? pass : muted, opacity: p.inQuadrant ? 0.95 : 0.55 },
         label: { show: p.inQuadrant || p.value[0] > 0.8 },
       })),
-      symbolSize: (v: number[]) => 9 + Math.sqrt(v[2]) * 2.2,
+      symbolSize: (v: number[]) => Math.min(40, 9 + Math.sqrt(v[2]) * 1.2),
       label: { position: "top", formatter: "{b}", color: text, fontSize: 11, fontFamily: "JetBrains Mono" },
       emphasis: { scale: 1.3 },
       markArea: {
         silent: true,
         itemStyle: { color: pass, opacity: 0.08 },
         label: { show: true, position: "insideTopRight", formatter: "רבע הקנייה", color: pass },
-        data: [[{ xAxis: qualityMin, yAxis: mosMin }, { xAxis: 1, yAxis: 0.5 }]],
+        data: [[{ xAxis: qualityMin, yAxis: mosMin }, { xAxis: 1, yAxis: 1 }]],
       },
       markLine: {
         silent: true, symbol: "none", label: { show: false },

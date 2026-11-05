@@ -15,13 +15,19 @@ MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 _MIGRATION_NAME = re.compile(r"^(\d{4})_[a-z0-9_]+\.sql$")
 
 
-def connect(path: str | Path) -> sqlite3.Connection:
-    """Open the database (":memory:" for tests), configured for this application."""
+def connect(path: str | Path, *, hand_between_threads: bool = False) -> sqlite3.Connection:
+    """Open the database (":memory:" for tests), configured for this application.
+
+    `hand_between_threads`: a web request's connection is created in one worker thread and used
+    in another (FastAPI runs sync dependencies and endpoints in a thread pool). It is still only
+    ever used by one thread at a time, so lifting sqlite3's same-thread check is safe there."""
     memory = str(path) == ":memory:"
     if not memory:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
     # isolation_level=None: we control transactions explicitly (see Repository.transaction).
-    conn = sqlite3.connect(str(path), isolation_level=None, timeout=30)
+    conn = sqlite3.connect(
+        str(path), isolation_level=None, timeout=30, check_same_thread=not hand_between_threads
+    )
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA busy_timeout = 30000")

@@ -25,6 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     sub.add_parser("docs", help="Write docs/criteria/*.md from the criteria definitions")
+    sub.add_parser("openapi", help="Print the API's OpenAPI schema (source of the frontend types)")
     sub.add_parser(
         "config", help="Show the effective settings (secrets are only reported as set/unset)"
     )
@@ -98,6 +99,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         for path in write_all():
             print(f"wrote {path}")
+        return 0
+    if args.command == "openapi":
+        import json
+
+        from value_scanner.api.app import openapi_schema
+
+        print(json.dumps(openapi_schema(), indent=2, sort_keys=True))
         return 0
     if args.command == "run":
         return _run(args.limit)

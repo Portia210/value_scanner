@@ -59,6 +59,10 @@ class Statements:
             return None
         return self._data.get(item, {}).get(f"FY {years[n]}")
 
+    def in_year(self, item: str, year: int) -> float | None:
+        """The value of `item` for fiscal year `year` (None if missing)."""
+        return self._data.get(item, {}).get(f"FY {year}")
+
     def ttm(self, item: str) -> float | None:
         return self._data.get(item, {}).get("TTM")
 

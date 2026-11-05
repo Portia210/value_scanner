@@ -1,13 +1,16 @@
 """FastAPI JSON API for the dashboard (E1). The web app only reads the database."""
 
 import secrets
-from typing import Annotated, Any
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from value_scanner.analysis.scoring import CANDIDATE_OPPORTUNITY, CANDIDATE_QUALITY
-from value_scanner.api import security
+from value_scanner.api import schemas, security, views
 from value_scanner.jobs import scheduler as jobs
 from value_scanner.settings import Settings
 from value_scanner.storage import db
@@ -15,6 +18,7 @@ from value_scanner.storage.repo import Repository
 
 SETTING_DAYS = "days_between_runs"
 DEFAULT_DAYS = 7
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
 class LoginBody(BaseModel):
@@ -25,7 +29,11 @@ class SettingsBody(BaseModel):
     days_between_runs: int = Field(ge=1, le=60)
 
 
-def create_app(settings: Settings, runner: jobs.Runner = jobs.default_runner) -> FastAPI:
+def create_app(
+    settings: Settings,
+    runner: jobs.Runner = jobs.default_runner,
+    frontend_dist: Path | None = FRONTEND_DIST,
+) -> FastAPI:
     # Local mode: no DASHBOARD_PASSWORD means no login, but only for requests addressed to
     # localhost (the CLI also refuses to bind a non-loopback host in this mode).
     local_mode = not settings.dashboard_password
@@ -47,7 +55,7 @@ def create_app(settings: Settings, runner: jobs.Runner = jobs.default_runner) ->
         return response
 
     def get_repo():
-        conn = db.connect(settings.db_path)
+        conn = db.connect(settings.db_path, hand_between_threads=True)
         try:
             yield Repository(conn)
         finally:
@@ -112,54 +120,27 @@ def create_app(settings: Settings, runner: jobs.Runner = jobs.default_runner) ->
 
     # ── data ────────────────────────────────────────────────────────────────────────────────
     @app.get("/api/stocks", dependencies=[Depends(session_csrf)])
-    def stocks(repo: RepoDep) -> dict[str, Any]:
-        run = repo.latest_analysed_run()
-        if run is None:
-            return {"run": None, "stocks": []}
-        rows = repo.stock_table(run["id"])
-        for row in rows:
-            q = (row["scores"].get("quality") or {}).get("score")
-            o = (row["scores"].get("opportunity") or {}).get("score")
-            row["candidate"] = (
-                q is not None
-                and o is not None
-                and q >= CANDIDATE_QUALITY
-                and o >= CANDIDATE_OPPORTUNITY
-            )
-        return {"run": {"id": run["id"], "started_at": run["started_at"]}, "stocks": rows}
+    def stocks(repo: RepoDep) -> schemas.StocksOut:
+        return views.stocks_view(repo)
 
     @app.get("/api/stocks/{symbol}", dependencies=[Depends(session_csrf)])
-    def stock(symbol: str, repo: RepoDep) -> dict[str, Any]:
-        symbol = symbol.upper()
-        company = repo.get_company(symbol)
-        run = repo.latest_analysed_run()
-        if company is None or run is None:
-            raise HTTPException(404, "unknown stock")
-        results = [dict(r) for r in repo.results_for(run["id"], symbol)]
-        if not results:
+    def stock(symbol: str, repo: RepoDep) -> schemas.StockDetailOut:
+        detail = views.stock_view(repo, symbol.upper())
+        if detail is None:
             raise HTTPException(404, "stock was not analysed in the latest run")
-        return {
-            "company": dict(company),
-            "run": {"id": run["id"], "started_at": run["started_at"]},
-            "labels": [dict(r) for r in repo.classification_for(run["id"], symbol)],
-            "results": results,
-            "scores": {
-                r["kind"]: {"score": r["score"], "coverage": r["coverage"]}
-                for r in repo.scores_for(run["id"], symbol)
-            },
-            "components": {
-                r["component"]: r["value"] for r in repo.score_components_for(run["id"], symbol)
-            },
-            "history": {
-                kind: [dict(h) for h in repo.score_history(symbol, kind)]
-                for kind in ("quality", "opportunity")
-            },
-            "membership_events": [dict(e) for e in repo.membership_events(symbol)],
-        }
+        return detail
+
+    @app.get("/api/criteria", dependencies=[Depends(session_csrf)])
+    def criteria() -> schemas.CriteriaOut:
+        return views.criteria_view()
+
+    @app.get("/api/history", dependencies=[Depends(session_csrf)])
+    def history(repo: RepoDep) -> schemas.HistoryOut:
+        return views.history_view(repo)
 
     @app.get("/api/runs", dependencies=[Depends(session_csrf)])
-    def runs(repo: RepoDep) -> list[dict[str, Any]]:
-        return [dict(r) for r in repo.recent_runs()]
+    def runs(repo: RepoDep) -> list[schemas.RunOut]:
+        return [schemas.RunOut(**dict(r)) for r in repo.recent_runs()]
 
     @app.post("/api/runs", status_code=202, dependencies=[Csrf])
     def start_run() -> dict[str, bool]:
@@ -168,18 +149,55 @@ def create_app(settings: Settings, runner: jobs.Runner = jobs.default_runner) ->
         return {"started": True}
 
     @app.get("/api/runs/{run_id}/log", dependencies=[Depends(session_csrf)])
-    def run_log(run_id: int, repo: RepoDep) -> list[dict[str, Any]]:
+    def run_log(run_id: int, repo: RepoDep) -> list[schemas.LogLine]:
         if repo.get_run(run_id) is None:
             raise HTTPException(404, "unknown run")
-        return [dict(r) for r in repo.run_log(run_id)]
+        return [schemas.LogLine(**dict(r)) for r in repo.run_log(run_id)]
+
+    def settings_view(repo: Repository) -> schemas.SettingsOut:
+        days = int(repo.get_setting(SETTING_DAYS, str(DEFAULT_DAYS)))
+        last = repo.last_successful_run()
+        nxt = None
+        if last is not None:
+            started = datetime.strptime(last["started_at"], "%Y-%m-%dT%H:%M:%SZ")
+            due = started.replace(tzinfo=UTC) + timedelta(days=days)
+            nxt = due.strftime("%Y-%m-%dT%H:%M:%SZ")
+        return schemas.SettingsOut(
+            days_between_runs=days,
+            last_run_at=last["started_at"] if last else None,
+            next_run_at=nxt,
+        )
 
     @app.get("/api/settings", dependencies=[Depends(session_csrf)])
-    def get_settings(repo: RepoDep) -> dict[str, int]:
-        return {SETTING_DAYS: int(repo.get_setting(SETTING_DAYS, str(DEFAULT_DAYS)))}
+    def get_settings(repo: RepoDep) -> schemas.SettingsOut:
+        return settings_view(repo)
 
     @app.put("/api/settings", dependencies=[Csrf])
-    def put_settings(body: SettingsBody, repo: RepoDep) -> dict[str, int]:
+    def put_settings(body: SettingsBody, repo: RepoDep) -> schemas.SettingsOut:
         repo.set_setting(SETTING_DAYS, str(body.days_between_runs))
-        return {SETTING_DAYS: body.days_between_runs}
+        return settings_view(repo)
+
+    # ── the built frontend (Vite output), served from the same origin ──────────────────────
+    if frontend_dist is not None and (frontend_dist / "index.html").is_file():
+        root = frontend_dist.resolve()
+        app.mount("/assets", StaticFiles(directory=root / "assets"), name="assets")
+
+        @app.get("/{path:path}", include_in_schema=False)
+        def spa(path: str) -> FileResponse:
+            if path.startswith("api/"):
+                raise HTTPException(404, "unknown endpoint")
+            candidate = (root / path).resolve()
+            if path and candidate.is_file() and candidate.is_relative_to(root):
+                return FileResponse(candidate)
+            return FileResponse(root / "index.html")
 
     return app
+
+
+def openapi_schema() -> dict:
+    """The OpenAPI schema without touching any database (used to generate frontend types)."""
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        settings = Settings(db_path=Path(tmp) / "schema.db")
+        return create_app(settings, frontend_dist=None).openapi()
