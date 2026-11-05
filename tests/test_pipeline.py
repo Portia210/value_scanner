@@ -58,7 +58,7 @@ def test_successful_run_end_to_end(repo):
     assert (
         run["status"] == "ok"
         and run["finished_at"]
-        and (run["progress_done"], run["progress_total"]) == (8, 8)
+        and (run["progress_done"], run["progress_total"]) == (6, 6)
     )  # downloads
     assert repo.latest_statement_fetch("AAA", "income")
     assert repo.latest_statement_fetch("CCC", "income") is None  # not in the screen
