@@ -12,6 +12,14 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — B4 (קוד) + ממצא חוסם: האתר החינמי קוטע את הדוחות (D19)
+- Changed: `jobs/pipeline.py` (`run_scan`), `jobs/alerts.py` (מייל ל-`MY_EMAIL`, SMTP מ-env), `cli.py run [--limit N]`, `SMTP_*` ב-settings ו-`.env.example`. `metrics` הוצא מ-`DEFAULT_STATEMENTS`.
+- Verified: gate ירוק (135 טסטים). ריצה אמיתית ראשונה (run 1): 5,601 מניות, 108 עוברות, 844 "כמעט"; הופסקה ידנית אחרי ~1 דקה → סטטוס `interrupted` והנעילה שוחררה (מאומת חי). דוחות AAON הורדו ונשמרו ב-DB.
+- **ממצא:** הדוחות החינמיים קטועים — מאזן בלי התחייבויות/הון, תזרים בלי capex/FCF, רווח והפסד בלי שולי רווח (אומת ב-httpx ובדפדפן המחובר שלך). `/financials/metrics/` הוא פילוח מגזרים. ר' GOTCHAS ו-ROADMAP D19 (המלצה: SEC XBRL).
+- NOT verified: ריצה מלאה וזמנה (לא הושלמה בכוונה: אין טעם להוריד דוחות קטועים); שליחת מייל אמיתית (אין SMTP מוגדר; ההתראות נשמרות ב-DB); `var/value_scanner.db` מכיל נתוני בדיקה (למחוק).
+- Traps / decisions: לא התחלתי C1–C6: הם תלויים במקור הדוחות. לא נגעתי בשום עקיפה של חסימת-תוכן באתר.
+- Next: **החלטה על D19**; אחריה ספק SEC מאחורי ממשק הספקים, ואז C1.
+
 ## 2026-11-05 — B1: הורדת דוחות
 - Changed: `sources/stockanalysis.py` (פענוח הטבלה לפורמט ארוך, `StatementFetcher` עם סיווג ok/blocked/failed/no_table וניסיונות חוזרים חסומים), `jobs/refresh.py` (כללי D18: חדש מיד, ניסיונות 1/3/7 ימים אחרי `lastEarningsDate` עד שהטבלה משתנה, ריענון מלא כל 45 יום; לולאת הורדה איטית), `tests/test_statements.py`.
 - Verified: gate ירוק (122 טסטים: 200/404/429/אתגר/בלי טבלה/טבלה פגומה/שגיאת רשת, גבולות D18, קצב 3–6 שנ' והפסקה ארוכה, חסימה → המתנה וניסיון חוזר → הפסקת האצווה אחרי 3). **בקשה חיה אחת** ל-AAON income: 138 שורות, FY 2024 תואם ל-v1 (Revenue 1201, EPS 2.02, Net Income 168.56).

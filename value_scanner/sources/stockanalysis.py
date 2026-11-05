@@ -32,9 +32,10 @@ STATEMENT_PATHS = {
     "cash_flow": "financials/cash-flow-statement/",
     "ratios": "financials/ratios/",
 }
-# What a scan downloads. `ratios` is deliberately left out: the anonymous page is stale and cut
-# to 4 rows (GOTCHAS); current multiples come from the screener JSON instead.
-DEFAULT_STATEMENTS = ("income", "metrics", "balance_sheet", "cash_flow")
+# What a scan downloads. `ratios` (stale, 4 rows) and `metrics` (company-specific segment revenue,
+# values like "960.49M") are left out; see GOTCHAS. NOTE: the free tier shows only part of each
+# table (no liabilities/equity, no capex/FCF) - an open decision, ROADMAP D19.
+DEFAULT_STATEMENTS = ("income", "balance_sheet", "cash_flow")
 
 Row = tuple[str, str, float | None]  # (item, period, value)
 

@@ -69,12 +69,12 @@ def test_successful_run_end_to_end(repo):
 def test_second_run_downloads_nothing_new(repo):
     scan(repo, {"AAA": {}})
     out = scan(repo, {"AAA": {}})
-    assert out.status == "ok" and "fresh-skipped=4" in out.summary and "ok=0" in out.summary
+    assert out.status == "ok" and "fresh-skipped=3" in out.summary and "ok=0" in out.summary
 
 
 def test_limit_restricts_downloads(repo):
     out = scan(repo, {"AAA": {}, "BBB": {}}, limit=1)
-    assert "ok=4" in out.summary  # 1 stock x 4 statements
+    assert "ok=3" in out.summary  # 1 stock x 3 statements
     assert repo.latest_statement_fetch("BBB", "income") is None
 
 
@@ -128,7 +128,7 @@ def test_many_failed_downloads_send_alert_but_run_is_ok(repo):
     f = fetcher(lambda r: httpx.Response(404, text="gone"))
     outbox = Outbox()
     out = scan(repo, {"AAA": {}, "BBB": {}}, outbox, fetcher=f)
-    assert out.status == "ok" and "failed=8" in out.summary
+    assert out.status == "ok" and "failed=6" in out.summary
     assert len(outbox) == 1 and "failed" in outbox[0]["Subject"].lower()
 
 
