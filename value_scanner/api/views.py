@@ -8,14 +8,10 @@ from typing import Any
 
 from value_scanner.analysis import rows
 from value_scanner.analysis.criteria import Criterion
-from value_scanner.analysis.docs import GURUS, SCORING
+from value_scanner.analysis.docs import GURUS, OPPORTUNITY_DOCS, OPPORTUNITY_NOTE, SCORING
 from value_scanner.analysis.scoring import (
     CANDIDATE_OPPORTUNITY,
     CANDIDATE_QUALITY,
-    FAIR_PE_DEFAULT,
-    FAIR_PE_TECH,
-    GRAHAM_PRODUCT,
-    MIN_COVERAGE,
     is_candidate,
 )
 from value_scanner.analysis.statements import Statements
@@ -23,36 +19,6 @@ from value_scanner.api import schemas
 from value_scanner.storage.repo import Repository
 
 GURU_KEYS = ("screen", "graham", "fisher", "piotroski")
-
-# The four buy-opportunity components (scoring.opportunity_components), with the formula text
-# shown on the "how it is calculated" page.
-OPPORTUNITY_DOCS = {
-    "graham_number": (
-        "Graham number",
-        f"1 - sqrt(P/E x P/B / {GRAHAM_PRODUCT:g})  (not technology; P/E and P/B positive)",
-    ),
-    "fair_pe": (
-        "Fair P/E",
-        f"1 - P/E / fair P/E  (fair P/E {FAIR_PE_DEFAULT:g}, technology {FAIR_PE_TECH:g}; "
-        "P/E positive)",
-    ),
-    "vs_history": (
-        "Versus its own history",
-        "1 - P/E / 5-year P/E  (the screener's 5-year average P/E; both positive)",
-    ),
-    "price_sales": (
-        "Price to sales",
-        "1 - P/S / limit  (limit 0.8 cyclical, 1.5 other; not technology; P/S positive)",
-    ),
-}
-
-OPPORTUNITY_NOTE = (
-    "- ציון ההזדמנות הוא **החציון** של הרכיבים שחלים על המניה (אין רכיב שחל = אין ציון).\n"
-    f"- מועמדת לקנייה: איכות ≥ {CANDIDATE_QUALITY:g} **וגם** הזדמנות ≥ {CANDIDATE_OPPORTUNITY:g}.\n"
-    f"- איכות = ממוצע ציוני הגורואים שדורגו (לפחות שניים); גורו עם כיסוי מתחת ל-{MIN_COVERAGE:.0%} "
-    "אינו מדרג."
-)
-
 
 def _all_criteria() -> dict[tuple[str, str], Criterion]:
     return {(g, c.id): c for g, (_, crit) in GURUS.items() for c in crit.values()}

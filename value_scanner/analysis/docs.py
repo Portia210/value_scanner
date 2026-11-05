@@ -10,6 +10,14 @@ from pathlib import Path
 
 from value_scanner.analysis.criteria import Criterion
 from value_scanner.analysis.gurus import fisher, graham, piotroski, screen
+from value_scanner.analysis.scoring import (
+    CANDIDATE_OPPORTUNITY,
+    CANDIDATE_QUALITY,
+    FAIR_PE_DEFAULT,
+    FAIR_PE_TECH,
+    GRAHAM_PRODUCT,
+    MIN_COVERAGE,
+)
 
 DOCS_DIR = Path(__file__).resolve().parents[2] / "docs" / "criteria"
 
@@ -34,6 +42,50 @@ SCORING = """
 """
 
 
+# The four buy-opportunity components (scoring.opportunity_components), with the formula text
+# shown on the "how it is calculated" page.
+OPPORTUNITY_DOCS = {
+    "graham_number": (
+        "Graham number",
+        f"1 - sqrt(P/E x P/B / {GRAHAM_PRODUCT:g})  (not technology; P/E and P/B positive)",
+    ),
+    "fair_pe": (
+        "Fair P/E",
+        f"1 - P/E / fair P/E  (fair P/E {FAIR_PE_DEFAULT:g}, technology {FAIR_PE_TECH:g}; "
+        "P/E positive)",
+    ),
+    "vs_history": (
+        "Versus its own history",
+        "1 - P/E / 5-year P/E  (the screener's 5-year average P/E; both positive)",
+    ),
+    "price_sales": (
+        "Price to sales",
+        "1 - P/S / limit  (limit 0.8 cyclical, 1.5 other; not technology; P/S positive)",
+    ),
+}
+
+OPPORTUNITY_NOTE = (
+    "- ציון ההזדמנות הוא **החציון** של הרכיבים שחלים על המניה (אין רכיב שחל = אין ציון).\n"
+    f"- מועמדת לקנייה: איכות ≥ {CANDIDATE_QUALITY:g} **וגם** הזדמנות ≥ {CANDIDATE_OPPORTUNITY:g}.\n"
+    f"- איכות = ממוצע ציוני הגורואים שדורגו (לפחות שניים); גורו עם כיסוי מתחת ל-{MIN_COVERAGE:.0%} "
+    "אינו מדרג."
+)
+
+
+
+def render_opportunity() -> str:
+    lines = [
+        HEADER,
+        "# הזדמנות קנייה (מרווח ביטחון)\n",
+        "לכל מניה ארבעה רכיבים אפשריים, כולם במחיר הנוכחי. רכיב שאינו חל על המניה אינו נספר.\n",
+        "| מזהה | רכיב | נוסחה |",
+        "|---|---|---|",
+    ]
+    for cid, (title, formula) in OPPORTUNITY_DOCS.items():
+        lines.append(f"| `{cid}` | {title} | {formula} |")
+    return "\n".join(lines) + "\n\n## איך זה נכנס לציון\n\n" + OPPORTUNITY_NOTE + "\n"
+
+
 def _threshold(c: Criterion) -> str:
     return f"{c.direction} {c.threshold:g}"
 
@@ -54,7 +106,9 @@ def render(guru: str) -> str:
 
 
 def render_all() -> dict[str, str]:
-    return {f"{guru}.md": render(guru) for guru in GURUS}
+    files = {f"{guru}.md": render(guru) for guru in GURUS}
+    files["opportunity.md"] = render_opportunity()
+    return files
 
 
 def write_all(directory: Path = DOCS_DIR) -> list[Path]:
