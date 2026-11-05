@@ -95,6 +95,7 @@ def evaluate(criterion: Criterion, value: float | None, note: str | None = None)
             None,
             note or "no data",
         )
+    value = round(value, 9)  # 1.3 / 1.0 - 1 is 0.30000000000000004: a value AT the threshold
     passed = _COMPARE[criterion.direction](value, criterion.threshold)
     return Result(
         criterion.guru,

@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — C4 (קוד): גראהם (שיעור 4)
+- Changed: `analysis/gurus/graham.py` — 6 קריטריונים מה-PDF: מכירות >350M; current ratio >2; הון חוזר > חוב ארוך טווח; P/E <15 (פרמטר `pe_limit`, 25 לטק לפי D5/D6); P/E×P/B <22; צמיחת EPS >30% (ממוצע שנתיים אחרונות / ממוצע שנתיים ראשונות מתוך 5 FY, ובלי שנת הפסד). `evaluate()` מעגל ל-9 ספרות (רעש float בגבול). `tests/test_graham.py`.
+- Verified: gate ירוק (199). גבולות: בדיוק בסף = FAIL; מכפיל ≤0 = FAIL (R4, לא PASS); שנת הפסד גוברת על נתון חסר; חסר = NA.
+- NOT verified: על נתונים חיים; חיבור לסיווג (איזה `pe_limit` למי — C2/D6 עדיין לא); P12 (מטבע זר: סף 350M בלי המרה).
+- Traps / decisions: אין שורת Long-Term Debt בחלק מהחברות (5/8 בדגימה). ללא שורה: Total Debt=0 → הון חוזר מול 0; הון חוזר > Total Debt → עובר; אחרת NA (ייתכן שהחוב קצר טווח). צמיחת EPS של גראהם שונה מצמיחת ה-5Y של הסורק/שיעור 3 (CAGR) — שתי הגדרות נפרדות בכוונה.
+- Next: C5 פישר (שיעור 5), C6 פיוטרוסקי, C2 סיווג, ואז C7 ציון.
+
 ## 2026-11-05 — C3 (חלקי): הסינון הראשוני (שיעור 3)
 - Changed: `analysis/rows.py` (שמות שורות חיים), `analysis/gurus/screen.py` (8 קריטריונים: שווי שוק ו-P/E מהסורק; צמיחת הכנסות ו-EPS כ-CAGR בין FY אחרון ל-4 שנים לפניו; שולי רווח NI/Revenue ב-TTM; D/E = Total Debt/Equity; current ratio; ROE ממוצע 5 שנים, ≥3 שנים תקפות), `tests/test_screen.py`.
 - Verified: gate ירוק; טסטי גבולות (בדיוק בסף = FAIL כי ההשוואה חמורה), חסר = NA, שלילי, הון עצמי ≤0 = FAIL, בסיס צמיחה ≤0 = NA.

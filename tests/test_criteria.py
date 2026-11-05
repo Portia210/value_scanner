@@ -123,3 +123,8 @@ def test_from_repo_merges_statements_and_uses_latest_fetch():
     s = Statements.from_repo(repo, "AAA")
     assert s.fy("Revenue") == 2.0 and s.fy("Total Assets") == 9.0
     assert Statements.from_repo(repo, "ZZZ").years() == []
+
+
+def test_float_noise_does_not_flip_a_boundary():
+    c = Criterion("t", "graham", 4, "t", "x > 30", ">", 30.0)
+    assert evaluate(c, (1.3 / 1.0 - 1) * 100).status == Status.FAIL  # 30.000000000000004
