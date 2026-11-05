@@ -39,11 +39,12 @@
   - Goal: סביבת עבודה שאפשר לאמת בה כל צעד.
   - Done when: D0 בוצע; ענף `v2` קיים; `pytest` ו-`ruff` מותקנים; hook סריקת סודות פעיל ונבדק עם סוד מזויף; Push Protection של GitHub מופעל; `uv run ruff check . && uv run pytest -q` עובר (הטסט הקיים כלול); הפקודה רשומה ב-CLAUDE.md.
   - Depends on: D0, D12, D15
-- [ ] **A2** — fixtures ותמונת מצב
+- [x] **A2** — fixtures ותמונת מצב
   - Goal: בסיס להשוואה לפני שמשנים לוגיקה.
-  - Done when: `tests/fixtures/` עם CSV של ~8 מניות מייצגות (כולל BRK.B, מניה עם שנת הפסד, טק, תעשייה, פיננסים, בלי מו"פ); טסט שמריץ את הבדיקות הקיימות עליהן ושומר את התוצאה כ-snapshot.
+  - Done when: `data/` ו-`outputs/` של v1 הועתקו ל-`var/legacy/` (לא ב-git) לטובת C9.
+  - Notes: **לא מקמטים נתונים שנגרדו מ-StockAnalysis לריפו ציבורי.** טסטי היחידה משתמשים בנתונים סינתטיים (`tests/factories.py`); נתונים אמיתיים רק בבדיקות מקומיות מתוך `var/`.
   - Depends on: A1
-- [ ] **A3** — ניקוי קוד מת ו-git
+- [x] **A3** — ניקוי קוד מת ו-git
   - Goal: להסיר את מה שלא בשימוש לפני הבנייה מחדש.
   - Done when: X1–X6 נמחקו (אחרי grep לאפס הפניות); תלויות X8 הוסרו ו-`uv sync` עובר; `outputs/`, `rate_limit_debug.txt`, `short_report.md` הוצאו מ-git ונוספו ל-`.gitignore`; gate ירוק.
   - Depends on: A2
