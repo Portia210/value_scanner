@@ -108,11 +108,20 @@ def evaluate(criterion: Criterion, value: float | None, note: str | None = None)
     )
 
 
-def compare(guru: str, criterion_id: str, now: float | None, before: float | None) -> Result:
-    """A comparative criterion (Piotroski: this year better than last): strength is 1 or 0."""
+def compare(
+    guru: str,
+    criterion_id: str,
+    now: float | None,
+    before: float | None,
+    *,
+    lower_is_better: bool = False,
+    note: str | None = None,
+) -> Result:
+    """A comparative criterion (Piotroski: this year better than last): strength is 1 or 0.
+    `value` is this year's figure and `threshold` last year's. Equal is not an improvement."""
     if is_missing(now) or is_missing(before):
-        return Result(guru, criterion_id, Status.NA, now, before, None, "no data")
-    passed = now > before
+        return Result(guru, criterion_id, Status.NA, now, before, None, note or "no data")
+    passed = now < before if lower_is_better else now > before
     return Result(
         guru,
         criterion_id,
@@ -120,4 +129,5 @@ def compare(guru: str, criterion_id: str, now: float | None, before: float | Non
         now,
         before,
         1.0 if passed else 0.0,
+        note,
     )
