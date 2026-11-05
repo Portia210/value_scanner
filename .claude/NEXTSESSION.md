@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — C3 (חלקי): הסינון הראשוני (שיעור 3)
+- Changed: `analysis/rows.py` (שמות שורות חיים), `analysis/gurus/screen.py` (8 קריטריונים: שווי שוק ו-P/E מהסורק; צמיחת הכנסות ו-EPS כ-CAGR בין FY אחרון ל-4 שנים לפניו; שולי רווח NI/Revenue ב-TTM; D/E = Total Debt/Equity; current ratio; ROE ממוצע 5 שנים, ≥3 שנים תקפות), `tests/test_screen.py`.
+- Verified: gate ירוק; טסטי גבולות (בדיוק בסף = FAIL כי ההשוואה חמורה), חסר = NA, שלילי, הון עצמי ≤0 = FAIL, בסיס צמיחה ≤0 = NA.
+- NOT verified: מול נתונים חיים ומול הסינון של האתר (הסורק משתמש ב-5Y מדויק; לי יש רק 5 שנות FY = 4 מרווחים) — להשוות בריצת C9; הסינון המשני (ממוצעי 5 שנים של שולי רווח וצמיחה) לא ממומש; תמחור לפי Current (R1) מגיע מהסורק, לא מחושב.
+- Traps / decisions: צמיחה "5Y" מחושבת כאן על 4 מרווחים בין 5 FY — ייתכן פער קל מול `revenueGrowth5Y` של האתר. D/E משתמש ב-`Total Debt` (כולל leases) כמו האתר, לא ב-`Long-Term Debt` (חסר ב-3 מתוך 8 חברות לדוגמה).
+- Next: C2 סיווג, C4 גראהם (קריאת PDF שיעור 4).
+
 ## 2026-11-05 — C1 (חלקי): מודל קריטריון וטעינת דוחות
 - Changed: `analysis/criteria.py` (`Status`, `Criterion`, `Result`, `strength`, `evaluate`, `compare`; NA לערך חסר/NaN), `analysis/statements.py` (`Statements.from_repo`: `fy(item, n)`, `ttm`, `current`, `series`; חסר = None, לא 0), `tests/test_criteria.py`.
 - Verified: gate ירוק (165). גבולות strength: בדיוק 20% מעל = 1.0, מתחת ל-20% = 0.75, בסף (מחמיר) = 0.25, בדיוק 20% מתחת = 0.
