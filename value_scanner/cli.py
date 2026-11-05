@@ -25,6 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     sub.add_parser("docs", help="Write docs/criteria/*.md from the criteria definitions")
+    sub.add_parser("test-alert", help="Send one test email to MY_EMAIL through the configured SMTP")
     sub.add_parser("openapi", help="Print the API's OpenAPI schema (source of the frontend types)")
     sub.add_parser(
         "config", help="Show the effective settings (secrets are only reported as set/unset)"
@@ -60,6 +61,18 @@ def _run(limit: int | None) -> int:
     outcome = run_scan(repo, settings, "cli", limit=limit)
     print(f"{outcome.status}: {outcome.summary}")
     return {"ok": 0, "locked": 3, "blocked": 3}.get(outcome.status, 1)
+
+
+def _test_alert() -> int:
+    from value_scanner.jobs.alerts import send_test_alert
+
+    try:
+        send_test_alert(load_settings(load_dotenv_file=True))
+    except Exception as exc:  # noqa: BLE001 - report the type, never the (secret-bearing) details
+        print(f"test alert FAILED: {type(exc).__name__}")
+        return 1
+    print("test alert sent to MY_EMAIL")
+    return 0
 
 
 def _serve(parser: argparse.ArgumentParser, host: str, port: int) -> int:
@@ -100,6 +113,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         for path in write_all():
             print(f"wrote {path}")
         return 0
+    if args.command == "test-alert":
+        return _test_alert()
     if args.command == "openapi":
         import json
 

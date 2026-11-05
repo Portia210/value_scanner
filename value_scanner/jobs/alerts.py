@@ -75,3 +75,19 @@ def send_pending_alerts(
             repo.mark_alert_sent(row["id"])
             sent += 1
     return sent, failed
+
+
+def send_test_alert(settings: Settings, sender: Sender | None = None) -> None:
+    """Send one harmless message to MY_EMAIL through the configured SMTP (nothing is stored).
+    Raises if email is not configured or delivery fails."""
+    if not (settings.smtp_host and settings.my_email):
+        raise RuntimeError("email not configured (SMTP_HOST, MY_EMAIL)")
+    sender = sender or smtp_sender(settings)
+    sender(
+        build_message(
+            settings,
+            "test alert",
+            "This is a test message from `python -m value_scanner test-alert`. "
+            "If you can read it, run alerts (blocked, structure change, failures) will reach you.",
+        )
+    )

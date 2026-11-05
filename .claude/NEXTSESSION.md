@@ -12,6 +12,14 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-06 — E1–E4, E6, C10, C9 (חלקי): דשבורד על נתוני אמת
+- Changed: `api/schemas.py` + `api/views.py` (מודלי תגובה, `/api/criteria`, `/api/history`, ספירת עוברים לגורו), OpenAPI → טיפוסים (`frontend/src/api/`, טסט נכשל כשהסכמה ישנה), הגשת `frontend/dist` מ-FastAPI, frontend אמיתי (התחברות, דשבורד, דף מניה, ריצות+הגדרות+לוג, כניסות/יציאות, "איך זה מחושב"; ה-mock נמחק), `docs/criteria/opportunity.md`, `tools/compare_v1_v2.py` + `docs/c9-summary.md`, `python -m value_scanner test-alert`, Dockerfile עם שלב בניית frontend, `ARCHITECTURE.md` נכתב מחדש ל-v2. תיקוני באגים: חיבור SQLite עבר בין threads (500 על `/api/runs` ו-`/api/settings`), CSP חסם גופנים inline, logout לא חזר למסך ההתחברות.
+- Verified: gate ירוק (334 טסטים) + `pnpm build`; בדפדפן (Playwright, על עותק DB של ריצה 1): כל המסכים, אור/כהה, מסך 390px בלי גלילה אופקית, התחברות שגויה/נכונה/יציאה, שמירת N ימים. מייל בדיקה נשלח ל-`MY_EMAIL` ב-SMTP האמיתי (השרת קיבל; **הגעה לתיבה לא נבדקה**).
+- NOT verified: "הרץ כעת" ומתזמן אמיתי (לא לחצתי: היה מפעיל סריקה אמיתית); סטטוס חי בזמן ריצה; אירועי כניסה/יציאה אמיתיים (נבדק עם 2 אירועים סינתטיים); `docker build` (אין Docker ב-WSL); מועמדות מול האתר ידנית.
+- Skipped (דורש אותך): ר' "שאלות שדורשות את ההחלטה שלך" ב-`docs/formula-decisions.md` (כינוי `Total Revenue` — VTMX ו-NMIH; סריקה משנית C3; גבולות C9) · E7 (הפרומפט לא סוכם, חיוב Gemini) · F1 (להפעיל WSL integration של Docker) · F2/F3 (D13 לא אושר; פריסה ל-Railway) · אישור טבלת הפרשנויות ב-`formula-decisions.md`.
+- Traps / decisions: אל תריץ `pkill -f "value_scanner serve"` מתוך פקודת shell שמכילה את אותו טקסט (הורג את ה-shell); שרת פיתוח: `DASHBOARD_PASSWORD= DB_PATH=<עותק> serve` (משתנה ריק מנצח את `.env`). `tools/` חריג ל-E501.
+- Next: תשובות לשאלות; ריצה שנייה (נותנת אירועי כניסה/יציאה אמיתיים); E7; F1–F3.
+
 ## 2026-11-06 — ריצה 1 הסתיימה + ניתוח סופי על נתוני אמת
 - Verified: ריצה 1 `ok`: 5,601 מניות, 108 במעקב, 324/324 דוחות הורדו, 0 כשלונות, 0 חסימות, **35:54 דקות**. אחר כך `analyse_run` על המקור: 108 נותחו; 11 מועמדות (ZM, FSLR, MU, SKHY, DINO, GOOGL, CTSH, CRUS, KGC, LRN, DHT); VTMX בלי ציון איכות. כל 8 מסנני שיעור 3 עוברים ב-108/108 (פרט ל-NA: NMIH ו-VTMX בלי נתוני הכנסות/רווח; 11 פיננסיות ללא current ratio) — תואם לכך שהסורק עצמו בחר אותן.
 - NOT verified: מייל אמיתי; מועמדות מול האתר/ידנית; ההחלטות ב-`docs/formula-decisions.md` ממתינות לאישור המפתח; VTMX (נדל"ן, חברה זרה) — למה אין לה דוחות (לא נבדק).

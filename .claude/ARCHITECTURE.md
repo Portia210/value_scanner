@@ -1,63 +1,75 @@
 # ARCHITECTURE
 
-**Derived from source on 2026-11-05 at `a448e20`** (plus uncommitted changes in
-`reports_checks/ken_fisher_check.py`). Source code outranks this file; if they disagree,
-report it and re-derive the section. Facts only — the target design lives in
-[plans/v2-rebuild.md](plans/v2-rebuild.md), known defects in [plans/v2-audit.md](plans/v2-audit.md).
+**Derived from source on 2026-11-06 (branch `v2`).** Source code outranks this file; if they
+disagree, report it and re-derive the section. Target design and history: [plans/v2-rebuild.md](plans/v2-rebuild.md);
+v1 defects: [plans/v2-audit.md](plans/v2-audit.md).
 
 ## Overview
-A local, interactive CLI (`main.py`). It logs in to StockAnalysis.com with Playwright, reads a
-stock list from the site's screener, downloads four financial statements per stock with
-httpx, classifies each company, runs three pass/fail checks, and writes Markdown/CSV reports.
-No server, no database, no scheduler.
+`value_scanner/` (v2) scans StockAnalysis.com anonymously with httpx (no browser, no login),
+stores everything in one SQLite file (`DB_PATH`), evaluates the lessons' criteria per stock and
+serves a React dashboard from FastAPI. A scheduler inside the same process starts a scan every N
+days; "Run now" starts one on demand. The v1 code (`main.py`, `pipeline/`, `reports_checks/`,
+`company_classifiers/`, `playwright_utils/`, `utils/`, `enums/`, `constants/`) is still in the repo
+only until C9 (old-vs-new comparison) is closed; v2 does not import it.
 
-## Run flow (`main.py`)
-1. `ensure_valid_cookies` — validate `cookies.txt`, else Playwright login (headed) → `playwright_utils/login_utils.py`
-2. `input()` asks whether to refresh the stock list → `pipeline/update_stock_list.py` → `pipeline/get_filtered_companies.py` (clicks the screener's saved "Filters" view and pages through `#main-table`; filters are **not** defined in code)
-3. `cleanup_stale_data` — delete `data/<SYMBOL>/` for symbols no longer listed
-4. `generate_classification_csv` — reads `data/*/income.csv` from the **previous** run → `outputs/company_classifications.csv` → `company_classifiers/`
-5. `initialize_output_files` — delete `outputs/filters_results.{csv,md}`
-6. `batch_process_companies` — per symbol (concurrency 2): `HttpReportsFetcher.fetch_all_reports` (skips any CSV that already exists) → `report_maker.generate_report`
-7. `sort_results_csv`
+## Run flow (`jobs/pipeline.py: run_scan`)
+1. Take the run lock (unique partial index: one `running` row) and log.
+2. `sources/screener.py` — two requests to StockAnalysis' screener JSON (`screener/initial`,
+   `data-points`); the 8 lesson-3 filters are applied **in code** (`FILTERS`), share classes are
+   de-duplicated, structure changes raise `StructureChanged`, a Cloudflare challenge raises `Blocked`.
+3. `jobs/universe.py` — snapshots of every stock in the screen or "almost" (≤2 failed filters) →
+   `screener_snapshots`; entries/exits vs the previous run → `membership_events` (reason: price /
+   report / new_symbol / delisted / data).
+4. `jobs/refresh.py` + `sources/stockanalysis.py` — download income / balance-sheet / cash-flow
+   pages only for stale stocks (D18 rules), one request at a time, 3–6 s apart, long pause every few
+   dozen requests; results in long format (`statement_values`).
+5. `jobs/analyze.py: analyse_run` — classify (`analysis/classify.py`), evaluate the criteria
+   (`analysis/gurus/{screen,graham,fisher,piotroski}.py`), score (`analysis/scoring.py`) → `results`,
+   `scores`, `score_components`, `classifications`.
+6. `jobs/alerts.py` — alerts are stored in `alerts` and emailed to `MY_EMAIL` (SMTP_*); a delivery
+   failure never fails a run.
 
-## Data (files, no DB)
-| What | Where | Written by |
-|---|---|---|
-| Stock list (symbol → name, href, sector, industry, beta) | `outputs/filtered_companies.json` | `get_filtered_companies.py` |
-| List changes log | `outputs/new_companies.md` | same |
-| Raw statements, 5 FY + TTM/Current columns | `data/<SYMBOL>/{income,balance-sheet,cash-flow,ratios}.csv` | `http_reports_fetcher.py` |
-| Classification | `outputs/company_classifications.csv` | `generate_classifications.py` |
-| Per-stock report | `data/<SYMBOL>/report.md` | `report_maker.py` |
-| Summary (PASS/FAIL per check) | `outputs/filters_results.{csv,md}` | `report_maker.py` |
-| Session cookie | `cookies.txt` (gitignored) | `cookie_utils.save_cookies_from_browser` |
+## Web (`api/`, `frontend/`)
+- `api/app.py` `create_app`: JSON API (`/api/stocks`, `/api/stocks/{symbol}`, `/api/criteria`,
+  `/api/history`, `/api/runs`, `/api/runs/{id}/log`, `/api/settings`, `/api/auth/*`), response models in
+  `api/schemas.py`, row→model shaping in `api/views.py`. One SQLite connection per request.
+  Serves `frontend/dist` (SPA fallback) when it exists.
+- Auth: `DASHBOARD_PASSWORD` + `SESSION_SECRET` → signed cookie + CSRF header; without a password
+  it is **local mode** (localhost Host only, `serve` refuses a non-loopback bind).
+- `frontend/`: Vite + React + TypeScript + Mantine (RTL, light/dark) + ECharts + TanStack Query.
+  Types come from the API: `python -m value_scanner openapi > frontend/src/api/openapi.json &&
+  pnpm -C frontend gen:api` (a test fails when the committed schema is stale).
+- `jobs/scheduler.py`: APScheduler checks every 15 min whether `days_between_runs` passed since the
+  last successful run; `serve` starts it and marks runs left `running` as `interrupted`.
 
-Row names of the statements are enumerated in `enums/` (generated once from NVDA by `utils/enum_generator.py`).
+## Data (SQLite, `storage/migrations/0001_initial.sql`)
+settings, runs, run_log, alerts, parse_failures · companies · screener_snapshots ·
+statement_fetches/statement_values · classifications, results, scores, score_components ·
+membership_events · profiles (E7, unused yet). `storage/repo.py` is the only module that talks to
+the DB. Retention: run_log 90 d, snapshots 400 d, 4 latest good statement fetches per stock/statement.
+No CSV/JSON/cookie files; `var/` (git-ignored) holds the local DB and legacy v1 snapshots.
 
-## Key modules
-| Path | Responsibility |
-|---|---|
-| `main.py`, `config.py` | Orchestration; paths relative to the repo root |
-| `pipeline/http_reports_fetcher.py` | httpx download + rate limiting (15 s pause every 10 requests, 60 s on 429) |
-| `pipeline/report_maker.py` | Loads CSVs, runs checks, writes reports |
-| `reports_checks/basic_reports_check.py` | Current ratio, net-income trend, margins, ROE, WC vs LTD |
-| `reports_checks/benjamin_graham_check.py` | Market cap, revenue, WC vs LTD, P/E, P/E×P/B or P/OCF<P/E, EPS growth |
-| `reports_checks/ken_fisher_check.py` | P/S by type, net margin, EPS growth, D/E, FCF/share, R&D |
-| `reports_checks/formula_helpers.py` | EPS growth, CAGR, CV, Graham product, P/OCF vs P/E |
-| `company_classifiers/main.py` + `constants/sectors.py` | Type: Tech/Pharma, Defensive, High Growth, Cyclical; valuation method Graham or P/OCF |
-| `playwright_utils/` | Browser lifecycle, cookies, login, popup close |
-| `utils/` | DataFrame helpers, HTML table parsing, logger |
+## Criteria docs
+`docs/criteria/*.md` are generated from the criterion definitions (`python -m value_scanner docs`);
+`tests/test_docs.py` fails on drift. The dashboard's "How it is calculated" page reads the same
+definitions through `/api/criteria`.
 
-Unused: `pipeline/reports_fetcher.py`, `reports_checks/cyclical_classifier.py`, `utils/linear_regression.py` (broken), `utils/enum_generator.py` (dev tool), `playwright_utils/page_helper.py`, `quick_actions.py`.
+## CLI (`python -m value_scanner <cmd>`)
+`run [--limit N]`, `serve [--host --port]`, `docs`, `openapi`, `config`, `test-alert`.
 
 ## External services
-| Service | Used for | Config (env var names only) |
+| Service | Used for | Env var names |
 |---|---|---|
-| StockAnalysis.com | Screener, statements, ratios (logged-in account) | `STOCK_ANALYSIS_EMAIL`, `STOCK_ANALYSIS_PASSWORD` |
+| StockAnalysis.com | screener JSON + statement pages (anonymous) | — |
+| SMTP (Gmail) | alert emails | `MY_EMAIL`, `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` (`GOOGLE_APP_PASSWORD` shortcut) |
+| Gemini | company profiles (E7, not built) | `GOOGLE_API_KEY` |
+| SEC | contact address in User-Agent (E7) | `MY_EMAIL` |
 
 ## Environments & deploy
 | Env | Branch | Storage | Notes |
 |---|---|---|---|
-| local (WSL) | `master` | files under repo | only environment today |
+| local (WSL) | `v2` | `var/value_scanner.db` | `serve` + `run` |
+| Railway | — | volume at `/data` | **not deployed yet** (F2); `Dockerfile` written, never built (no Docker in WSL) |
 
-## Verification commands
-`uv run python -m unittest tests.verify_innovation_logic` (5 tests). No linter, no pytest yet.
+## Verification
+`uv run ruff check . && uv run pytest -q` and `pnpm -C frontend build`.

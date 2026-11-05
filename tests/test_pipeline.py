@@ -181,3 +181,20 @@ def test_without_smtp_alerts_stay_in_db(repo):
     repo.add_alert("blocked", "S", "B")
     assert send_pending_alerts(repo, load_settings({})) == (0, 1)
     assert "not configured" in repo.conn.execute("SELECT error FROM alerts").fetchone()[0]
+
+
+def test_send_test_alert_goes_to_my_email_and_needs_configuration():
+    import pytest
+
+    from value_scanner.jobs.alerts import send_test_alert
+    from value_scanner.settings import load_settings
+
+    sent = []
+    configured = load_settings(
+        {"DB_PATH": ":memory:", "MY_EMAIL": "me@example.com", "SMTP_HOST": "smtp.example.com",
+         "SMTP_USER": "u@example.com"}
+    )
+    send_test_alert(configured, sent.append)
+    assert sent[0]["To"] == "me@example.com" and "test alert" in sent[0]["Subject"]
+    with pytest.raises(RuntimeError, match="not configured"):
+        send_test_alert(load_settings({"DB_PATH": ":memory:"}), sent.append)

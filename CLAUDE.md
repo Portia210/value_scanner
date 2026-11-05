@@ -28,7 +28,7 @@ silently; they are decisions in ROADMAP.
 | Lint | `uv run ruff check .` (`--fix` for imports/format) |
 | Secret scan hook | `git config core.hooksPath .githooks` (once per clone) |
 
-**Build gate:** `uv run ruff check . && uv run pytest -q` (+ `pnpm -C frontend build` once the frontend exists).
+**Build gate:** `uv run ruff check . && uv run pytest -q` + `pnpm -C frontend build`.
 The pre-commit hook (`.githooks/pre-commit`) runs detect-secrets against `.secrets.baseline` and
 refuses `.env`/cookie files. GitHub secret scanning + push protection are enabled on the repo.
 
