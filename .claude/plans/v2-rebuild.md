@@ -98,6 +98,27 @@ Dockerfile, .env.example
 
 CSV גולמיים נשמרים לכל ריצה ב-`runs/<run_id>/`; נשמרות 10 הריצות האחרונות.
 
+**למה SQLite ולא Postgres:** כותב אחד (הריצה), קורא אחד (האתר), נפח זעיר — בערך 110 מניות ×
+~35 קריטריונים לריצה. Postgres היה מוסיף שירות ועלות בלי תועלת. נדרש רק אם יהיו כמה מופעים.
+מצב WAL כדי שהאתר יקרא בזמן שהריצה כותבת.
+**גיבוי:** Volume Backups של Railway (קיים, ר' docs.railway.com/volumes/backups) + כפתור ייצוא
+CSV/JSON של תוצאות הריצה בדשבורד. **מקומית:** אותו מבנה תחת `DATA_DIR=./var` (ב-`.gitignore`).
+שום נתון לא נכנס ל-git.
+
+## 2א. אבטחה (הריפו ציבורי)
+
+- **סודות רק במשתני סביבה:** מקומית ב-`.env` (ב-`.gitignore`), בשרת ב-Railway Variables.
+  `.env.example` עם שמות וערכי דמה בלבד. לשרת עוברים רק `STOCK_ANALYSIS_EMAIL`,
+  `STOCK_ANALYSIS_PASSWORD`, `DASHBOARD_PASSWORD`, `SESSION_SECRET`, `DATA_DIR`.
+- **סריקת סודות לפני כל קומיט:** hook של gitleaks ב-`.git/hooks/pre-commit` + Secret Scanning
+  Push Protection של GitHub (חינמי לריפו ציבורי) — מופעל ונבדק ב-A1.
+- **עוגיות StockAnalysis** רק ב-`DATA_DIR`, אף פעם לא בלוג. מחיקת `rate_limit_debug.txt`
+  (שומר headers וגוף תגובה).
+- **הדשבורד:** סיסמה אחת, השוואה ב-constant time, session חתום (`HttpOnly`, `Secure`,
+  `SameSite=Lax`), הגבלת ניסיונות התחברות, CSRF token על כל POST ("הרץ כעת", הגדרות),
+  headers אבטחה (CSP, `X-Frame-Options`), שגיאות גנריות למשתמש.
+- **HTTPS** — מ-Railway.
+
 ## 3. מודל הציון (ברירות מחדל — ר' החלטות D8, D9)
 
 **לכל קריטריון:** `PASS` / `FAIL` / `NA` + `strength` בין 0 ל-1:
@@ -178,7 +199,13 @@ CSV גולמיים נשמרים לכל ריצה ב-`runs/<run_id>/`; נשמרו�
 | `fastapi`, `uvicorn[standard]`, `jinja2`, `python-multipart`, `itsdangerous` | שרת, תבניות, טפסים, session חתום |
 | `apscheduler` (3.x) | תזמון בתוך התהליך |
 | `pytest`, `ruff` (dev) | טסטים ו-lint ל-gate |
-| ECharts, Alpine.js (CDN, גרסה נעולה) | גרפים ואינטראקטיביות בלי build |
+| gitleaks (בינארי, hook מקומי) | סריקת סודות לפני קומיט |
+| Tabler `@tabler/core@1.0.0` (RTL) + Tabler Icons `3.19.0` | ספריית רכיבי דשבורד מוכנה: RTL מובנה, מצב כהה, טבלאות, טפסים, כרטיסים |
+| ECharts `5.5.1`, Alpine.js `3.14.1` | גרפים; אינטראקטיביות קלה. בלי build |
+| גופנים: Heebo, JetBrains Mono (Google Fonts) | עברית; ספרות ברוחב קבוע |
+
+הנכסים יוגשו מקומית מ-`web/static/vendor/` (גרסאות נעולות) ולא מ-CDN בזמן ריצה — CSP הדוק יותר
+ותלות פחותה בשירות חיצוני. תצוגה מקדימה: `design/dashboard-preview.html`.
 
 | מסירים | למה |
 |---|---|

@@ -27,3 +27,6 @@ screenshots/
 cookies.txt
 *cookies*.txt
 !cookies.example.txt
+
+# Playwright MCP artifacts
+.playwright-mcp/

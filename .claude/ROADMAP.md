@@ -37,7 +37,7 @@
 
 - [ ] **A1** — ענף, gate ותלויות פיתוח
   - Goal: סביבת עבודה שאפשר לאמת בה כל צעד.
-  - Done when: D0 בוצע; ענף `v2` קיים; `pytest` ו-`ruff` מותקנים; `uv run ruff check . && uv run pytest -q` עובר (הטסט הקיים כלול); הפקודה רשומה ב-CLAUDE.md.
+  - Done when: D0 בוצע; ענף `v2` קיים; `pytest` ו-`ruff` מותקנים; hook של gitleaks פעיל ונבדק עם סוד מזויף; Push Protection של GitHub מופעל; `uv run ruff check . && uv run pytest -q` עובר (הטסט הקיים כלול); הפקודה רשומה ב-CLAUDE.md.
   - Depends on: D0, D12, D15
 - [ ] **A2** — fixtures ותמונת מצב
   - Goal: בסיס להשוואה לפני שמשנים לוגיקה.
@@ -111,7 +111,7 @@
 ## שלב 4 — אתר
 
 - [ ] **E1** — שלד, התחברות, עיצוב בסיס
-  - Done when: FastAPI עם התחברות לפי D11; layout לפי D10 עם מצב כהה ומסך צר; עמוד ריק עולה מקומית.
+  - Done when: FastAPI עם התחברות לפי D11 ואמצעי האבטחה בתוכנית §2א; layout ב-Tabler RTL לפי `design/dashboard-preview.html` עם מצב כהה ומסך צר; נכסי צד-שלישי מוגשים מקומית; עמוד ריק עולה מקומית.
   - Depends on: D1, D10, D11
 - [ ] **E2** — מסך ראשי
   - Done when: כרטיסי סיכום, פיזור איכות↔הזדמנות, מטריצה, סינונים; נבדק בדפדפן על נתוני ריצה אמיתית.

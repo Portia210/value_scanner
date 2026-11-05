@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-bs-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>סורק ערך — תצוגה מקדימה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler.rtl.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  :root { --tblr-font-sans-serif: "Heebo", system-ui, sans-serif; --pass: #2fb344; --near: #f59f00; --fail: #d63939; }
+  body { font-feature-settings: "tnum"; }
+  .ltr { direction: ltr; unicode-bidi: isolate; }
+  .num { font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+  .demo-banner { background: var(--tblr-warning-lt); color: var(--tblr-warning); font-size: .8rem; text-align: center; padding: .25rem; }
+  .pill { display: inline-block; min-width: 2.6rem; padding: .15rem .45rem; border-radius: 999px; font-size: .75rem; font-weight: 600; text-align: center; }
+  .pill.p { background: color-mix(in srgb, var(--pass) 16%, transparent); color: var(--pass); }
+  .pill.n { background: color-mix(in srgb, var(--near) 18%, transparent); color: #b87700; }
+  .pill.f { background: color-mix(in srgb, var(--fail) 14%, transparent); color: var(--fail); }
+  [data-bs-theme="dark"] .pill.n { color: var(--near); }
+  .gauge { position: relative; height: 8px; border-radius: 4px; background: var(--tblr-bg-surface-secondary); }
+  .gauge .zone { position: absolute; top: 0; bottom: 0; border-radius: 4px; background: color-mix(in srgb, var(--pass) 22%, transparent); }
+  .gauge .thr { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--tblr-body-color); opacity: .5; }
+  .gauge .val { position: absolute; top: -3px; width: 14px; height: 14px; border-radius: 50%; transform: translateX(50%); border: 2px solid var(--tblr-bg-surface); }
+  .crit-row + .crit-row { border-top: 1px solid var(--tblr-border-color); }
+  .kpi .subheader { font-size: .75rem; }
+  #scatter { height: 380px; }
+  .table td, .table th { vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="demo-banner">תצוגה מקדימה של העיצוב · כל המספרים בדף הם נתוני דמה</div>
+<div class="page">
+  <header class="navbar navbar-expand-md d-print-none">
+    <div class="container-xl">
+      <a class="navbar-brand fw-bold" href="#"><i class="ti ti-scale me-2 text-primary"></i>סורק ערך</a>
+      <ul class="navbar-nav flex-row gap-1 d-none d-md-flex">
+        <li class="nav-item active"><a class="nav-link" href="#"><i class="ti ti-layout-dashboard me-1"></i>דשבורד</a></li>
+        <li class="nav-item"><a class="nav-link" href="#"><i class="ti ti-list-details me-1"></i>מניות</a></li>
+        <li class="nav-item"><a class="nav-link" href="#"><i class="ti ti-history me-1"></i>ריצות</a></li>
+        <li class="nav-item"><a class="nav-link" href="#"><i class="ti ti-math-function me-1"></i>איך זה מחושב</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-secondary small d-none d-lg-inline"><i class="ti ti-clock me-1"></i>עודכן לפני יומיים · הבאה בעוד 3 ימים</span>
+        <button class="btn btn-primary btn-sm"><i class="ti ti-player-play me-1"></i>הרץ כעת</button>
+        <button class="btn btn-ghost-secondary btn-icon btn-sm" id="themeToggle" aria-label="מצב כהה"><i class="ti ti-moon"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="page-header">
+      <div class="container-xl">
+        <div class="row align-items-center g-2">
+          <div class="col">
+            <div class="page-pretitle">ריצה #42 · 110 מניות · נתונים נכון ל-03.11.2026</div>
+            <h2 class="page-title">מי עומדת בהכי הרבה קריטריונים, ובכמה היא זולה</h2>
+          </div>
+          <div class="col-auto d-flex gap-2">
+            <select class="form-select form-select-sm"><option>כל הסקטורים</option><option>Technology</option><option>Industrials</option></select>
+            <select class="form-select form-select-sm"><option>כל הסוגים</option><option>טכנולוגיה/פארמה</option><option>מחזורית</option><option>רגילה</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <div class="container-xl">
+        <div class="row row-cards">
+          <div class="col-6 col-lg-3"><div class="card kpi"><div class="card-body">
+            <div class="subheader">מניות שנסרקו</div>
+            <div class="h1 mb-0 num">110</div>
+            <div class="text-secondary small">2 נכשלו בהורדה</div>
+          </div></div></div>
+          <div class="col-6 col-lg-3"><div class="card kpi"><div class="card-body">
+            <div class="subheader">איכות ≥ 70%</div>
+            <div class="h1 mb-0 num">18</div>
+            <div class="text-success small"><i class="ti ti-trending-up"></i> 3+ מהריצה הקודמת</div>
+          </div></div></div>
+          <div class="col-6 col-lg-3"><div class="card kpi"><div class="card-body">
+            <div class="subheader">מרווח ביטחון ≥ 20%</div>
+            <div class="h1 mb-0 num">11</div>
+            <div class="text-secondary small">לפי חציון רכיבי ההזדמנות</div>
+          </div></div></div>
+          <div class="col-6 col-lg-3"><div class="card kpi card-borderless" style="background: color-mix(in srgb, var(--pass) 10%, var(--tblr-bg-surface));"><div class="card-body">
+            <div class="subheader">מועמדות לקנייה</div>
+            <div class="h1 mb-0 num text-success">4</div>
+            <div class="text-secondary small">איכות ≥ 70% וגם MoS ≥ 20%</div>
+          </div></div></div>
+
+          <div class="col-lg-8"><div class="card">
+            <div class="card-header"><h3 class="card-title">איכות מול הזדמנות</h3>
+              <div class="card-actions text-secondary small">גודל העיגול = שווי שוק</div></div>
+            <div class="card-body"><div id="scatter"></div></div>
+          </div></div>
+
+          <div class="col-lg-4"><div class="card h-100">
+            <div class="card-header"><h3 class="card-title">מועמדות לקנייה</h3></div>
+            <div class="list-group list-group-flush" id="candidates"></div>
+          </div></div>
+
+          <div class="col-12"><div class="card">
+            <div class="card-header"><h3 class="card-title">מטריצת קריטריונים</h3>
+              <div class="card-actions"><input class="form-control form-control-sm" placeholder="חיפוש סימול" style="width:10rem"></div></div>
+            <div class="table-responsive">
+              <table class="table table-vcenter card-table table-hover">
+                <thead><tr><th>מניה</th><th>סוג</th><th class="text-center">סינון</th><th class="text-center">גראהם</th><th class="text-center">פישר</th><th class="text-center">פיוטרוסקי</th><th style="width:18%">איכות</th><th class="text-end">מרווח ביטחון</th></tr></thead>
+                <tbody id="matrix"></tbody>
+              </table>
+            </div>
+          </div></div>
+
+          <div class="col-lg-7"><div class="card">
+            <div class="card-header">
+              <div><h3 class="card-title">CSW · גראהם</h3><div class="text-secondary small">דף מניה — כל קריטריון מול הסף</div></div>
+              <div class="card-actions"><span class="pill p">6/7</span></div>
+            </div>
+            <div class="card-body" id="criteria"></div>
+          </div></div>
+
+          <div class="col-lg-5"><div class="card">
+            <div class="card-header"><h3 class="card-title">CSW · מגמות 5 שנים</h3></div>
+            <div class="card-body"><div id="trend" style="height:300px"></div></div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script>
+const stocks = [
+  ["CSW","Industrials","רגילה",0.86,0.34,[8,8],[6,7],[5,6],[7,8],5.1],
+  ["DCI","Industrials","רגילה",0.81,0.27,[8,8],[6,7],[4,6],[6,8],7.8],
+  ["UTHR","Healthcare","פארמה",0.78,0.31,[8,8],[5,6],[5,6],[5,8],15.2],
+  ["GNTX","Cons. Disc.","מחזורית",0.74,0.22,[7,8],[5,7],[4,6],[6,8],6.4],
+  ["SNA","Industrials","רגילה",0.69,0.12,[8,8],[5,7],[3,6],[6,8],17.5],
+  ["MPWR","Technology","טכנולוגיה",0.83,-0.21,[8,8],[4,6],[4,6],[7,8],30.1],
+  ["NVDA","Technology","טכנולוגיה",0.88,-0.46,[8,8],[3,6],[4,6],[7,8],180],
+  ["CPRT","Industrials","רגילה",0.76,-0.18,[8,8],[4,7],[3,6],[6,8],45],
+  ["FAST","Industrials","רגילה",0.72,-0.33,[8,8],[4,7],[3,6],[5,8],47],
+  ["DHI","Cons. Disc.","מחזורית",0.58,0.29,[7,8],[5,7],[3,6],[3,8],48],
+  ["PHM","Cons. Disc.","מחזורית",0.61,0.33,[7,8],[5,7],[3,6],[4,8],24],
+  ["TROW","Financials","פיננסית",0.55,0.18,[6,8],[4,5],[2,4],[4,8],22],
+  ["LULU","Cons. Disc.","מחזורית",0.67,0.08,[8,8],[4,7],[3,6],[5,8],20],
+  ["AMAT","Technology","טכנולוגיה",0.71,-0.05,[8,8],[4,6],[3,6],[5,8],140],
+  ["COLM","Cons. Disc.","מחזורית",0.42,0.15,[6,8],[3,7],[2,6],[3,8],4.6],
+  ["OLLI","Cons. Staples","רגילה",0.49,-0.12,[7,8],[3,7],[3,6],[4,8],6.8],
+  ["VEEV","Technology","טכנולוגיה",0.64,-0.38,[8,8],[3,6],[3,6],[6,8],38],
+  ["MNST","Cons. Staples","רגילה",0.66,-0.28,[8,8],[3,7],[4,6],[5,8],55],
+  ["AFG","Financials","פיננסית",0.47,0.05,[6,8],[3,5],[2,4],[3,8],10.5],
+  ["KEYS","Technology","טכנולוגיה",0.52,-0.09,[7,8],[3,6],[3,6],[4,8],27],
+];
+const QMIN = 0.7, MMIN = 0.2;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const pillCls = ([a,b]) => a/b >= .8 ? "p" : a/b >= .55 ? "n" : "f";
+const pct = v => (v>0?"+":"") + Math.round(v*100) + "%";
+
+document.getElementById("matrix").innerHTML = [...stocks].sort((a,b)=>b[3]-a[3]).slice(0,10).map(s => `
+  <tr><td><div class="fw-semibold num">${s[0]}</div><div class="text-secondary small"><bdi class="ltr">${s[1]}</bdi></div></td>
+  <td><span class="badge bg-secondary-lt">${s[2]}</span></td>
+  ${[5,6,7,8].map(i=>`<td class="text-center"><span class="pill ${pillCls(s[i])} num">${s[i][0]}/${s[i][1]}</span></td>`).join("")}
+  <td><div class="d-flex align-items-center gap-2"><div class="progress progress-sm flex-fill"><div class="progress-bar ${s[3]>=QMIN?"bg-success":"bg-secondary"}" style="width:${s[3]*100}%"></div></div><span class="num small">${Math.round(s[3]*100)}</span></div></td>
+  <td class="text-end num ${s[4]>=MMIN?"text-success":s[4]<0?"text-danger":""}">${pct(s[4])}</td></tr>`).join("");
+
+document.getElementById("candidates").innerHTML = stocks.filter(s=>s[3]>=QMIN&&s[4]>=MMIN).sort((a,b)=>b[4]-a[4]).map(s=>`
+  <div class="list-group-item"><div class="row align-items-center">
+    <div class="col-auto"><span class="avatar bg-success-lt num">${s[0].slice(0,2)}</span></div>
+    <div class="col"><div class="fw-semibold num">${s[0]}</div><div class="text-secondary small">${s[2]} · <bdi class="ltr">${s[1]}</bdi></div></div>
+    <div class="col-auto text-end"><div class="num text-success fw-semibold">${pct(s[4])}</div><div class="text-secondary small num">איכות ${Math.round(s[3]*100)}</div></div>
+  </div></div>`).join("");
+
+const crit = [
+  ["הכנסות > 350M$", "$1,190M", 350, 1190, 0, 1500, "gt"],
+  ["יחס שוטף ≥ 2", "3.4", 2, 3.4, 0, 5, "gt"],
+  ["הון חוזר > חוב לז\"א", "410 / 236", 236, 410, 0, 600, "gt"],
+  ["P/E < 15 (מחיר נוכחי)", "13.1", 15, 13.1, 0, 30, "lt"],
+  ["P/E × P/B < 22", "19.6", 22, 19.6, 0, 40, "lt"],
+  ["צמיחת EPS (2 ראשונות→2 אחרונות) > 30%", "41%", 30, 41, 0, 80, "gt"],
+  ["אף שנה הפסדית ב-5 שנים", "0 שנים", null, null, 0, 1, "bool"],
+];
+document.getElementById("criteria").innerHTML = crit.map(([name, shown, thr, val, lo, hi, op]) => {
+  if (op === "bool") return `<div class="crit-row py-2 d-flex justify-content-between"><span>${name}</span><span class="pill p">עובר</span></div>`;
+  const pos = v => Math.max(0, Math.min(100, (v-lo)/(hi-lo)*100));
+  const ok = op==="gt" ? val>thr : val<thr;
+  const margin = Math.abs(val-thr)/thr;
+  const color = !ok ? "var(--fail)" : margin < .2 ? "var(--near)" : "var(--pass)";
+  const zone = op==="gt" ? `right:${pos(thr)}%;left:0` : `right:0;width:${pos(thr)}%`;
+  return `<div class="crit-row py-2">
+    <div class="d-flex justify-content-between mb-2"><span>${name}</span><span class="num fw-semibold">${shown}</span></div>
+    <div class="gauge" dir="ltr"><div class="zone" style="${op==="gt"?`left:${pos(thr)}%;right:0`:`left:0;width:${pos(thr)}%`}"></div>
+      <div class="thr" style="left:${pos(thr)}%"></div><div class="val" style="left:calc(${pos(val)}% - 7px);transform:none;background:${color}"></div></div>
+    <div class="d-flex justify-content-between text-secondary small mt-1"><span>${ok ? (margin<.2?"עובר, קרוב לסף":"עובר בביטחון") : "נכשל"}</span><span class="num">סף ${thr}</span></div>
+  </div>`;
+}).join("");
+
+let charts = [];
+function draw() {
+  charts.forEach(c => c.dispose());
+  const text = css("--tblr-body-color"), muted = css("--tblr-secondary"), grid = css("--tblr-border-color");
+  const sc = echarts.init(document.getElementById("scatter"));
+  sc.setOption({
+    textStyle: { fontFamily: "Heebo" },
+    grid: { left: 48, right: 24, top: 16, bottom: 44 },
+    tooltip: { formatter: p => `<b>${p.data[2]}</b><br>איכות ${Math.round(p.data[0]*100)} · MoS ${pct(p.data[1])}` },
+    xAxis: { name: "איכות (ציון קריטריונים)", nameLocation: "middle", nameGap: 28, min: .3, max: 1, nameTextStyle:{color:muted},
+             axisLabel: { color: muted, formatter: v => Math.round(v*100) }, splitLine: { lineStyle: { color: grid } } },
+    yAxis: { name: "מרווח ביטחון", nameLocation: "middle", nameGap: 36, min: -.6, max: .5, nameTextStyle:{color:muted},
+             axisLabel: { color: muted, formatter: v => Math.round(v*100)+"%" }, splitLine: { lineStyle: { color: grid } } },
+    series: [{
+      type: "scatter",
+      data: stocks.map(s => [s[3], s[4], s[0], s[9]]),
+      symbolSize: d => 8 + Math.sqrt(d[3]) * 2.2,
+      itemStyle: { color: p => (p.data[0]>=QMIN && p.data[1]>=MMIN) ? css("--pass") : muted, opacity: .85 },
+      label: { show: true, formatter: p => (p.data[0]>=QMIN && p.data[1]>=MMIN) || p.data[0]>.8 ? p.data[2] : "", position: "top", color: text, fontSize: 11, fontFamily: "JetBrains Mono" },
+      markArea: { silent: true, itemStyle: { color: css("--pass"), opacity: .08 },
+        label: { show: true, position: "insideTopRight", formatter: "רבע הקנייה", color: css("--pass") },
+        data: [[{ xAxis: QMIN, yAxis: MMIN }, { xAxis: 1, yAxis: .5 }]] },
+      markLine: { silent: true, symbol: "none", lineStyle: { type: "dashed", color: muted, opacity: .6 }, label: { show: false },
+        data: [{ xAxis: QMIN }, { yAxis: MMIN }, { yAxis: 0 }] },
+    }],
+  });
+  const tr = echarts.init(document.getElementById("trend"));
+  tr.setOption({
+    textStyle: { fontFamily: "Heebo" },
+    legend: { top: 0, textStyle: { color: muted } },
+    grid: { left: 40, right: 40, top: 36, bottom: 28 },
+    tooltip: { trigger: "axis" },
+    xAxis: { type: "category", data: ["2021","2022","2023","2024","2025"], axisLabel: { color: muted } },
+    yAxis: [{ type: "value", name: "EPS $", nameTextStyle:{color:muted}, axisLabel: { color: muted }, splitLine: { lineStyle: { color: grid } } },
+            { type: "value", name: "שולי רווח %", nameTextStyle:{color:muted}, axisLabel: { color: muted }, splitLine: { show: false } }],
+    series: [
+      { name: "EPS", type: "bar", data: [5.1, 6.4, 8.2, 8.9, 9.6], itemStyle: { color: css("--tblr-primary"), borderRadius: [4,4,0,0] } },
+      { name: "שולי רווח נקי", type: "line", yAxisIndex: 1, smooth: true, data: [13.2, 14.1, 15.8, 16.4, 17.0], itemStyle: { color: css("--pass") } },
+    ],
+  });
+  charts = [sc, tr];
+}
+draw();
+window.addEventListener("resize", () => charts.forEach(c => c.resize()));
+document.getElementById("themeToggle").addEventListener("click", () => {
+  const h = document.documentElement;
+  h.dataset.bsTheme = h.dataset.bsTheme === "dark" ? "light" : "dark";
+  draw();
+});
+</script>
+</body>
+</html>

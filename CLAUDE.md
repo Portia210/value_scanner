@@ -12,7 +12,8 @@ StockAnalysis.com, checks each stock against the guru criteria from the develope
 opportunity. **Being rebuilt as v2:** an online dashboard on Railway with scheduled runs —
 see `.claude/plans/v2-rebuild.md`.
 **Stack:** Python ≥3.11, uv, pandas, httpx, Playwright, BeautifulSoup. v2 adds FastAPI,
-Jinja, APScheduler, SQLite, ECharts (pending D12).
+Jinja, APScheduler, SQLite (WAL), and in the UI Tabler (RTL) + ECharts + Alpine.js served
+from `web/static/vendor/`. Design reference: `design/dashboard-preview.html`.
 **Environment:** WSL Ubuntu locally; target Railway (Docker, Playwright base image, volume at `/data`).
 **Course material (source of the criteria):** `/mnt/c/Users/hp/Documents/השקעות ערך/שיעור-*.md`.
 The lessons flag conflicts between the PDF and the developer's summary — never pick one
