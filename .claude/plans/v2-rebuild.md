@@ -25,13 +25,14 @@
 3. **הספים בקובץ אחד.** כל קונפליקט בין ה-PDF לסיכום הוא וריאנט בקובץ הספים, עם ברירת מחדל
    שנבחרה ב-ROADMAP.
 4. **נתונים חסרים ≠ עובר.** קריטריון שאי אפשר לחשב הוא `NA`, לא נספר בציון, ומוצג ככזה.
-5. **המחיר הנוכחי לתמחור, השנים המלאות ליציבות.** מכפילים ושווי שוק — מעמודת `Current`.
-   ממוצעים ומגמות — מ-5 שנות FY.
+5. **המחיר הנוכחי לתמחור, השנים המלאות ליציבות.** מחיר, מכפילים ושווי שוק — מה-JSON של הסורק (`priceDate` של היום);
+   ממוצעים ומגמות — מ-5 שנות FY. (עמוד ה-ratios האנונימי מיושן; ר' GOTCHAS.)
 6. **הסריקה והאתר מופרדים בקוד,** גם אם רצים באותו תהליך: האתר קורא רק מה-DB.
+7. **הכול במסד נתונים אחד.** אין תיקיית נתונים על הדיסק; המערכת לא כותבת CSV, JSON או עוגיות.
 
 ## 2. ארכיטקטורת יעד
 
-שירות Railway אחד, Docker על בסיס האימג' הרשמי של Playwright ל-Python:
+שירות Railway אחד, Docker על python slim (בלי דפדפן: אין התחברות ואין סורק דפדפן — D7):
 
 ```
 React (Vite build, Mantine) ── קבצים סטטיים שמוגשים ע"י FastAPI באותו דומיין
@@ -41,27 +42,25 @@ FastAPI (uvicorn) ── API של JSON בלבד: ציונים, קריטריונ�
    ├── APScheduler (בתוך התהליך) ── בודק כל 15 דק' אם עברו N ימים מהריצה המוצלחת האחרונה
    │
    └── Run (משימת רקע אחת בכל רגע — נעילה ב-DB)
-         login (Playwright headless) → screener → financials (httpx) →
+         screener JSON (httpx) → מסננים בקוד → דוחות (httpx, לאט, רק מה שהתיישן) →
          classify → criteria → scores → כתיבה ל-SQLite
                                                    │
-                                Volume של Railway: /data
-                                  ├── app.db (SQLite)
-                                  ├── runs/<run_id>/<SYMBOL>/*.csv
-                                  └── cookies.txt
+                         Volume של Railway ← קובץ אחד: value_scanner.db (SQLite, מצב WAL)
+                         אין תיקיית נתונים, אין CSV/JSON/עוגיות על הדיסק
 ```
 
 ### מבנה תיקיות יעד
 
 ```
 value_scanner/
-  settings.py            # כל הנתיבים והסודות מ-env; DATA_DIR אבסולוטי
+  settings.py            # הגדרות וסודות מ-env בלבד: DB_PATH, MY_EMAIL, ...
   cli.py                 # python -m value_scanner run | serve
-  scraper/
-    browser.py           # Playwright headless (מצומצם מ-playwright_utils)
-    auth.py, cookies.py  # login אחד, שמירת עוגיות ב-DATA_DIR
-    screener.py          # רשימת המניות, pagination חסום, dedupe סדרות מניה
-    financials.py        # httpx, ניסיונות מוגבלים, כתיבה לתיקיית הריצה
+  sources/               # ממשק ספק נתונים; כל ספק מחזיר אובייקטים, לא קבצים
+    base.py              # Provider: universe(), prices(), statements(symbol), filings(symbol)
+    stockanalysis.py     # JSON של הסורק + עמודי דוחות (httpx; ניסיונות מוגבלים, קצב איטי)
     html_table.py        # parse + ניקוי (מ-utils/pd_helpers, df_cleaner)
+    sec.py               # רשימת דוחות, הורדת 10-K/20-F וחיתוך פרקים (MY_EMAIL ב-User-Agent)
+  profile/gemini.py      # פרופיל עסקי (E7)
   analysis/
     statements.py        # טעינת 4 הדוחות לאובייקט אחד: fy(n), current(), ttm()
     rows.py              # שמות השורות (היום: enums/)
@@ -84,41 +83,47 @@ frontend/                # Vite + React + TypeScript + Mantine + ECharts + TanSt
   src/api/               # types שנוצרו מ-OpenAPI (openapi-typescript) + client
   src/pages/             # Dashboard, Stock, Runs, Criteria, Login
 tests/
-  fixtures/              # CSV מוקפאים לכמה מניות + מקרי קצה סינתטיים
+  factories.py           # נתונים סינתטיים לטסטים (DB בזיכרון); אין נתוני אמת ב-git
 Dockerfile, .env.example
 ```
 
 `playwright_utils/`, `pipeline/`, `reports_checks/`, `company_classifiers/`, `utils/`, `enums/`,
 `constants/`, `main.py`, `config.py` מתפרקים לתוך המבנה החדש ונמחקים כשריקים.
 
-### נתונים (SQLite)
+### נתונים — הכול במסד נתונים אחד
 
-| טבלה | תוכן |
-|---|---|
-| `settings` | `run_interval_days`, וריאנטי ספים פעילים, משקלים |
-| `runs` | id, trigger (`schedule`/`manual`), started/finished, status, progress, מניות ok/failed, `data_as_of`, לוג |
-| `companies` | symbol, שם, סקטור, ענף, beta, סיווג + נימוקים (לכל ריצה) |
-| `results` | run_id, symbol, guru, criterion_id, value, threshold, op, status, strength, note |
-| `scores` | run_id, symbol, ציון לכל גורו + כיסוי, quality, opportunity, רכיבי MoS |
+אין תיקיית `data/`, ואין קבצי CSV, JSON או עוגיות בדיסק. כל מה שהמערכת מביאה או מחשבת נשמר ב-SQLite
+(קובץ אחד, `DB_PATH`).
 
-CSV גולמיים נשמרים לכל ריצה ב-`runs/<run_id>/`; נשמרות 10 הריצות האחרונות.
+| קבוצה | טבלאות | תוכן |
+|---|---|---|
+| הגדרות ותפעול | `settings`, `runs`, `run_log`, `alerts`, `parse_failures` | מספר ימים בין ריצות וספים; ריצות (סוג, מי הפעיל, סטטוס, התקדמות); לוג חי; היסטוריית התראות; דוגמית קצרה מכל כשל פענוח (בלי headers), כדי לדעת מה לתקן |
+| חברות | `companies` | symbol, שם, מדינה, בורסה, sector ו-industry (מהסורק), תיאור SIC ו-CIK (מה-SEC), מתי נראתה לראשונה ולאחרונה |
+| מחירים ומסננים | `screener_snapshots` | לכל ריצה ולכל מניה שבמעקב או "כמעט" (נכשלת בעד 2 מסננים): מחיר, `priceDate`, שווי שוק, P/E, P/S, P/B, P/OCF, P/E ממוצע 5Y, תאריכי דוחות, ושמונת שדות הסינון |
+| דוחות כספיים | `statement_fetches`, `statement_values` | הורדה = שורה אחת (מניה, סוג דוח, מועד, מקור, תקופת הדוח האחרונה); הערכים בפורמט ארוך (פריט, תקופה, ערך). נשמרות 4 ההורדות האחרונות לכל מניה ודוח, כדי לראות תיקוני דוחות |
+| תוצאות | `classifications`, `results`, `scores` | סיווג ונימוקים; כל קריטריון (גורו, מזהה, ערך, סף, סטטוס, strength, הערה); ציון לגורו, איכות והזדמנות ורכיביה. נשמרות כל הריצות, כדי לראות איך ציון של מניה השתנה |
+| מעקב | `membership_events` | כניסה או יציאה מהסינון: מניה, כיוון, סוג סיבה (`price` / `report` / `new_symbol` / `delisted` / `data`), פירוט (איזה מסנן התהפך, ערך לפני ואחרי), ריצה (E6) |
+| פרופילים | `profiles` | טקסט הפרופיל, מזהה הדוח (accession), תאריך ההגשה, קישור למקור, מודל וגרסת פרומפט (E7). טקסט הדוח הגולמי לא נשמר: אפשר להוריד אותו שוב מה-SEC |
 
-**למה SQLite ולא Postgres:** כותב אחד (הריצה), קורא אחד (האתר), נפח זעיר — בערך 110 מניות ×
-~35 קריטריונים לריצה. Postgres היה מוסיף שירות ועלות בלי תועלת. נדרש רק אם יהיו כמה מופעים.
-מצב WAL כדי שהאתר יקרא בזמן שהריצה כותבת.
-**גיבוי:** Volume Backups של Railway (קיים, ר' docs.railway.com/volumes/backups) + כפתור ייצוא
-CSV/JSON של תוצאות הריצה בדשבורד. **מקומית:** אותו מבנה תחת `DATA_DIR=./var` (ב-`.gitignore`).
+**מדיניות שמירה:** `run_log` — 90 יום; `screener_snapshots` — 400 יום; דוחות — 4 הורדות אחרונות; כל השאר
+נשמר. הנפח הצפוי: כמה עשרות MB בשנה. **ייצוא:** כפתור בדשבורד שמייצר CSV או JSON לפי דרישה מהמסד, בלי
+לשמור קובץ.
+
+**למה SQLite ולא Postgres:** כותב אחד (הריצה), קורא אחד (האתר), נפח קטן; מצב WAL כדי שהאתר יקרא בזמן
+שהריצה כותבת. **פתוח לעתיד:** הסכמה נכתבת ב-SQL נייד ושכבת ה-repository היא הנקודה היחידה שמדברת עם
+ה-DB, כך שמעבר ל-Postgres (שירות של Railway) יהיה העתקת נתונים והחלפת חיבור, בלי שינוי בלוגיקה.
+**גיבוי:** Volume Backups של Railway. **מקומית:** `DB_PATH=./var/value_scanner.db` (ב-`.gitignore`).
 שום נתון לא נכנס ל-git.
 
 ## 2א. אבטחה (הריפו ציבורי)
 
 - **סודות רק במשתני סביבה:** מקומית ב-`.env` (ב-`.gitignore`), בשרת ב-Railway Variables.
-  `.env.example` עם שמות וערכי דמה בלבד. לשרת עוברים רק `STOCK_ANALYSIS_EMAIL`,
-  `STOCK_ANALYSIS_PASSWORD`, `DASHBOARD_PASSWORD`, `SESSION_SECRET`, `DATA_DIR`.
+  `.env.example` עם שמות וערכי דמה בלבד. לשרת עוברים רק: `DASHBOARD_PASSWORD`, `SESSION_SECRET`,
+  `DB_PATH`, `GOOGLE_API_KEY` (פרופילים), `MY_EMAIL` (נמען ההתראות וכתובת הקשר מול ה-SEC; לא נכנס לקוד
+  או ל-git) ופרטי שליחת המייל (`SMTP_*`, ייקבע ב-B4). אין סיסמת StockAnalysis ואין עוגיות (D7).
 - **סריקת סודות לפני כל קומיט:** hook של detect-secrets ב-`.githooks/pre-commit` + Secret Scanning
   Push Protection של GitHub (חינמי לריפו ציבורי) — מופעל ונבדק ב-A1.
-- **עוגיות StockAnalysis** רק ב-`DATA_DIR`, אף פעם לא בלוג. מחיקת `rate_limit_debug.txt`
-  (שומר headers וגוף תגובה).
+- **לוגים** לא כוללים headers או `MY_EMAIL`. דוגמית של פענוח שנכשל נשמרת ב-DB בלי headers.
 - **הדשבורד:** סיסמה אחת, השוואה ב-constant time, session חתום (`HttpOnly`, `Secure`,
   `SameSite=Lax`), הגבלת ניסיונות התחברות, CSRF token על כל POST ("הרץ כעת", הגדרות),
   headers אבטחה (CSP, `X-Frame-Options`), שגיאות גנריות למשתמש.
@@ -154,18 +159,19 @@ CSV/JSON של תוצאות הריצה בדשבורד. **מקומית:** אותו
 
 ### שלב 0 — יסודות (לא תלוי בהחלטות)
 - **A1** טיפול בשינויים הלא מקומטים (D0), ענף `v2`, pytest + ruff, gate.
-- **A2** fixtures: הקפאת CSV של ~8 מניות שמייצגות מקרים (טק, תעשייה, פיננסים, שנת הפסד,
-  `BRK.A`, חסר מו"פ, P/E גבוה) + טסט "תמונת מצב" של התוצאות הנוכחיות — בסיס להשוואה.
+- **A2** גיבוי מקומי של נתוני v1 ל-`var/legacy/` (לא ב-git; לצורך C9 בלבד, יימחק אחריו) ופקטוריות
+  נתונים סינתטיים לטסטים.
 - **A3** ניקוי: מחיקת קוד מת (X1–X6), תלויות שלא בשימוש (X8), הוצאת קבצים מיוצרים מ-git (X9).
 - **A4** שלד החבילה `value_scanner/` + `settings.py` (נתיבים אבסולוטיים, env), `.env.example`.
 
 ### שלב 1 — סריקה אמינה (P1–P11)
-- **B1** `financials.py`: ניסיונות מוגבלים, מניה שנכשלה מסומנת ולא תוקעת את הריצה; כל ריצה
-  כותבת לתיקייה משלה (פותר P1 בלי "resume" שבור); resume רק בתוך אותה ריצה.
-- **B2** `auth.py`: login אחד, headless, עוגיות ב-`DATA_DIR`.
-- **B3** `screener.py`: pagination חסום במספר עמודים וזמן; dedupe סדרות; תיעוד הסינון (D7).
-- **B4** `jobs/pipeline.py` + `cli.py run`: סדר נכון (סיווג אחרי הורדה), בלי `input()`,
-  סיכום ok/failed. אימות: ריצה מלאה מקומית מקצה לקצה, בלי מגע יד.
+- **B1** `sources/stockanalysis.py` (דוחות): ניסיונות מוגבלים, מניה שנכשלה מסומנת ולא תוקעת את הריצה;
+  כתיבה ל-`statement_fetches`/`statement_values`; הורדה רק כשהדוח התיישן (D18); קצב איטי.
+- **B2** בוטל — אין התחברות (D7).
+- **B3** רשימת המניות מה-JSON של הסורק: 8 המסננים בקוד, dedupe סדרות, snapshot ב-DB, זיהוי כניסות
+  ויציאות, זיהוי שינוי מבנה.
+- **B4** `jobs/pipeline.py` + `cli.py run` + התראות במייל ל-`MY_EMAIL`: סדר נכון (סיווג אחרי הורדה),
+  בלי `input()`, סיכום ok/failed. אימות: ריצה מלאה מקומית מקצה לקצה, בלי מגע יד.
 
 ### שלב 2 — מנוע הקריטריונים (R1–R13, K1–K3; תלוי בהחלטות D1–D9)
 - **C1** `criteria.py` + `thresholds.py` + `statements.py`.
@@ -181,7 +187,8 @@ CSV/JSON של תוצאות הריצה בדשבורד. **מקומית:** אותו
 כל קריטריון מקבל טסט עם ערכים בדיוק על הסף, מעליו, מתחתיו, חסר, ושלילי.
 
 ### שלב 3 — אחסון
-- **D1** סכמת SQLite, repository, retention, מיגרציה פשוטה (גרסת סכמה בטבלה).
+- **D1** סכמת SQLite מלאה לפי §2 (הכול ב-DB), repository ב-SQL נייד, גרסת סכמה, מדיניות שמירה.
+  **מבוצע מיד אחרי A4, לפני B1**, כי כל השלבים כותבים ל-DB.
 
 ### שלב 4 — אתר
 - **E1** FastAPI + התחברות בסיסמה (env) + layout: RTL, טוקני צבע, מצב כהה, מובייל.
@@ -193,8 +200,8 @@ CSV/JSON של תוצאות הריצה בדשבורד. **מקומית:** אותו
 אימות: הרצה מקומית ומעבר ידני בכל מסך ובכל כפתור, כולל מצב כהה ומסך צר.
 
 ### שלב 5 — פריסה
-- **F1** Dockerfile + healthcheck; בדיקה מקומית ב-`docker run`.
-- **F2** Railway: שירות, Volume ב-`/data`, משתני סביבה, דומיין. ריצה ראשונה מהשרת.
+- **F1** Dockerfile על python slim (בלי דפדפן) + healthcheck; בדיקה מקומית ב-`docker run`.
+- **F2** Railway: שירות, Volume לקובץ ה-DB (`DB_PATH`), משתני סביבה, דומיין. ריצה ראשונה מהשרת.
 - **F3** תיעוד סופי, מחיקת קבצי התוכנית.
 
 ## 5. תלויות (דורש אישור — D12)
@@ -222,6 +229,7 @@ CSV/JSON של תוצאות הריצה בדשבורד. **מקומית:** אותו
 | `jupyter`, `ipykernel`, `ipython` | מחברות ניסוי בלבד |
 | `scipy` | רק בקוד שבור (X3) |
 | `dotenv` | כפול ל-`python-dotenv` |
+| `playwright`, `playwright_utils/` | אין התחברות ואין דפדפן בשרת (D7); יוסרו כש-v1 יוחלף (C9) |
 
 SQLite — מהספרייה הסטנדרטית, בלי ORM.
 
@@ -233,7 +241,7 @@ SQLite — מהספרייה הסטנדרטית, בלי ORM.
 | תנאי השימוש של StockAnalysis | — | המפתח מאשר (D13) |
 | הסינון השמור בחשבון לא ידוע (P5) | אי אפשר לשחזר את רשימת המניות | D7 |
 | deploy באמצע ריצה | ריצה נקטעת | סטטוס `interrupted` ומשיכה אוטומטית ב-startup |
-| ריפו ציבורי | דליפת עוגיות/נתונים | סודות רק ב-Railway Variables; `DATA_DIR` מחוץ לריפו |
+| ריפו ציבורי | דליפת סודות או נתונים | סודות רק ב-Railway Variables; ה-DB מחוץ לריפו (`var/` ב-`.gitignore`) |
 
 ## 7. שאלות פתוחות
 ר' טבלת *Open decisions* ב-[ROADMAP](../ROADMAP.md). שלבים 0–1 לא תלויים בהן.

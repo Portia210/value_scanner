@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — הכול במסד נתונים, MY_EMAIL
+- Changed: תיעוד בלבד. `plans/v2-rebuild.md` §2: אין תיקיית נתונים; כל המידע ב-SQLite (הגדרות, חברות, snapshots של הסורק, דוחות בפורמט ארוך, תוצאות, ציונים, אירועי מעקב, פרופילים, התראות). `sources/` עם ממשק ספק במקום `scraper/`; בלי login/Playwright/עוגיות. ROADMAP: B2 בוטל, B1/B3/B4/D1/F1/F2 עודכנו; **D1 מבוצע מיד אחרי A4**.
+- Verified: עקביות המסמכים (grep); אין שינוי בקוד.
+- NOT verified: מבנה הסכמה בפועל (D1); נפח ה-DB (הערכה: עשרות MB בשנה).
+- Traps / decisions: D16 — משתנה אחד `MY_EMAIL` לנמען ההתראות ולכתובת הקשר מול ה-SEC; לא נכנס לקוד, ללוגים או ל-git. פרטי שליחת מייל (`SMTP_*`) ייקבעו ב-B4. SQLite נשאר; מעבר ל-Postgres אפשרי דרך שכבת ה-repository.
+- Next: A4 (שלד חבילה + settings), ואז D1.
+
 ## 2026-11-05 — פרופיל חברה עם Gemini נבדק
 - Changed: תיעוד (D17, E7, GOTCHAS). הפלט: `var/probe-gemini/aaon.md` (לא ב-git).
 - Verified: החיוב תוקן (ping 200). AAON: 113 שניות, ~57K טוקנים, 8/8 עובדות שנבדקו נכונות (הכנסות חוץ, זמני אספקה, שלושה לקוחות מעל 10% ב-2025, שותפי הפצה, חברות חוות שרתים שהדוח מזכיר כדוגמאות שוק ולא כלקוחות).
