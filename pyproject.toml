@@ -21,3 +21,27 @@ dependencies = [
     "scipy>=1.16.2",
     "tabulate>=0.9.0",
 ]
+
+[dependency-groups]
+dev = [
+    "detect-secrets>=1.5.0",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+# Legacy v1 code is excluded until it is replaced (ROADMAP A3-C9); new code must be clean.
+extend-exclude = [
+    "playwright_utils", "pipeline", "reports_checks", "company_classifiers", "utils",
+    "enums", "constants", "main.py", "config.py", "test_cleanup.py", "testing_scripts",
+    "tests/verify_innovation_logic.py", "design", "frontend",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "verify_*.py"]

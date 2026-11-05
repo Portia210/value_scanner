@@ -24,12 +24,15 @@ silently; they are decisions in ROADMAP.
 |---|---|
 | Install | `uv sync` then `uv run playwright install chromium` |
 | Run (current, interactive) | `uv run python main.py` |
-| Tests | `uv run python -m unittest tests.verify_innovation_logic` (until A1 adds pytest) |
-| Lint | none yet (A1 adds ruff) |
+| Tests | `uv run pytest -q` |
+| Lint | `uv run ruff check .` (`--fix` for imports/format) |
+| Secret scan hook | `git config core.hooksPath .githooks` (once per clone) |
 
-**Build gate** — after A1: `uv run ruff check . && uv run pytest -q`. Until then: the unittest command above.
+**Build gate:** `uv run ruff check . && uv run pytest -q` (+ `pnpm -C frontend build` once the frontend exists).
+The pre-commit hook (`.githooks/pre-commit`) runs detect-secrets against `.secrets.baseline` and
+refuses `.env`/cookie files. GitHub secret scanning + push protection are enabled on the repo.
 
-**Branches:** `master` — stable, developer merges. `v2` — rebuild work (pending D15).
+**Branches:** `master` — stable. `v2` — rebuild work; push freely; merge to master when v2 is deployed.
 Remote `origin` is a **public** GitHub repo.
 **Language:** code, comments, commit messages in English. Project docs under `.claude/` in
 Hebrew (CLAUDE.md and ARCHITECTURE.md in English). Dashboard UI in Hebrew RTL (pending D10).

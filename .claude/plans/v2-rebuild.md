@@ -115,7 +115,7 @@ CSV/JSON של תוצאות הריצה בדשבורד. **מקומית:** אותו
 - **סודות רק במשתני סביבה:** מקומית ב-`.env` (ב-`.gitignore`), בשרת ב-Railway Variables.
   `.env.example` עם שמות וערכי דמה בלבד. לשרת עוברים רק `STOCK_ANALYSIS_EMAIL`,
   `STOCK_ANALYSIS_PASSWORD`, `DASHBOARD_PASSWORD`, `SESSION_SECRET`, `DATA_DIR`.
-- **סריקת סודות לפני כל קומיט:** hook של gitleaks ב-`.git/hooks/pre-commit` + Secret Scanning
+- **סריקת סודות לפני כל קומיט:** hook של detect-secrets ב-`.githooks/pre-commit` + Secret Scanning
   Push Protection של GitHub (חינמי לריפו ציבורי) — מופעל ונבדק ב-A1.
 - **עוגיות StockAnalysis** רק ב-`DATA_DIR`, אף פעם לא בלוג. מחיקת `rate_limit_debug.txt`
   (שומר headers וגוף תגובה).
@@ -204,7 +204,7 @@ CSV/JSON של תוצאות הריצה בדשבורד. **מקומית:** אותו
 | `fastapi`, `uvicorn[standard]`, `jinja2`, `python-multipart`, `itsdangerous` | שרת, תבניות, טפסים, session חתום |
 | `apscheduler` (3.x) | תזמון בתוך התהליך |
 | `pytest`, `ruff` (dev) | טסטים ו-lint ל-gate |
-| gitleaks (בינארי, hook מקומי) | סריקת סודות לפני קומיט |
+| detect-secrets (dev) | סריקת סודות לפני קומיט |
 | Node 20 + pnpm, Vite, React, TypeScript | ממשק (הוחלט 2026-11-05: React + Mantine במקום Jinja + Tabler) |
 | `@mantine/core`, `@mantine/hooks`, `@mantine/notifications`, `@tabler/icons-react` | ספריית רכיבים מוכנה עם RTL רשמי ומצב כהה |
 | `echarts` + `echarts-for-react` | גרפים (פיזור עם רבע קנייה, מגמות) |

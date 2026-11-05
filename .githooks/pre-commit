@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Block commits that add secrets. Installed via: git config core.hooksPath .githooks
+set -euo pipefail
+files=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$files" ] && exit 0
+for f in $files; do
+  case "$f" in
+    .env|.env.*|*cookies*.txt) [ "$f" = ".env.example" ] || { echo "pre-commit: refusing to commit $f"; exit 1; } ;;
+  esac
+done
+# shellcheck disable=SC2086
+uv run --quiet detect-secrets-hook --baseline .secrets.baseline $files
