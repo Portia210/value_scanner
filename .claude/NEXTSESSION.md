@@ -12,6 +12,12 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — C1 (חלקי): מודל קריטריון וטעינת דוחות
+- Changed: `analysis/criteria.py` (`Status`, `Criterion`, `Result`, `strength`, `evaluate`, `compare`; NA לערך חסר/NaN), `analysis/statements.py` (`Statements.from_repo`: `fy(item, n)`, `ttm`, `current`, `series`; חסר = None, לא 0), `tests/test_criteria.py`.
+- Verified: gate ירוק (165). גבולות strength: בדיוק 20% מעל = 1.0, מתחת ל-20% = 0.75, בסף (מחמיר) = 0.25, בדיוק 20% מתחת = 0.
+- NOT verified: `thresholds.py` ו-`rows.py` (שמות שורות חיים) לא נכתבו — דורשים קריאת PDF השיעורים וביקורת מול נתוני ה-DB מהריצה המלאה. ריצה מלאה (`var/first-real-run.log`) רצה ברקע בעת הכתיבה.
+- Next: לסיים את הריצה ולמדוד זמן (B4), אז `rows.py` מהשמות החיים, `thresholds.py`, C2.
+
 ## 2026-11-05 — תיקון: דפי הדוחות הם כמה טבלאות (D19 בוטל)
 - Changed: `parse_statement_table` קורא את **כל** טבלאות `table.financials-table` בעמוד; סיומות K/M/B/T מומרות למיליונים; שם שחוזר — הראשון מנצח. `metrics` מחוץ לברירת המחדל. B4 (קוד): `jobs/pipeline.py`, `jobs/alerts.py`, `cli.py run [--limit N]`, `SMTP_*`.
 - Verified: gate ירוק (137). חי על AAON: income 228 שורות (כולל FCF), balance_sheet 288 (התחייבויות, הון, חוב), cash_flow 246 (capex, FCF). ריצה ראשונה: 5,601 מניות, 108 עוברות; הופסקה ידנית → `interrupted`, נעילה שוחררה.
