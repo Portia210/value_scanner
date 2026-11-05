@@ -12,6 +12,12 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — E5 + "הרץ כעת" (backend)
+- Changed: תלות `apscheduler` 3.x (D12). `jobs/scheduler.py`: `is_due` (עברו N ימים מהריצה המוצלחת האחרונה; אחרי ריצה שנכשלה/נחסמה ממתינים 6 שעות; אף פעם כשיש ריצה פעילה), `tick`, `run_now` (thread), `start_scheduler` (מסמן ריצות שנתקעו כ-`interrupted`, בדיקה כל 15 דק'). `POST /api/runs` (CSRF; 202 או 409). `serve` מפעיל את המתזמן. `settings.days_between_runs` נשמר ב-DB (ברירת מחדל 7).
+- Verified: gate ירוק (310) עם שעון מזויף: גבולות N ימים, ההמתנה אחרי כשל, נעילה, 409.
+- NOT verified: APScheduler באמת מפעיל את ה-job (נבדק רק `tick` ישירות); ריצה מתוזמנת אחת מלאה מעצמה (תנאי "Done" בתוכנית); סטטוס חי בדשבורד (רק polling של `/api/runs` קיים).
+- Next: חיבור ה-frontend (E1-E4), Docker (F1).
+
 ## 2026-11-05 — E1 (backend): API לדשבורד
 - Changed: תלויות (D12): `fastapi`, `uvicorn[standard]`, `itsdangerous`, `python-multipart`. `api/app.py` (`create_app`), `api/security.py` (סיסמה אחת ב-constant time, cookie חתום HttpOnly/SameSite=Lax/Secure מאחורי HTTPS, CSRF header על POST/PUT, הגבלת 5 כשלונות ל-15 דק', headers אבטחה), נקודות: `/api/auth/*`, `/api/stocks`, `/api/stocks/{symbol}`, `/api/runs`, `/api/runs/{id}/log`, `/api/settings`. שאילתות דשבורד ב-`Repository`. `python -m value_scanner serve`. נמחק מנגנון "not implemented".
 - Verified: gate ירוק (299), כולל `tests/test_api.py` (401 בלי התחברות, 429, cookie, CSRF, טוקן מזויף, ולידציה, headers, נתוני ריצה).

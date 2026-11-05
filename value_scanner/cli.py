@@ -21,7 +21,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--limit", type=int, metavar="N", help="only download statements for the first N stocks"
     )
-    serve = sub.add_parser("serve", help="Serve the dashboard JSON API (scheduler: ROADMAP E5)")
+    serve = sub.add_parser("serve", help="Serve the dashboard API and run the scheduler")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     sub.add_parser("docs", help="Write docs/criteria/*.md from the criteria definitions")

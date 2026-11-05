@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from value_scanner.analysis.scoring import CANDIDATE_OPPORTUNITY, CANDIDATE_QUALITY
 from value_scanner.api import security
+from value_scanner.jobs import scheduler as jobs
 from value_scanner.settings import Settings
 from value_scanner.storage import db
 from value_scanner.storage.repo import Repository
@@ -23,7 +24,7 @@ class SettingsBody(BaseModel):
     days_between_runs: int = Field(ge=1, le=60)
 
 
-def create_app(settings: Settings) -> FastAPI:
+def create_app(settings: Settings, runner: jobs.Runner = jobs.default_runner) -> FastAPI:
     if not settings.dashboard_password or not settings.session_secret:
         raise RuntimeError("DASHBOARD_PASSWORD and SESSION_SECRET must be set")
     app = FastAPI(title="Value Scanner", docs_url=None, redoc_url=None)
@@ -149,6 +150,12 @@ def create_app(settings: Settings) -> FastAPI:
     @app.get("/api/runs", dependencies=[Depends(session_csrf)])
     def runs(repo: RepoDep) -> list[dict[str, Any]]:
         return [dict(r) for r in repo.recent_runs()]
+
+    @app.post("/api/runs", status_code=202, dependencies=[Csrf])
+    def start_run() -> dict[str, bool]:
+        if not jobs.run_now(settings, runner):
+            raise HTTPException(409, "a run is already in progress")
+        return {"started": True}
 
     @app.get("/api/runs/{run_id}/log", dependencies=[Depends(session_csrf)])
     def run_log(run_id: int, repo: RepoDep) -> list[dict[str, Any]]:
