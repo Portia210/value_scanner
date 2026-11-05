@@ -12,6 +12,11 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — C10 (חלקי): קובצי מסננים נוצרים מהקוד
+- Changed: `analysis/docs.py`, `python -m value_scanner docs` → `docs/criteria/{screen,graham,fisher,piotroski}.md` (טבלה: מזהה, מבחן, נוסחה, סף, הערות + הסבר הציון), `tests/test_docs.py` נכשל אם הקבצים לא תואמים לקוד.
+- NOT verified / חסר: `opportunity.md` (רכיבי ההזדמנות) ותצוגה בדשבורד ("איך זה מחושב" — E-phase); הנוסחאות באנגלית בכוונה (שמות השורות באתר); ללא ציון "סטייה מהשיעור" מפורש לכל מבחן.
+- Next: אחרי שריצה 1 מסתיימת — `analyse_run` על ה-DB שלה ובדיקת דגימה.
+
 ## 2026-11-05 — C2, C7, C8 + חיבור לצינור
 - Changed: `analysis/classify.py` (ברירות המחדל של `docs/classification-doubts.md`: tech/pharma/financial/cyclical לפי סקטור וענף בלבד; `pe_limit`, `rd_applies`, `pb_applies`), `analysis/scoring.py` (ציון גורו = ממוצע strength בלי NA + כיסוי, כיסוי <60% = לא מדורג; איכות = ממוצע גורואים, ≥2; הזדמנות = חציון 4 רכיבים; מועמדת: איכות ≥0.7 והזדמנות ≥0.2), `jobs/analyze.py` (`analyse_run`: סיווג+תוצאות+ציונים+רכיבים ל-DB; פיננסיות: 6 מבחנים לא רלוונטיים = NA), `run_scan` קורא לו אחרי ההורדה.
 - Verified: gate ירוק (285 טסטים).

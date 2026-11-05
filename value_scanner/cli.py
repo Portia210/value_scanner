@@ -12,7 +12,6 @@ from value_scanner.settings import load_settings
 # command -> (help text, ROADMAP task that implements it)
 _PENDING = {
     "serve": ("Serve the dashboard and the scheduler", "E1"),
-    "docs": ("Generate docs/criteria/*.md from the criteria definitions", "C10"),
 }
 
 
@@ -30,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--limit", type=int, metavar="N", help="only download statements for the first N stocks"
     )
+    sub.add_parser("docs", help="Write docs/criteria/*.md from the criteria definitions")
     sub.add_parser(
         "config", help="Show the effective settings (secrets are only reported as set/unset)"
     )
@@ -74,6 +74,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "config":
         return _show_config()
+    if args.command == "docs":
+        from value_scanner.analysis.docs import write_all
+
+        for path in write_all():
+            print(f"wrote {path}")
+        return 0
     if args.command == "run":
         return _run(args.limit)
     _, task = _PENDING[args.command]
