@@ -21,9 +21,9 @@ import httpx
 from bs4 import BeautifulSoup
 
 BASE = "https://stockanalysis.com"
-STOCKS = ["aaon", "csw", "dci", "nvda", "blk", "asr", "sna", "fast", "uthr", "gntx"]
-PAGES = ["financials/", "financials/balance-sheet/", "financials/cash-flow-statement/",
-         "financials/ratios/"]
+STOCKS = ["aaon", "csw", "dci", "nvda", "blk"]
+PAGES = ["financials/income-statement/", "financials/metrics/", "financials/balance-sheet/",
+         "financials/cash-flow-statement/", "financials/ratios/"]
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
@@ -119,7 +119,28 @@ async def main() -> None:
         urls = [f"{BASE}/stocks/{s}/{p}" for s in STOCKS for p in PAGES]
         summary["anonymous"] = await fetch_pages(client, "anonymous", urls)
 
-    summary["browser"], cookies = await browser_phase()
+    async with httpx.AsyncClient(headers=HEADERS, timeout=60) as client:
+        summary["screener_json"] = {}
+        for name, path in (
+            ("initial", "/_api/endpoints/screener/initial?type=stock&countryCode=&format=compact"),
+            ("data_points", "/_api/endpoints/screener/data-points?type=s&ids=marketCap+peRatio"
+                            "+currentRatio+debtEquity+nextEarningsDate"),
+        ):
+            resp = await client.get(BASE + path, headers={"Referer": f"{BASE}/stocks/screener/"})
+            challenged = (bool(resp.headers.get("cf-mitigated"))
+                          or "Just a moment" in resp.text[:2000])
+            try:
+                n = len(resp.json()["data"]["data"])
+            except Exception:
+                n = None
+            summary["screener_json"][name] = {"status": resp.status_code, "challenge": challenged,
+                                              "stocks": n, "bytes": len(resp.content)}
+            log(phase="screener_json", name=name, **summary["screener_json"][name])
+            await asyncio.sleep(5)
+
+    cookies: list[dict] = []
+    if os.environ.get("PROBE_BROWSER") == "1":
+        summary["browser"], cookies = await browser_phase()
 
     if cookies:
         async with httpx.AsyncClient(headers=HEADERS, timeout=30) as client:
