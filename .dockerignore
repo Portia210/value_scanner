@@ -1,0 +1,15 @@
+.git
+.venv
+var
+data
+outputs
+frontend/node_modules
+.env
+cookies*.txt
+.playwright-mcp
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+probes
+tests

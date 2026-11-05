@@ -12,6 +12,11 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — F1 (טיוטה, לא נבדקה): Dockerfile
+- Changed: `Dockerfile` (python:3.11-slim + uv, `uv sync --frozen --no-dev`, בלי דפדפן; `DB_PATH=/data/value_scanner.db`; healthcheck על `/api/health`; `serve` על `$PORT`), `.dockerignore`.
+- NOT verified: **`docker build`/`run` לא הורצו** — Docker Desktop לא מחובר ל-WSL (להפעיל WSL integration). ה-frontend לא נבנה לתוך התמונה ואין הגשת סטטיים מ-FastAPI. `playwright` עדיין בתלויות (v1) וגדל את התמונה; יוסר עם C9.
+- Next: להפעיל WSL integration ולהריץ build; לחבר frontend.
+
 ## 2026-11-05 — E5 + "הרץ כעת" (backend)
 - Changed: תלות `apscheduler` 3.x (D12). `jobs/scheduler.py`: `is_due` (עברו N ימים מהריצה המוצלחת האחרונה; אחרי ריצה שנכשלה/נחסמה ממתינים 6 שעות; אף פעם כשיש ריצה פעילה), `tick`, `run_now` (thread), `start_scheduler` (מסמן ריצות שנתקעו כ-`interrupted`, בדיקה כל 15 דק'). `POST /api/runs` (CSRF; 202 או 409). `serve` מפעיל את המתזמן. `settings.days_between_runs` נשמר ב-DB (ברירת מחדל 7).
 - Verified: gate ירוק (310) עם שעון מזויף: גבולות N ימים, ההמתנה אחרי כשל, נעילה, 409.

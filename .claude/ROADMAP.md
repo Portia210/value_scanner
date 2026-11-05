@@ -148,7 +148,7 @@
 
 ## שלב 5 — פריסה
 
-- [ ] **F1** — Docker
+- [~] **F1** — Docker
   - Done when: Dockerfile על python slim, בלי דפדפן; `docker run` מקומי מגיש את האתר ומריץ סריקה; healthcheck.
   - Depends on: E2–E5
 - [ ] **F2** — Railway
