@@ -51,7 +51,7 @@
   - Goal: להסיר את מה שלא בשימוש לפני הבנייה מחדש.
   - Done when: X1–X6 נמחקו (אחרי grep לאפס הפניות); תלויות X8 הוסרו ו-`uv sync` עובר; `outputs/`, `rate_limit_debug.txt`, `short_report.md` הוצאו מ-git ונוספו ל-`.gitignore`; gate ירוק.
   - Depends on: A2
-- [ ] **A4** — שלד חבילה והגדרות
+- [x] **A4** — שלד חבילה והגדרות
   - Goal: חבילת `value_scanner/` עם `settings.py` אחד.
   - Done when: כל הגדרה מ-env בלבד (`DB_PATH`, `MY_EMAIL`, ...) ואין תיקיית נתונים; `.env.example` עם כל המשתנים (ערכי דמה); `python -m value_scanner --help` עובד.
   - Depends on: A3
