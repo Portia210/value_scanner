@@ -12,6 +12,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from value_scanner.jobs.alerts import Sender, send_pending_alerts
+from value_scanner.jobs.analyze import analyse_run
 from value_scanner.jobs.refresh import DownloadSummary, Pacing, download_statements
 from value_scanner.jobs.universe import UniverseResult, refresh_universe
 from value_scanner.settings import Settings
@@ -87,7 +88,12 @@ def run_scan(
                 "\n".join(downloads.failures[:30]),
                 run_id,
             )
-        note("info", "criteria and scores: not built yet (ROADMAP C-phase)")
+        analysis = analyse_run(repo, run_id)
+        note(
+            "info",
+            f"analysed {analysis.analysed}: {len(analysis.candidates)} candidates, "
+            f"{len(analysis.unranked)} without a quality score",
+        )
         repo.apply_retention()
         status, summary = "ok", _summary(universe, downloads)
     except Blocked as exc:

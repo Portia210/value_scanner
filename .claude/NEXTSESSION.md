@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — C2, C7, C8 + חיבור לצינור
+- Changed: `analysis/classify.py` (ברירות המחדל של `docs/classification-doubts.md`: tech/pharma/financial/cyclical לפי סקטור וענף בלבד; `pe_limit`, `rd_applies`, `pb_applies`), `analysis/scoring.py` (ציון גורו = ממוצע strength בלי NA + כיסוי, כיסוי <60% = לא מדורג; איכות = ממוצע גורואים, ≥2; הזדמנות = חציון 4 רכיבים; מועמדת: איכות ≥0.7 והזדמנות ≥0.2), `jobs/analyze.py` (`analyse_run`: סיווג+תוצאות+ציונים+רכיבים ל-DB; פיננסיות: 6 מבחנים לא רלוונטיים = NA), `run_scan` קורא לו אחרי ההורדה.
+- Verified: gate ירוק (285 טסטים).
+- NOT verified: על נתונים אמיתיים — ריצה 1 (`var/first-real-run.log`) התחילה לפני החיבור ולכן לא מנתחת; יש להריץ `analyse_run` על ה-DB שלה. C9 (השוואה ל-v1) לא נעשה. "מול ההיסטוריה" משתמש ב-`peRatio5Y` של הסורק (ממוצע, לא חציון כמו ב-D9). חציון P/B לסקטור דורש ≥3 מניות בריצה, אחרת מבחן פיוטרוסקי הראשון = NA.
+- Traps / decisions: P/B שלילי או P/E שלילי לא נכנס להזדמנות (לא חל). חברה "regular" נשמרת בטבלת הסיווג כ-label בשם `regular`.
+- Next: להריץ ניתוח על ריצה 1 ולבדוק דגימה ידנית מול האתר; C9; C10 (קובצי מסננים); אז E1 (אתר).
+
 ## 2026-11-05 — C6 (קוד): פיוטרוסקי (שיעור 6)
 - Changed: `analysis/gurus/piotroski.py` — 8 בדיקות (FY אחרון מול הקודם): מכפיל הון מול חציון סקטור (D2: רק פיננסיות; NA בלי חציון), current ratio עלה, חוב ארוך/נכסים ירד, תזרים תפעולי חיובי וגדול מהרווח, ROA חיובי ועלה, פחות מניות, שולי גולמי עלו, מחזור נכסים עלה. `compare()` קיבל `lower_is_better`.
 - Verified: gate ירוק (240). שוויון = FAIL; חסר שנה קודמת = NA; מכנה ≤0 = NA; חוב ארוך חסר נחשב 0 רק אם Total Debt=0.
