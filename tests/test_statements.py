@@ -4,7 +4,7 @@ from datetime import UTC, date, datetime, timedelta
 import httpx
 import pytest
 
-from tests.factories import statement_html
+from tests.factories import multi_table_html, statement_html
 from value_scanner.jobs.refresh import (
     FULL_REFRESH_DAYS,
     Pacing,
@@ -48,6 +48,31 @@ def test_upgrade_columns_are_skipped():
     )
     rows, _ = parse_statement_table(html)
     assert {p for _, p, _ in rows} == {"TTM", "FY 2024", "FY 2023"}
+
+
+def test_all_tables_on_the_page_are_read():
+    html = multi_table_html(
+        [["Total Assets", "1,864", "1,687", "1,175"]],
+        [["Total Liabilities", "853", "791", "350"], ["Total Assets", "9", "9", "9"]],
+        [["Shareholders' Equity", "1,011", "896", "824"]],
+    )
+    rows, latest = parse_statement_table(html)
+    got = {(i, p): v for i, p, v in rows}
+    assert got[("Total Liabilities", "FY 2024")] == 791.0
+    assert got[("Shareholders' Equity", "FY 2023")] == 824.0
+    assert got[("Total Assets", "FY 2024")] == 1687.0  # first table wins on a repeated name
+    assert latest == "FY 2024"
+
+
+def test_suffixes_are_converted_to_millions():
+    rows, _ = parse_statement_table(
+        statement_html([["Backlog", "960.49M", "1.20B", "500K"], ["Cap", "2T", "-", ""]])
+    )
+    got = {(i, p): v for i, p, v in rows}
+    assert got[("Backlog", "TTM")] == pytest.approx(960.49)
+    assert got[("Backlog", "FY 2024")] == pytest.approx(1200.0)
+    assert got[("Backlog", "FY 2023")] == pytest.approx(0.5)
+    assert got[("Cap", "TTM")] == 2e6 and got[("Cap", "FY 2024")] is None
 
 
 def test_no_table_returns_empty():

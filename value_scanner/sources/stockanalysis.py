@@ -32,9 +32,8 @@ STATEMENT_PATHS = {
     "cash_flow": "financials/cash-flow-statement/",
     "ratios": "financials/ratios/",
 }
-# What a scan downloads. `ratios` (stale, 4 rows) and `metrics` (company-specific segment revenue,
-# values like "960.49M") are left out; see GOTCHAS. NOTE: the free tier shows only part of each
-# table (no liabilities/equity, no capex/FCF) - an open decision, ROADMAP D19.
+# What a scan downloads. `ratios` (stale, 4 rows) and `metrics` (company-specific segment revenue)
+# are left out; see GOTCHAS.
 DEFAULT_STATEMENTS = ("income", "balance_sheet", "cash_flow")
 
 Row = tuple[str, str, float | None]  # (item, period, value)
@@ -56,33 +55,31 @@ def statement_url(symbol: str, statement: str) -> str:
     return f"{BASE}/stocks/{symbol.lower()}/{STATEMENT_PATHS[statement]}"
 
 
+_SUFFIX_TO_MILLIONS = {"K": 1e-3, "M": 1.0, "B": 1e3, "T": 1e6}
+
+
 def parse_number(text: str) -> float | None:
-    """'1,316.0' -> 1316.0; '8.77%' -> 8.77; '-', '—', '' -> None. Anything else raises."""
+    """'1,316.0' -> 1316.0; '8.77%' -> 8.77; '960.49M' -> 960.49 (K/M/B/T are converted to
+    millions, the unit of the statements); '-', '—', '' -> None. Anything else raises."""
     t = text.strip().replace(",", "").replace("$", "").replace("%", "")
     if t in ("", "-", "—", "–", "n/a", "N/A", "NaN"):
         return None
+    factor = 1.0
+    if t[-1] in _SUFFIX_TO_MILLIONS:
+        factor, t = _SUFFIX_TO_MILLIONS[t[-1]], t[:-1]
     try:
-        return float(t)
+        return float(t) * factor
     except ValueError as exc:
         raise ParseError(f"not a number: {text!r}") from exc
 
 
-def parse_statement_table(html: str) -> tuple[list[Row], str | None]:
-    """Return (rows, latest_period) from the financials table; ([], None) if there is none.
-
-    Columns whose header or cells say "Upgrade" (paid-only) are skipped. A row whose cells carry
-    '%' gets " (%)" appended to its name unless it already ends with it (same names as v1).
-    """
-    table = BeautifulSoup(html, "html.parser").select_one("table.financials-table")
-    if table is None:
-        return [], None
+def _parse_one_table(table) -> tuple[list[Row], list[str]]:
     header_row = table.select_one("thead tr")
     if header_row is None:
         raise ParseError("table has no header row")
     periods = [c.get_text(strip=True) for c in header_row.find_all(["th", "td"])]
     if len(periods) < 2:
         raise ParseError("table header has no period columns")
-
     skip = {i for i, p in enumerate(periods) if p == "Upgrade"}
     rows: list[Row] = []
     for tr in table.select("tbody tr"):
@@ -98,11 +95,34 @@ def parse_statement_table(html: str) -> tuple[list[Row], str | None]:
             if i in skip or cells[i] == "Upgrade":
                 continue
             rows.append((item, periods[i], parse_number(cells[i])))
+    return rows, periods
+
+
+def parse_statement_table(html: str) -> tuple[list[Row], str | None]:
+    """Return (rows, latest_period) from all `table.financials-table` elements on the page
+    (a statement is split into several tables: assets / liabilities / equity, operating /
+    investing / financing, ...). ([], None) if there is none.
+
+    Columns whose header or cells say "Upgrade" (paid-only, the older years) are skipped. A row
+    whose cells carry '%' gets " (%)" appended unless it already ends with it (same names as v1).
+    When an item name repeats in a later table, the first occurrence wins.
+    """
+    tables = BeautifulSoup(html, "html.parser").select("table.financials-table")
+    if not tables:
+        return [], None
+    rows: list[Row] = []
+    seen: set[tuple[str, str]] = set()
+    first_periods: list[str] = []
+    for table in tables:
+        table_rows, periods = _parse_one_table(table)
+        first_periods = first_periods or periods
+        for item, period, value in table_rows:
+            if (item, period) not in seen:
+                seen.add((item, period))
+                rows.append((item, period, value))
     if not rows:
         raise ParseError("table has no data rows")
-    latest = next(
-        (p for i, p in enumerate(periods) if i > 0 and i not in skip and p != "TTM"), None
-    )
+    latest = next((p for p in first_periods[1:] if p not in ("Upgrade", "TTM")), None)
     return rows, latest
 
 

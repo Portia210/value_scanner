@@ -12,13 +12,12 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
-## 2026-11-05 — B4 (קוד) + ממצא חוסם: האתר החינמי קוטע את הדוחות (D19)
-- Changed: `jobs/pipeline.py` (`run_scan`), `jobs/alerts.py` (מייל ל-`MY_EMAIL`, SMTP מ-env), `cli.py run [--limit N]`, `SMTP_*` ב-settings ו-`.env.example`. `metrics` הוצא מ-`DEFAULT_STATEMENTS`.
-- Verified: gate ירוק (135 טסטים). ריצה אמיתית ראשונה (run 1): 5,601 מניות, 108 עוברות, 844 "כמעט"; הופסקה ידנית אחרי ~1 דקה → סטטוס `interrupted` והנעילה שוחררה (מאומת חי). דוחות AAON הורדו ונשמרו ב-DB.
-- **ממצא:** הדוחות החינמיים קטועים — מאזן בלי התחייבויות/הון, תזרים בלי capex/FCF, רווח והפסד בלי שולי רווח (אומת ב-httpx ובדפדפן המחובר שלך). `/financials/metrics/` הוא פילוח מגזרים. ר' GOTCHAS ו-ROADMAP D19 (המלצה: SEC XBRL).
-- NOT verified: ריצה מלאה וזמנה (לא הושלמה בכוונה: אין טעם להוריד דוחות קטועים); שליחת מייל אמיתית (אין SMTP מוגדר; ההתראות נשמרות ב-DB); `var/value_scanner.db` מכיל נתוני בדיקה (למחוק).
-- Traps / decisions: לא התחלתי C1–C6: הם תלויים במקור הדוחות. לא נגעתי בשום עקיפה של חסימת-תוכן באתר.
-- Next: **החלטה על D19**; אחריה ספק SEC מאחורי ממשק הספקים, ואז C1.
+## 2026-11-05 — תיקון: דפי הדוחות הם כמה טבלאות (D19 בוטל)
+- Changed: `parse_statement_table` קורא את **כל** טבלאות `table.financials-table` בעמוד; סיומות K/M/B/T מומרות למיליונים; שם שחוזר — הראשון מנצח. `metrics` מחוץ לברירת המחדל. B4 (קוד): `jobs/pipeline.py`, `jobs/alerts.py`, `cli.py run [--limit N]`, `SMTP_*`.
+- Verified: gate ירוק (137). חי על AAON: income 228 שורות (כולל FCF), balance_sheet 288 (התחייבויות, הון, חוב), cash_flow 246 (capex, FCF). ריצה ראשונה: 5,601 מניות, 108 עוברות; הופסקה ידנית → `interrupted`, נעילה שוחררה.
+- NOT verified: ריצה מלאה וזמנה (B4 עדיין פתוח); מייל אמיתי (אין SMTP); שמות שורות מול v1 (ר' GOTCHAS); `Profit Margin` לא נמצא בשם הזה ברווח והפסד.
+- Traps / decisions: **טעיתי** בדיווח קודם שהאתר קוטע דוחות — המשתמש הראה צילום מסך של התחייבויות באתר. הבדיקה שלי קראה רק טבלה ראשונה (גם בדפדפן). שנים ישנות (2016–2020) הן `Upgrade` ולכן 5 FY + TTM בלבד.
+- Next: ריצה מלאה מקומית למדידת זמן (סוגרת B4), ואז C1.
 
 ## 2026-11-05 — B1: הורדת דוחות
 - Changed: `sources/stockanalysis.py` (פענוח הטבלה לפורמט ארוך, `StatementFetcher` עם סיווג ok/blocked/failed/no_table וניסיונות חוזרים חסומים), `jobs/refresh.py` (כללי D18: חדש מיד, ניסיונות 1/3/7 ימים אחרי `lastEarningsDate` עד שהטבלה משתנה, ריענון מלא כל 45 יום; לולאת הורדה איטית), `tests/test_statements.py`.

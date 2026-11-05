@@ -72,3 +72,12 @@ def statement_html(
         "<html><body><table class='financials-table'>"
         f"<thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></body></html>"
     )
+
+
+def multi_table_html(*tables):
+    """A page with several financials tables, as the balance sheet and cash flow pages have."""
+    inner = []
+    for rows in tables:
+        html = statement_html(rows)
+        inner.append(html[html.index("<table") : html.index("</table>") + 8])
+    return "<html><body>" + "".join(inner) + "</body></html>"
