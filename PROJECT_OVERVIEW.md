@@ -1,5 +1,9 @@
 # Project Overview: Value Scanner
 
+> **Outdated (2026-11-05).** Several statements below don't match the code (see
+> `.claude/plans/v2-audit.md`, item T2). The current structure is in
+> `.claude/ARCHITECTURE.md`. This file will be removed in the v2 rebuild (task F3).
+
 **Value Scanner** is an automated financial analysis tool designed to screen stocks based on fundamental data and Benjamin Graham's investment principles. It scrapes financial statements, calculates key ratios, and generates comprehensive pass/fail reports.
 
 ## 🚀 Usage

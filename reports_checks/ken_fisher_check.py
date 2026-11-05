@@ -141,55 +141,73 @@ def ken_fisher_check(symbol: str, income_df: pd.DataFrame, balance_df: pd.DataFr
         fcf_pass = False
         fcf_msg = "**valid?**: False, Missing FCF/Share"
 
-    # 5. Innovation Factor (Tech & Pharma Only)
-    innovation_pass = True # Default True for non-tech to not fail them on this check check? 
-    # Or should this check be exclusive? 
-    # Usually "Super Stocks" implies matching ALL criteria. 
-    # If a generic company doesn't need innovation, it passes this section N/A.
-    innovation_msg = "N/A (Not Tech/Pharma)"
+    # 5. Innovation Factor
+    # Split: Tech/Pharma (P/R&D) vs Others (R&D/Revenue)
     
-    if is_tech_mode:
-        rnd_exp = get_cell_safe(income_df, IncomeIndex.RESEARCH_AND_DEVELOPMENT, most_recent_year)
-        revenue = get_cell_safe(income_df, IncomeIndex.REVENUE, most_recent_year)
-        market_cap = get_cell_safe(ratios_df, RatiosIndex.MARKET_CAPITALIZATION, most_recent_year)
-        
-        if rnd_exp and rnd_exp > 0 and revenue and market_cap:
-            # PRR: Market Cap / R&D
-            prr = market_cap / rnd_exp
-            prr_pass = 5 < prr < 15
-            
-            # R&D Intensity: R&D / Revenue (5Y Avg > 10%)
-            # Get 5Y R&D and Revenue
-            rnd_row = get_row_safe(income_df, IncomeIndex.RESEARCH_AND_DEVELOPMENT, last_5_years_cols)
-            rev_row = get_row_safe(income_df, IncomeIndex.REVENUE, last_5_years_cols)
-            
-            if rnd_row is not None and rev_row is not None:
+    rnd_exp = get_cell_safe(income_df, IncomeIndex.RESEARCH_AND_DEVELOPMENT, most_recent_year)
+    revenue = get_cell_safe(income_df, IncomeIndex.REVENUE, most_recent_year)
+    market_cap = get_cell_safe(ratios_df, RatiosIndex.MARKET_CAPITALIZATION, most_recent_year)
+    
+    # Get 5Y History for R&D and Revenue for both cases (needed for Trend or Tech calc if we wanted, but mainly for "Others")
+    rnd_row = get_row_safe(income_df, IncomeIndex.RESEARCH_AND_DEVELOPMENT, last_5_years_cols)
+    rev_row = get_row_safe(income_df, IncomeIndex.REVENUE, last_5_years_cols)
+
+    # Check if R&D data exists at all (Red Flag check)
+    has_rnd_data = rnd_row is not None and not rnd_row.dropna().empty and rnd_row.sum() != 0
+    
+    if not has_rnd_data:
+        innovation_pass = True
+        innovation_msg = "**valid?**: True, N/A (Missing R&D Data)"
+    else:
+        if is_tech_mode:
+            # Tech/Pharma: P/R&D 5-15
+            if rnd_exp and rnd_exp > 0 and market_cap:
+                prr = market_cap / rnd_exp
+                innovation_pass = 5 <= prr <= 15
+                innovation_msg = f"**valid?**: {innovation_pass} (Tech/Pharma), P/R&D: {prr:.1f} (Target 5-15)"
+            else:
+                # Should have been caught by has_rnd_data but double check specific year
+                innovation_pass = False
+                innovation_msg = "**valid?**: False (Tech/Pharma), Missing Current R&D or Market Cap"
+        else:
+            # Others: Avg R&D/Revenue > 10%
+            if rev_row is not None:
                 # Calculate yearly intensity
-                intensities = (rnd_row / rev_row) * 100
-                avg_intensity = intensities.mean()
-                intensity_pass = avg_intensity > 10.0
+                # Handle potential 0 revenue to avoid div by zero
+                # We align rnd_row and rev_row
                 
-                # Trend
-                recent_rnd = rnd_row.iloc[0]
-                prev_rnd = rnd_row.iloc[1] if len(rnd_row) > 1 else recent_rnd
-                rnd_growth = ((recent_rnd - prev_rnd) / prev_rnd) * 100 if prev_rnd > 0 else 0
+                # Make sure we have aligned series
+                trends = []
+                ratios = []
                 
-                innovation_pass = prr_pass and intensity_pass
-                innovation_msg = f"**valid?**: {innovation_pass}, PRR: {prr:.1f} (Target 5-15), R&D/Rev Avg: {avg_intensity:.1f}% (>10%), R&D Growth: {rnd_growth:.1f}%"
+                for col in last_5_years_cols:
+                    r_val = get_cell_safe(income_df, IncomeIndex.RESEARCH_AND_DEVELOPMENT, col)
+                    rev_val = get_cell_safe(income_df, IncomeIndex.REVENUE, col)
+                    
+                    if r_val is not None and rev_val is not None and rev_val != 0:
+                        ratio = (r_val / rev_val) * 100
+                        ratios.append(ratio)
+                        trends.append(f"{ratio:.1f}%")
+                    else:
+                         trends.append("N/A")
+                
+                if ratios:
+                    avg_intensity = sum(ratios) / len(ratios)
+                    innovation_pass = avg_intensity > 10.0
+                    trend_str = ", ".join(trends)
+                    innovation_msg = f"**valid?**: {innovation_pass} (Standard), Avg R&D/Rev: {avg_intensity:.1f}% (>10%), Trend: ({trend_str})"
+                else:
+                    innovation_pass = False
+                    innovation_msg = "**valid?**: False (Standard), Insufficient Data for R&D/Rev Calc"
             else:
                 innovation_pass = False
-                innovation_msg = "**valid?**: False, Insufficient 5Y Data for R&D"
-        else:
-            # Tech company with no R&D? Fail Innovation.
-            innovation_pass = False
-            innovation_msg = "**valid?**: False, Missing R&D Expenses"
+                innovation_msg = "**valid?**: False (Standard), Missing Revenue Data"
 
 
     # Overall Result
-    checks = [valuation_pass, margin_pass, eps_growth_pass, de_pass, fcf_pass]
-    if is_tech_mode:
-        checks.append(innovation_pass)
-        
+    # Overall Result
+    checks = [valuation_pass, margin_pass, eps_growth_pass, de_pass, fcf_pass, innovation_pass]
+
     all_passed = all(checks)
     
     report_str = f"""
@@ -199,7 +217,7 @@ def ken_fisher_check(symbol: str, income_df: pd.DataFrame, balance_df: pd.DataFr
 - EPS Growth (5Y > 15%): {format_valid(eps_growth_pass, eps_growth_msg)}
 - Debt-to-Equity (< 0.4): {format_valid(de_pass, de_msg)}
 - FCF/Share (> 0): {format_valid(fcf_pass, fcf_msg)}
-- Innovation Factor (Tech/Pharma): {format_valid(innovation_pass, innovation_msg)}
+- Innovation Factor: {format_valid(innovation_pass, innovation_msg)}
     """
     
     return report_str, all_passed
