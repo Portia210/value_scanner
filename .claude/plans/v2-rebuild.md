@@ -71,7 +71,7 @@ value_scanner/
     scoring.py           # ציון לגורו, כיסוי, איכות כוללת
     opportunity.py       # מרווח ביטחון ורכיביו
   storage/
-    schema.sql, db.py, repo.py
+    migrations/0001_initial.sql, db.py, repo.py   # גרסאות סכמה כקבצי SQL ממוספרים
   jobs/
     pipeline.py          # ריצה מלאה: נעילה, התקדמות, לוג, סטטוס סופי
     scheduler.py

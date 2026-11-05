@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — A4 + D1: שלד חבילה ומסד נתונים
+- Changed: `value_scanner/` — `settings.py` (env בלבד, סודות מוסתרים מ-repr), `cli.py` (`--help`, `config`; `run`/`serve`/`docs` עדיין stubs עם קוד יציאה 2), `.env.example`. `storage/migrations/0001_initial.sql` (15 טבלאות לפי §2), `storage/db.py` (WAL, foreign keys, מיגרציות ממוספרות), `storage/repo.py` (הנקודה היחידה מול ה-DB; מדיניות שמירה).
+- Verified: gate ירוק (35 טסטים, מתוכם 24 על DB בזיכרון: נעילת ריצה, שמירת 4 הורדות, NA, CHECK על סטטוס/strength, שמירה לפי חלונות זמן, rollback); `python -m value_scanner --help` ו-`config` עובדים.
+- NOT verified: מעבר ל-Postgres (ids הם `INTEGER PRIMARY KEY` — שם יידרש IDENTITY); ביצועים על נפח אמיתי; `config` מול `.env` אמיתי הראה רק set/unset.
+- Traps / decisions: נעילת הריצה = אינדקס ייחודי חלקי על `runs(status) WHERE status='running'`. `save_statement_fetch` גוזם רק הורדות `ok`; הורדות שנכשלו נמחקות אחרי 90 יום. `classifications` ו-`score_components` בפורמט שורות (גמיש ל-D6/D9). הסכמה עוד לא נבדקה מול הצרכים של B1/B3 — מיגרציה 0002 אם צריך. מילת-קסם `pragma: allowlist secret` נדרשה בטסט (סיסמת דמה).
+- Next: B1 (הורדת דוחות) או B3 (רשימת מניות מה-JSON) — שתיהן כותבות דרך `Repository`.
+
 ## 2026-11-05 — הכול במסד נתונים, MY_EMAIL
 - Changed: תיעוד בלבד. `plans/v2-rebuild.md` §2: אין תיקיית נתונים; כל המידע ב-SQLite (הגדרות, חברות, snapshots של הסורק, דוחות בפורמט ארוך, תוצאות, ציונים, אירועי מעקב, פרופילים, התראות). `sources/` עם ממשק ספק במקום `scraper/`; בלי login/Playwright/עוגיות. ROADMAP: B2 בוטל, B1/B3/B4/D1/F1/F2 עודכנו; **D1 מבוצע מיד אחרי A4**.
 - Verified: עקביות המסמכים (grep); אין שינוי בקוד.
