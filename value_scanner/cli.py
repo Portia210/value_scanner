@@ -3,16 +3,10 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from collections.abc import Sequence
 
 from value_scanner import __version__
 from value_scanner.settings import load_settings
-
-# command -> (help text, ROADMAP task that implements it)
-_PENDING = {
-    "serve": ("Serve the dashboard and the scheduler", "E1"),
-}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -23,12 +17,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command", metavar="<command>")
-    for name, (text, task) in _PENDING.items():
-        sub.add_parser(name, help=f"{text} (not implemented yet: ROADMAP {task})")
     run = sub.add_parser("run", help="Run a full scan end to end; alerts go to MY_EMAIL")
     run.add_argument(
         "--limit", type=int, metavar="N", help="only download statements for the first N stocks"
     )
+    serve = sub.add_parser("serve", help="Serve the dashboard JSON API (scheduler: ROADMAP E5)")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
     sub.add_parser("docs", help="Write docs/criteria/*.md from the criteria definitions")
     sub.add_parser(
         "config", help="Show the effective settings (secrets are only reported as set/unset)"
@@ -74,6 +69,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "config":
         return _show_config()
+    if args.command == "serve":
+        import uvicorn
+
+        from value_scanner.api.app import create_app
+
+        uvicorn.run(
+            create_app(load_settings(load_dotenv_file=True)), host=args.host, port=args.port
+        )
+        return 0
     if args.command == "docs":
         from value_scanner.analysis.docs import write_all
 
@@ -82,6 +86,5 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "run":
         return _run(args.limit)
-    _, task = _PENDING[args.command]
-    print(f"'{args.command}' is not implemented yet (ROADMAP {task}).", file=sys.stderr)
+    parser.error(f"unknown command {args.command}")
     return 2

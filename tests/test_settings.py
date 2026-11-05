@@ -42,9 +42,10 @@ def test_cli_help_exits_zero(capsys):
     assert "run" in capsys.readouterr().out
 
 
-def test_cli_pending_command_returns_nonzero(capsys):
-    assert main(["serve"]) == 2
-    assert "not implemented" in capsys.readouterr().err
+def test_cli_unknown_command_is_an_error(capsys):
+    with pytest.raises(SystemExit) as exc:
+        main(["bogus"])
+    assert exc.value.code == 2
 
 
 def test_google_app_password_configures_gmail():

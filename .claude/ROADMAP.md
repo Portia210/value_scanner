@@ -118,7 +118,7 @@
 
 ## שלב 4 — אתר
 
-- [ ] **E1** — שלד, התחברות, עיצוב בסיס
+- [~] **E1** — שלד, התחברות, עיצוב בסיס
   - Done when: FastAPI JSON API עם התחברות לפי D11 ואמצעי האבטחה בתוכנית §2א; `frontend/` (Vite + React + Mantine, RTL) נבנה ומוגש ע"י FastAPI; types נוצרים מ-OpenAPI; layout לפי `design/dashboard-preview.html`, מסך צר; עמוד התחברות ועמוד ריק עולים מקומית.
   - Depends on: D1, D10, D11
 - [ ] **E2** — מסך ראשי

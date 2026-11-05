@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — E1 (backend): API לדשבורד
+- Changed: תלויות (D12): `fastapi`, `uvicorn[standard]`, `itsdangerous`, `python-multipart`. `api/app.py` (`create_app`), `api/security.py` (סיסמה אחת ב-constant time, cookie חתום HttpOnly/SameSite=Lax/Secure מאחורי HTTPS, CSRF header על POST/PUT, הגבלת 5 כשלונות ל-15 דק', headers אבטחה), נקודות: `/api/auth/*`, `/api/stocks`, `/api/stocks/{symbol}`, `/api/runs`, `/api/runs/{id}/log`, `/api/settings`. שאילתות דשבורד ב-`Repository`. `python -m value_scanner serve`. נמחק מנגנון "not implemented".
+- Verified: gate ירוק (299), כולל `tests/test_api.py` (401 בלי התחברות, 429, cookie, CSRF, טוקן מזויף, ולידציה, headers, נתוני ריצה).
+- NOT verified: הרצה אמיתית של `serve` בדפדפן; `frontend/` (React) לא חובר ל-API ואין הגשת קבצים סטטיים; types מ-OpenAPI; "הרץ כעת" ותזמון (E4/E5); `DASHBOARD_PASSWORD`/`SESSION_SECRET` לא מוגדרים ב-`.env` (המפתח צריך להוסיף).
+- Traps / decisions: ב-`api/app.py` אסור `from __future__ import annotations` (FastAPI לא מצליח לפתור dependencies מקומיים ומחזיר 422 במקום 401). חיבור לכל בקשה (SQLite לא בטוח בין threads).
+- Next: E5 (APScheduler + נעילה), E4 (הרץ כעת), ואז חיבור ה-frontend.
+
 ## 2026-11-05 — C10 (חלקי): קובצי מסננים נוצרים מהקוד
 - Changed: `analysis/docs.py`, `python -m value_scanner docs` → `docs/criteria/{screen,graham,fisher,piotroski}.md` (טבלה: מזהה, מבחן, נוסחה, סף, הערות + הסבר הציון), `tests/test_docs.py` נכשל אם הקבצים לא תואמים לקוד.
 - NOT verified / חסר: `opportunity.md` (רכיבי ההזדמנות) ותצוגה בדשבורד ("איך זה מחושב" — E-phase); הנוסחאות באנגלית בכוונה (שמות השורות באתר); ללא ציון "סטייה מהשיעור" מפורש לכל מבחן.

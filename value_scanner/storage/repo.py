@@ -393,6 +393,63 @@ class Repository:
             (symbol,),
         ).fetchone()
 
+    # ── dashboard queries ───────────────────────────────────────────────────────────────────
+    def latest_analysed_run(self) -> sqlite3.Row | None:
+        """The newest run that produced scores (a finished 'ok' run)."""
+        return self.conn.execute(
+            "SELECT * FROM runs WHERE status = 'ok' AND id IN (SELECT run_id FROM scores) "
+            "ORDER BY started_at DESC, id DESC LIMIT 1"
+        ).fetchone()
+
+    def stock_table(self, run_id: int) -> list[dict[str, Any]]:
+        """One dict per analysed stock of the run: company, snapshot multiples, labels, scores."""
+        stocks: dict[str, dict[str, Any]] = {}
+        for r in self.conn.execute(
+            """SELECT c.symbol, c.name, c.sector, c.industry, c.country, c.exchange,
+                      s.price, s.market_cap, s.pe_ratio, s.ps_ratio, s.pb_ratio
+               FROM screener_snapshots s JOIN companies c ON c.symbol = s.symbol
+               WHERE s.run_id = ? AND s.in_screen = 1 ORDER BY c.symbol""",
+            (run_id,),
+        ):
+            stocks[r["symbol"]] = {**dict(r), "labels": [], "scores": {}}
+        for r in self.conn.execute(
+            "SELECT symbol, label FROM classifications WHERE run_id = ?", (run_id,)
+        ):
+            if r["symbol"] in stocks:
+                stocks[r["symbol"]]["labels"].append(r["label"])
+        for r in self.conn.execute(
+            "SELECT symbol, kind, score, coverage FROM scores WHERE run_id = ?", (run_id,)
+        ):
+            if r["symbol"] in stocks:
+                stocks[r["symbol"]]["scores"][r["kind"]] = {
+                    "score": r["score"],
+                    "coverage": r["coverage"],
+                }
+        return list(stocks.values())
+
+    def recent_runs(self, limit: int = 50) -> list[sqlite3.Row]:
+        return self.conn.execute(
+            "SELECT * FROM runs ORDER BY started_at DESC, id DESC LIMIT ?", (limit,)
+        ).fetchall()
+
+    def score_components_for(self, run_id: int, symbol: str) -> list[sqlite3.Row]:
+        return self.conn.execute(
+            "SELECT kind, component, value FROM score_components WHERE run_id = ? AND symbol = ?",
+            (run_id, symbol),
+        ).fetchall()
+
+    def classification_for(self, run_id: int, symbol: str) -> list[sqlite3.Row]:
+        return self.conn.execute(
+            "SELECT label, reason FROM classifications WHERE run_id = ? AND symbol = ?",
+            (run_id, symbol),
+        ).fetchall()
+
+    def scores_for(self, run_id: int, symbol: str) -> list[sqlite3.Row]:
+        return self.conn.execute(
+            "SELECT kind, score, coverage FROM scores WHERE run_id = ? AND symbol = ?",
+            (run_id, symbol),
+        ).fetchall()
+
     # ── retention ───────────────────────────────────────────────────────────────────────────
     def apply_retention(self) -> dict[str, int]:
         """Delete data past its retention window. Returns rows deleted per table."""
