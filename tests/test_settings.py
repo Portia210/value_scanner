@@ -45,3 +45,23 @@ def test_cli_help_exits_zero(capsys):
 def test_cli_pending_command_returns_nonzero(capsys):
     assert main(["serve"]) == 2
     assert "not implemented" in capsys.readouterr().err
+
+
+def test_google_app_password_configures_gmail():
+    fake = "app-password-for-test"  # pragma: allowlist secret
+    s = load_settings({"MY_EMAIL": "a@b.co", "GOOGLE_APP_PASSWORD": fake})
+    assert (s.smtp_host, s.smtp_port, s.smtp_user) == ("smtp.gmail.com", 587, "a@b.co")
+    assert s.smtp_password == fake and fake not in repr(s)
+
+
+def test_explicit_smtp_settings_beat_the_gmail_shortcut():
+    s = load_settings(
+        {
+            "MY_EMAIL": "a@b.co",
+            "GOOGLE_APP_PASSWORD": "x",
+            "SMTP_HOST": "mail.example.com",
+            "SMTP_USER": "u",
+            "SMTP_PASSWORD": "p",
+        }  # pragma: allowlist secret
+    )
+    assert (s.smtp_host, s.smtp_user, s.smtp_password) == ("mail.example.com", "u", "p")

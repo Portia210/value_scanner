@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 DEFAULT_DB_PATH = "./var/value_scanner.db"
+GMAIL_HOST = "smtp.gmail.com"
 
 
 class SettingsError(RuntimeError):
@@ -76,15 +77,18 @@ def load_settings(
         load_dotenv(override=False)
     if env is None:
         env = os.environ
+    # Gmail shortcut: GOOGLE_APP_PASSWORD alone is enough to send alerts from and to MY_EMAIL.
+    app_password = _clean(env.get("GOOGLE_APP_PASSWORD"))
+    my_email = _clean(env.get("MY_EMAIL"))
     return Settings(
         db_path=Path(_clean(env.get("DB_PATH")) or DEFAULT_DB_PATH).expanduser(),
-        my_email=_clean(env.get("MY_EMAIL")),
+        my_email=my_email,
         dashboard_password=_clean(env.get("DASHBOARD_PASSWORD")),
         session_secret=_clean(env.get("SESSION_SECRET")),
         google_api_key=_clean(env.get("GOOGLE_API_KEY")),
-        smtp_host=_clean(env.get("SMTP_HOST")),
+        smtp_host=_clean(env.get("SMTP_HOST")) or (GMAIL_HOST if app_password else None),
         smtp_port=_port(env.get("SMTP_PORT")),
-        smtp_user=_clean(env.get("SMTP_USER")),
-        smtp_password=_clean(env.get("SMTP_PASSWORD")),
+        smtp_user=_clean(env.get("SMTP_USER")) or (my_email if app_password else None),
+        smtp_password=_clean(env.get("SMTP_PASSWORD")) or app_password,
         smtp_from=_clean(env.get("SMTP_FROM")),
     )

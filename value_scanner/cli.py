@@ -39,7 +39,15 @@ def build_parser() -> argparse.ArgumentParser:
 def _show_config() -> int:
     s = load_settings(load_dotenv_file=True)
     print(f"DB_PATH            = {s.db_path}")
-    for name in ("my_email", "dashboard_password", "session_secret", "google_api_key"):
+    for name in (
+        "my_email",
+        "dashboard_password",
+        "session_secret",
+        "google_api_key",
+        "smtp_host",
+        "smtp_user",
+        "smtp_password",
+    ):
         print(f"{name.upper():18} = {'set' if getattr(s, name) else 'unset'}")
     return 0
 
