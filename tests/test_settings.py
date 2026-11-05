@@ -43,5 +43,5 @@ def test_cli_help_exits_zero(capsys):
 
 
 def test_cli_pending_command_returns_nonzero(capsys):
-    assert main(["run"]) == 2
+    assert main(["serve"]) == 2
     assert "not implemented" in capsys.readouterr().err

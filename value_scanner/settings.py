@@ -27,6 +27,12 @@ class Settings:
     dashboard_password: str | None = field(default=None, repr=False)
     session_secret: str | None = field(default=None, repr=False)
     google_api_key: str | None = field(default=None, repr=False)
+    # Alert email (B4). Without SMTP_HOST alerts are kept in the database but not sent.
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_user: str | None = field(default=None, repr=False)
+    smtp_password: str | None = field(default=None, repr=False)
+    smtp_from: str | None = field(default=None, repr=False)
 
     def require(self, name: str) -> str:
         """Return a secret/optional setting or raise naming the missing env variable."""
@@ -41,6 +47,19 @@ def _clean(value: str | None) -> str | None:
         return None
     value = value.strip()
     return value or None
+
+
+def _port(value: str | None) -> int:
+    value = _clean(value)
+    if value is None:
+        return 587
+    try:
+        port = int(value)
+    except ValueError as exc:
+        raise SettingsError("SMTP_PORT must be an integer") from exc
+    if not 0 < port < 65536:
+        raise SettingsError("SMTP_PORT must be between 1 and 65535")
+    return port
 
 
 def load_settings(
@@ -63,4 +82,9 @@ def load_settings(
         dashboard_password=_clean(env.get("DASHBOARD_PASSWORD")),
         session_secret=_clean(env.get("SESSION_SECRET")),
         google_api_key=_clean(env.get("GOOGLE_API_KEY")),
+        smtp_host=_clean(env.get("SMTP_HOST")),
+        smtp_port=_port(env.get("SMTP_PORT")),
+        smtp_user=_clean(env.get("SMTP_USER")),
+        smtp_password=_clean(env.get("SMTP_PASSWORD")),
+        smtp_from=_clean(env.get("SMTP_FROM")),
     )
