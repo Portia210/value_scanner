@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — B3: רשימת מניות מה-JSON של הסורק
+- Changed: `sources/screener.py` (שתי בקשות איטיות, 8 מסננים בקוד, dedupe סדרות, `Blocked`/`StructureChanged`), `jobs/universe.py` (snapshots ל-DB, כניסות/יציאות עם סיבה, התראה בטבלת `alerts`), `tests/factories.py`.
+- Verified: gate ירוק (81 טסטים); על ה-JSON השמור ב-`var/probe-screener`: 5,600 מניות → 109 עוברות (כמו ב-probe) → 107 אחרי dedupe (GOOG, HEI.A נשמטות); 967 "כמעט" (נכשלות עד 2 מסננים).
+- NOT verified: **לא הורץ מול האתר החי** (הקוד נבדק עם httpx mock ועם JSON שמור); מזהי data-points `pOcfRatio`, `peRatio5Y`, `priceDate`, `lastEarningsDate`, `nextEarningsDate` קיימים בקטלוג אבל הערכים שלהם לא נבדקו בתשובה אמיתית; שליחת המייל בפועל (B4).
+- Traps / decisions: ערך חסר במסנן = לא עובר (ונספר ב-`filters_failed`). השוואת חברות בין ריצות לפי שם, לא סימבול, כדי שהחלפת סדרה (GOOG↔GOOGL) לא תיראה כיציאה. מניה שנכנסה בלי snapshot קודם אבל מוכרת → סיבה `data`. שדה סינון שמלא ב-<15% מהמניות = שינוי מבנה; ירידה מתחת ל-70% בכמות = שינוי מבנה (נבדק מול `universe_count` ב-settings).
+- Next: B1 (הורדת דוחות); אחר כך B4.
+
 ## 2026-11-05 — A4 + D1: שלד חבילה ומסד נתונים
 - Changed: `value_scanner/` — `settings.py` (env בלבד, סודות מוסתרים מ-repr), `cli.py` (`--help`, `config`; `run`/`serve`/`docs` עדיין stubs עם קוד יציאה 2), `.env.example`. `storage/migrations/0001_initial.sql` (15 טבלאות לפי §2), `storage/db.py` (WAL, foreign keys, מיגרציות ממוספרות), `storage/repo.py` (הנקודה היחידה מול ה-DB; מדיניות שמירה).
 - Verified: gate ירוק (35 טסטים, מתוכם 24 על DB בזיכרון: נעילת ריצה, שמירת 4 הורדות, NA, CHECK על סטטוס/strength, שמירה לפי חלונות זמן, rollback); `python -m value_scanner --help` ו-`config` עובדים.
