@@ -36,9 +36,16 @@ Reply to the developer in the language they write in.
 ## Developer authorization (2026-11-05)
 
 The developer granted full permission to edit, move, rename or delete any file in this
-repo and to abandon the current structure. Still confirm before: anything outward-facing
-(push to `master`, deploy, Railway changes), deleting data the developer can't regenerate,
-and touching the developer's uncommitted work.
+repo and to abandon the current structure, and to run the whole v2 plan without asking
+for approval (decisions take the defaults in ROADMAP). Still stop for what needs the
+developer: a CAPTCHA, StockAnalysis blocking the server, or secrets they haven't provided.
+
+**Chrome extension (Claude in Chrome):** full permission to use it in the developer's
+browser — e.g. to inspect StockAnalysis pages, verify the screener filters, and click
+through the deployed dashboard. Don't change account settings or saved screens there.
+
+**Classification doubts** go to `docs/classification-doubts.md` (Hebrew, written for the
+developer): current behavior, what the lessons say, the default in effect, the question.
 
 ## Session start
 
