@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — B1: הורדת דוחות
+- Changed: `sources/stockanalysis.py` (פענוח הטבלה לפורמט ארוך, `StatementFetcher` עם סיווג ok/blocked/failed/no_table וניסיונות חוזרים חסומים), `jobs/refresh.py` (כללי D18: חדש מיד, ניסיונות 1/3/7 ימים אחרי `lastEarningsDate` עד שהטבלה משתנה, ריענון מלא כל 45 יום; לולאת הורדה איטית), `tests/test_statements.py`.
+- Verified: gate ירוק (122 טסטים: 200/404/429/אתגר/בלי טבלה/טבלה פגומה/שגיאת רשת, גבולות D18, קצב 3–6 שנ' והפסקה ארוכה, חסימה → המתנה וניסיון חוזר → הפסקת האצווה אחרי 3). **בקשה חיה אחת** ל-AAON income: 138 שורות, FY 2024 תואם ל-v1 (Revenue 1201, EPS 2.02, Net Income 168.56).
+- NOT verified: ריצה ארוכה על מאות עמודים; `metrics`/`balance_sheet`/`cash_flow` לא נבדקו חיים (רק income); עמוד חסום אמיתי; מניות עם נקודה בסימבול (`brk.b` בכתובת — מתוך hrefs של v1, לא נבדק חי).
+- Traps / decisions: שמות שורות באתר השתנו מ-v1 (GOTCHAS). `ratios` מוגדר ב-`STATEMENT_PATHS` אבל מחוץ ל-`DEFAULT_STATEMENTS` (סתירה בין ROADMAP B1 ל-GOTCHAS — בחרתי ב-GOTCHAS; לשנות אם רוצים). `latest_period` = שנת ה-FY האחרונה (בלי TTM), ולכן ריבוע חדש (TTM) מתגלה רק דרך השוואת ערכים. כשל/no_table לא נספרים כניסיון ב-D18; מניה כושלת תנוסה שוב בכל ריצה.
+- Next: B4 (`pipeline.py` + `cli.py run` + מייל) — מחבר `refresh_universe` ← `download_statements`; פרטי SMTP.
+
 ## 2026-11-05 — B3: רשימת מניות מה-JSON של הסורק
 - Changed: `sources/screener.py` (שתי בקשות איטיות, 8 מסננים בקוד, dedupe סדרות, `Blocked`/`StructureChanged`), `jobs/universe.py` (snapshots ל-DB, כניסות/יציאות עם סיבה, התראה בטבלת `alerts`), `tests/factories.py`.
 - Verified: gate ירוק (81 טסטים); על ה-JSON השמור ב-`var/probe-screener`: 5,600 מניות → 109 עוברות (כמו ב-probe) → 107 אחרי dedupe (GOOG, HEI.A נשמטות); 967 "כמעט" (נכשלות עד 2 מסננים).

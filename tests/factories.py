@@ -54,3 +54,21 @@ def screener_json(stocks: dict[str, dict]):
         },
     }
     return initial, {"status": 200, "data": {"data": points}}
+
+
+def statement_html(
+    rows=None, periods=("Fiscal Year", "TTM", "FY 2024", "FY 2023"), extra_header=""
+):
+    """A StockAnalysis-style financials page. rows: list of lists (item, *cells as text)."""
+    if rows is None:
+        rows = [
+            ["Revenue", "1,316.0", "1,201.0", "1,169.0"],
+            ["Revenue Growth (YoY)", "8.77%", "2.75%", "-"],
+            ["Net Income", "100.25", "168.56", "177.62"],
+        ]
+    head = "".join(f"<th>{p}</th>" for p in periods) + extra_header
+    body = "".join("<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>" for r in rows)
+    return (
+        "<html><body><table class='financials-table'>"
+        f"<thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></body></html>"
+    )
