@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-06 — מצב לוקאלי בלי סיסמה + תיקון serve
+- Changed: בלי `DASHBOARD_PASSWORD` אין התחברות (מצב לוקאלי): מתקבלות רק בקשות עם Host של localhost/127.0.0.1/[::1] (הגנה מ-DNS rebinding), ו-`serve` מסרב להאזין על כתובת אחרת. `SESSION_SECRET` נדרש רק כשיש סיסמה. ה-CSRF header עדיין נדרש (טוקן קבוע `local-mode`). `cli.py`: `_serve()`.
+- **תיקון לדיווח קודם:** ההערה "serve מפעיל את המתזמן" ב-E5 הייתה שגויה — ה-replace לא נכנס. עכשיו `_serve` מפעיל `start_scheduler` באמת.
+- Verified: 319 טסטים ב-2.7 שניות; הרצה חיה על DB זמני: `/api/health` 200, `/api/runs` `[]`, Host זר = 403, `--host 0.0.0.0` בלי סיסמה נדחה.
+- Traps / decisions: טסט שקורא `main(["serve"])` חייב לנתק `dotenv.load_dotenv`, אחרת קורא את ה-`.env` האמיתי ומפעיל שרת שלא נעצר (כך נתקעו הבדיקות). `serve` מסמן ריצות `running` כ-`interrupted` בעלייה — אל תפעיל אותו על `var/value_scanner.db` כשסריקה רצה.
+- NOT verified: שהמתזמן באמת מפעיל ריצה אחרי 30 שניות (לא הרצתי בכוונה: ריצה אמיתית).
+
 ## 2026-11-05 — F1 (טיוטה, לא נבדקה): Dockerfile
 - Changed: `Dockerfile` (python:3.11-slim + uv, `uv sync --frozen --no-dev`, בלי דפדפן; `DB_PATH=/data/value_scanner.db`; healthcheck על `/api/health`; `serve` על `$PORT`), `.dockerignore`.
 - NOT verified: **`docker build`/`run` לא הורצו** — Docker Desktop לא מחובר ל-WSL (להפעיל WSL integration). ה-frontend לא נבנה לתוך התמונה ואין הגשת סטטיים מ-FastAPI. `playwright` עדיין בתלויות (v1) וגדל את התמונה; יוסר עם C9.

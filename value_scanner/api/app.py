@@ -1,5 +1,6 @@
 """FastAPI JSON API for the dashboard (E1). The web app only reads the database."""
 
+import secrets
 from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
@@ -25,16 +26,21 @@ class SettingsBody(BaseModel):
 
 
 def create_app(settings: Settings, runner: jobs.Runner = jobs.default_runner) -> FastAPI:
-    if not settings.dashboard_password or not settings.session_secret:
-        raise RuntimeError("DASHBOARD_PASSWORD and SESSION_SECRET must be set")
+    # Local mode: no DASHBOARD_PASSWORD means no login, but only for requests addressed to
+    # localhost (the CLI also refuses to bind a non-loopback host in this mode).
+    local_mode = not settings.dashboard_password
+    if not local_mode and not settings.session_secret:
+        raise RuntimeError("SESSION_SECRET must be set when DASHBOARD_PASSWORD is set")
     app = FastAPI(title="Value Scanner", docs_url=None, redoc_url=None)
-    signer = security.SessionSigner(settings.session_secret)
+    signer = security.SessionSigner(settings.session_secret or secrets.token_urlsafe(32))
     limiter = security.LoginLimiter()
     # Schema is created at startup; each request then uses its own connection (threads).
     db.open_database(settings.db_path).close()
 
     @app.middleware("http")
     async def headers(request: Request, call_next):
+        if local_mode and not security.is_local_host(request.headers.get("host", "")):
+            return Response("local mode: use http://localhost", status_code=403)
         response = await call_next(request)
         for name, value in security.SECURITY_HEADERS.items():
             response.headers[name] = value
@@ -50,6 +56,8 @@ def create_app(settings: Settings, runner: jobs.Runner = jobs.default_runner) ->
     RepoDep = Annotated[Repository, Depends(get_repo)]
 
     def session_csrf(request: Request) -> str:
+        if local_mode:
+            return security.LOCAL_CSRF
         csrf = signer.read(request.cookies.get(security.SESSION_COOKIE))
         if csrf is None:
             raise HTTPException(401, "not signed in")
@@ -66,6 +74,8 @@ def create_app(settings: Settings, runner: jobs.Runner = jobs.default_runner) ->
     # ── auth ────────────────────────────────────────────────────────────────────────────────
     @app.post("/api/auth/login")
     def login(body: LoginBody, request: Request, response: Response) -> dict[str, str]:
+        if local_mode:
+            return {"csrf": security.LOCAL_CSRF}
         client = request.client.host if request.client else "?"
         if limiter.blocked(client):
             raise HTTPException(429, "too many attempts, try again later")

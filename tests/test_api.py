@@ -36,9 +36,51 @@ def login(client):
     return r.json()["csrf"]
 
 
-def test_app_refuses_to_start_without_password_or_secret(env):
-    with pytest.raises(RuntimeError):
-        create_app(load_settings({"DB_PATH": env["DB_PATH"]}))
+def test_password_without_secret_refuses_to_start(env):
+    with pytest.raises(RuntimeError, match="SESSION_SECRET"):
+        create_app(load_settings({"DB_PATH": env["DB_PATH"], "DASHBOARD_PASSWORD": PASSWORD}))
+
+
+@pytest.fixture
+def local_client(env):
+    return TestClient(
+        create_app(load_settings({"DB_PATH": env["DB_PATH"]})), base_url="http://localhost"
+    )
+
+
+def test_local_mode_needs_no_login(local_client):
+    assert local_client.get("/api/runs").status_code == 200
+    assert local_client.get("/api/settings").json() == {"days_between_runs": 7}
+    csrf = local_client.get("/api/auth/me").json()["csrf"]
+    body = {"days_between_runs": 4}
+    assert local_client.put("/api/settings", json=body).status_code == 403  # header still needed
+    assert (
+        local_client.put("/api/settings", json=body, headers={"x-csrf-token": csrf}).status_code
+        == 200
+    )
+    any_password = {"password": "anything"}  # pragma: allowlist secret
+    assert local_client.post("/api/auth/login", json=any_password).status_code == 200
+
+
+@pytest.mark.parametrize("host", ["evil.example.com", "192.168.1.5:8000", "localhost.evil.com"])
+def test_local_mode_rejects_other_host_headers(local_client, host):
+    assert local_client.get("/api/runs", headers={"host": host}).status_code == 403
+
+
+@pytest.mark.parametrize("host", ["localhost", "localhost:8000", "127.0.0.1:8000", "[::1]:8000"])
+def test_local_mode_accepts_loopback_hosts(local_client, host):
+    assert local_client.get("/api/health", headers={"host": host}).status_code == 200
+
+
+def test_cli_refuses_open_dashboard_on_public_interface(monkeypatch, tmp_path):
+    from value_scanner.cli import main
+
+    monkeypatch.setenv("DB_PATH", str(tmp_path / "x.db"))
+    monkeypatch.delenv("DASHBOARD_PASSWORD", raising=False)
+    monkeypatch.setattr("dotenv.load_dotenv", lambda *a, **kw: None)  # never read the real .env
+    with pytest.raises(SystemExit) as exc:
+        main(["serve", "--host", "0.0.0.0"])
+    assert exc.value.code == 2
 
 
 def test_health_is_public_and_everything_else_needs_login(client):

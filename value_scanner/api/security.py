@@ -26,6 +26,24 @@ SECURITY_HEADERS = {
 }
 
 
+LOCAL_CSRF = "local-mode"  # no session in local mode; the header is still required
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "[::1]", "::1"}
+
+
+def is_local_host(host_header: str) -> bool:
+    """True for a Host header naming this machine (port allowed). Blocks DNS rebinding."""
+    host = host_header.strip().lower()
+    if host.startswith("["):
+        host = host.split("]")[0] + "]"
+    else:
+        host = host.rsplit(":", 1)[0] if host.count(":") == 1 else host
+    return host in LOCAL_HOSTS
+
+
+def is_loopback_bind(host: str) -> bool:
+    return host in {"127.0.0.1", "localhost", "::1"}
+
+
 def password_matches(given: str, expected: str) -> bool:
     return hmac.compare_digest(given.encode(), expected.encode())
 

@@ -61,6 +61,28 @@ def _run(limit: int | None) -> int:
     return {"ok": 0, "locked": 3, "blocked": 3}.get(outcome.status, 1)
 
 
+def _serve(parser: argparse.ArgumentParser, host: str, port: int) -> int:
+    import uvicorn
+
+    from value_scanner.api.app import create_app
+    from value_scanner.api.security import is_loopback_bind
+    from value_scanner.jobs.scheduler import start_scheduler
+
+    settings = load_settings(load_dotenv_file=True)
+    if not settings.dashboard_password and not is_loopback_bind(host):
+        parser.error(
+            "DASHBOARD_PASSWORD is not set (local mode): serve only on 127.0.0.1, "
+            "or set DASHBOARD_PASSWORD and SESSION_SECRET"
+        )
+    app = create_app(settings)
+    scheduler = start_scheduler(settings)
+    try:
+        uvicorn.run(app, host=host, port=port)
+    finally:
+        scheduler.shutdown(wait=False)
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -70,14 +92,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "config":
         return _show_config()
     if args.command == "serve":
-        import uvicorn
-
-        from value_scanner.api.app import create_app
-
-        uvicorn.run(
-            create_app(load_settings(load_dotenv_file=True)), host=args.host, port=args.port
-        )
-        return 0
+        return _serve(parser, args.host, args.port)
     if args.command == "docs":
         from value_scanner.analysis.docs import write_all
 
