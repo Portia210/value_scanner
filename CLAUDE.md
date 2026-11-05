@@ -11,9 +11,10 @@ StockAnalysis.com, checks each stock against the guru criteria from the develope
 (lessons 3–6: initial screen, Graham, Ken Fisher, Piotroski), and scores quality and buy
 opportunity. **Being rebuilt as v2:** an online dashboard on Railway with scheduled runs —
 see `.claude/plans/v2-rebuild.md`.
-**Stack:** Python ≥3.11, uv, pandas, httpx, Playwright, BeautifulSoup. v2 adds FastAPI,
-Jinja, APScheduler, SQLite (WAL), and in the UI Tabler (RTL) + ECharts + Alpine.js served
-from `web/static/vendor/`. Design reference: `design/dashboard-preview.html`.
+**Stack:** Python ≥3.11, uv, pandas, httpx, Playwright, BeautifulSoup. v2 adds a FastAPI
+JSON API, APScheduler, SQLite (WAL), and a React + TypeScript + Mantine + ECharts frontend
+(Vite, pnpm, Node 20) in `frontend/`, built and served by FastAPI. API types for the frontend
+are generated from FastAPI's OpenAPI. Layout/colour reference: `design/dashboard-preview.html`.
 **Environment:** WSL Ubuntu locally; target Railway (Docker, Playwright base image, volume at `/data`).
 **Course material (source of the criteria):** `/mnt/c/Users/hp/Documents/השקעות ערך/שיעור-*.md`.
 The lessons flag conflicts between the PDF and the developer's summary — never pick one

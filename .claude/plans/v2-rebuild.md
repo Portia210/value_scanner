@@ -34,7 +34,9 @@
 שירות Railway אחד, Docker על בסיס האימג' הרשמי של Playwright ל-Python:
 
 ```
-FastAPI (uvicorn) ── מגיש את הדשבורד, API ל"הרץ כעת" ולסטטוס
+React (Vite build, Mantine) ── קבצים סטטיים שמוגשים ע"י FastAPI באותו דומיין
+   │  fetch /api/*  (עוגיית session, CSRF header)
+FastAPI (uvicorn) ── API של JSON בלבד: ציונים, קריטריונים, ריצות, הגדרות, "הרץ כעת"
    │
    ├── APScheduler (בתוך התהליך) ── בודק כל 15 דק' אם עברו N ימים מהריצה המוצלחת האחרונה
    │
@@ -74,10 +76,13 @@ value_scanner/
   jobs/
     pipeline.py          # ריצה מלאה: נעילה, התקדמות, לוג, סטטוס סופי
     scheduler.py
-  web/
-    app.py, auth.py
-    routes/              # dashboard, stock, runs, api
-    templates/, static/
+  api/
+    app.py, auth.py, security.py
+    routes/              # stocks, criteria, runs, settings, auth
+    schemas.py           # Pydantic — מקור ה-OpenAPI שממנו נוצרים ה-types של הממשק
+frontend/                # Vite + React + TypeScript + Mantine + ECharts + TanStack Query
+  src/api/               # types שנוצרו מ-OpenAPI (openapi-typescript) + client
+  src/pages/             # Dashboard, Stock, Runs, Criteria, Login
 tests/
   fixtures/              # CSV מוקפאים לכמה מניות + מקרי קצה סינתטיים
 Dockerfile, .env.example
@@ -200,12 +205,16 @@ CSV/JSON של תוצאות הריצה בדשבורד. **מקומית:** אותו
 | `apscheduler` (3.x) | תזמון בתוך התהליך |
 | `pytest`, `ruff` (dev) | טסטים ו-lint ל-gate |
 | gitleaks (בינארי, hook מקומי) | סריקת סודות לפני קומיט |
-| Tabler `@tabler/core@1.0.0` (RTL) + Tabler Icons `3.19.0` | ספריית רכיבי דשבורד מוכנה: RTL מובנה, מצב כהה, טבלאות, טפסים, כרטיסים |
-| ECharts `5.5.1`, Alpine.js `3.14.1` | גרפים; אינטראקטיביות קלה. בלי build |
-| גופנים: Heebo, JetBrains Mono (Google Fonts) | עברית; ספרות ברוחב קבוע |
+| Node 20 + pnpm, Vite, React, TypeScript | ממשק (הוחלט 2026-11-05: React + Mantine במקום Jinja + Tabler) |
+| `@mantine/core`, `@mantine/hooks`, `@mantine/notifications`, `@tabler/icons-react` | ספריית רכיבים מוכנה עם RTL רשמי ומצב כהה |
+| `echarts` + `echarts-for-react` | גרפים (פיזור עם רבע קנייה, מגמות) |
+| `@tanstack/react-query`, `react-router-dom` | טעינת נתונים וניווט |
+| `openapi-typescript` (dev) | types של ה-API נוצרים מ-FastAPI — הממשק והשרת לא יכולים להתפספס |
+| `vitest` (dev) | טסטים לממשק |
+| גופנים: Heebo, JetBrains Mono (`@fontsource`) | עברית; ספרות ברוחב קבוע; מוגשים מקומית |
 
-הנכסים יוגשו מקומית מ-`web/static/vendor/` (גרסאות נעולות) ולא מ-CDN בזמן ריצה — CSP הדוק יותר
-ותלות פחותה בשירות חיצוני. תצוגה מקדימה: `design/dashboard-preview.html`.
+כל הנכסים נבנים ומוגשים מהשרת — בלי CDN בזמן ריצה. הסקיצה `design/dashboard-preview.html`
+(Tabler) נשארת כרפרנס לפריסה ולצבעים בלבד.
 
 | מסירים | למה |
 |---|---|
