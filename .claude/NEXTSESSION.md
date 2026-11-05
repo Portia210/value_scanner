@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-05 — Gemini billing ובדיקת SEC
+- Changed: תיעוד בלבד (R3 ב-ROADMAP, מלכודות ב-GOTCHAS).
+- Verified: SEC `companyfacts` ל-AAON תואם ל-StockAnalysis בהכנסות, רווח נקי, נכסים/התחייבויות שוטפים, נכסים, הון עצמי, חוב, תזרים תפעולי ו-capex (עד עיגול), מ-2020 עד 2025; מו"פ קיים ב-SEC בלבד. EPS FY2020 לא מותאם לפיצול; רווח תפעולי שונה בעד ~6%.
+- NOT verified: Gemini — עדיין 402 בבדיקה האחרונה. המפתח שייך לפרויקט `value scanner` (`gen-lang-client-0429022801`) שמקושר ל-"My Billing Account" (₪0). **המפתח מחליף ל-"My Billing Account 1" בעצמו** (Cloud Console ← Billing ← Your projects ← ⋮ ← Change billing). Claude לא שינה דבר ולא לחץ "Set account". אחרי זה: `uv run python probes/gemini/business_summary.py --ping --model gemini-3.8-flash`, ואז הרצת הסיכום על AAON (`https://www.sec.gov/Archives/edgar/data/824142/000082414226000005/aaon-20251231.htm`).
+- Traps / decisions: ממשק ספק נתונים (StockAnalysis עכשיו, SEC אפשרי בהמשך). הדיון על הפרומפט של הסיכום מחכה לתוצאה הראשונה.
+- Next: כתובת קשר ל-SEC (D17), ואז B1.
+
 ## 2026-11-05 — מקור נתונים (D7) אומת
 - Changed: `probes/screener/probe.py` (הרשאת Bash ייעודית ב-`.claude/settings.local.json`); probe ה-Railway בודק את ה-JSON של הסורק.
 - Verified: מקומי — 8 המסננים בקוד = 109 התאמות = הסינון השמור באתר באותו רגע, 20/20 סימבולים בעמוד הראשון. מחיר הסורק = מחיר עמוד המניה (`priceDate` היום). Railway — JSON 200 ×2 (5,600 מניות), 25/25 עמודי דוחות, 0 חסימות.
