@@ -69,6 +69,11 @@ developer): current behavior, what the lessons say, the default in effect, the q
 - **No new dependency without approval** (list in plan §5, decision D12).
 - **"Done" means verified** — run it; for UI, click through it.
 - **Missing data is `NA`, never `PASS`.**
+- **Never decide a formula or a fallback that the course summaries do not state.** If something is
+  missing or unclear, show the developer the problem *before* implementing a substitute. Every
+  interpretation already made is listed in `docs/formula-decisions.md` for approval.
+- **Always report a failure or anomaly up front** (broken test, hang, wrong earlier claim,
+  contradicting data), before continuing. A missing `Long-Term Debt` row means no long-term debt (0).
 
 ## Workflow
 

@@ -44,8 +44,7 @@ CRITERIA = {
             "(Total Current Assets - Total Current Liabilities) - Long-Term Debt, current",
             ">",
             0.0,
-            "no long-term-debt row and Total Debt > 0: pass only if working capital "
-            "exceeds Total Debt, otherwise NA",
+            "no Long-Term Debt row = no long-term debt (0), if the balance sheet exists",
         ),
         Criterion(
             "pe",
@@ -111,7 +110,7 @@ def _working_capital_vs_debt(s: Statements) -> Result:
         return evaluate(c, None)
     long_term = long_term_debt(s.current)
     if long_term is None:
-        return evaluate(c, None, "no debt data")
+        return evaluate(c, None, "no balance sheet")
     return evaluate(c, assets - liabilities - long_term, "working capital minus long-term debt")
 
 

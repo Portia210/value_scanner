@@ -39,7 +39,7 @@ CRITERIA = {
             "lt_debt_assets",
             "Long-term debt / assets fell",
             "Long-Term Debt / Total Assets: FY0 < FY1",
-            "no Long-Term Debt row: Total Debt minus its current parts",
+            "no Long-Term Debt row = no long-term debt (0), if the balance sheet exists",
         ),
         _c(
             "cash_flow",

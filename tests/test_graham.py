@@ -62,23 +62,22 @@ def test_working_capital_vs_long_term_debt():
     assert neg.status == Status.FAIL and neg.value < 0
 
 
-def test_working_capital_without_long_term_debt_row_uses_total_debt_minus_current_parts():
-    no_lt = {R.LONG_TERM_DEBT: {"FY": [None] * 5}}
-    debt_free = run(**no_lt, **{R.TOTAL_DEBT: {"TTM": 0.0, "FY": [0.0] * 5}})["working_capital"]
-    assert debt_free.status == Status.PASS and debt_free.value == pytest.approx(300.0)
-    covers = run(**no_lt, **{R.TOTAL_DEBT: {"TTM": 250.0, "FY": [250.0] * 5}})["working_capital"]
-    assert covers.status == Status.PASS and covers.value == pytest.approx(50.0)
-    too_much = run(**no_lt, **{R.TOTAL_DEBT: {"TTM": 350.0, "FY": [350.0] * 5}})["working_capital"]
-    assert too_much.status == Status.FAIL and too_much.value == pytest.approx(-50.0)
-    with_current = run(
-        **no_lt,
-        **{
-            R.TOTAL_DEBT: {"TTM": 350.0, "FY": [350.0] * 5},
-            R.SHORT_TERM_DEBT: {"TTM": 100.0, "FY": [100.0] * 5},
-        },
-    )["working_capital"]
-    assert with_current.status == Status.PASS  # 300 - (350 - 100)
-    assert run(**no_lt)["working_capital"].status == Status.NA  # no debt data at all
+def test_working_capital_without_long_term_debt_row_means_no_long_term_debt():
+    no_lt = {
+        R.LONG_TERM_DEBT: {"FY": [None] * 5},
+        R.TOTAL_ASSETS: {"TTM": 900.0, "FY": [900.0] * 5},
+    }
+    r = run(**no_lt)["working_capital"]
+    assert r.status == Status.PASS and r.value == pytest.approx(300.0)  # 300 - 0
+    # Total Debt (e.g. leases) is not used as a substitute
+    r = run(**no_lt, **{R.TOTAL_DEBT: {"TTM": 350.0, "FY": [350.0] * 5}})["working_capital"]
+    assert r.status == Status.PASS and r.value == pytest.approx(300.0)
+
+
+def test_working_capital_unknown_without_a_balance_sheet():
+    data = {k: v for k, v in GOOD.items() if k != R.LONG_TERM_DEBT}
+    res = {r.criterion_id: r for r in evaluate_graham(stmts(**data), 10.0, 1.5)}
+    assert res["working_capital"].status == Status.NA
 
 
 @pytest.mark.parametrize(
