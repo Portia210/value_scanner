@@ -75,14 +75,21 @@ def test_roa_must_be_positive_and_improving():
     assert run(**{R.NET_INCOME: (80.0, 80.0)})["roa"].status == Status.FAIL
 
 
-def test_missing_long_term_debt_row_counts_as_zero_only_with_zero_total_debt():
+def test_missing_long_term_debt_row_falls_back_to_total_debt():
     rows_without = {R.LONG_TERM_DEBT: (None, None), R.TOTAL_DEBT: (0.0, 0.0)}
-    # 0 vs 0: not lower -> FAIL, but computable
-    assert run(**rows_without)["lt_debt_assets"].status == Status.FAIL
+    assert run(**rows_without)["lt_debt_assets"].status == Status.FAIL  # 0 vs 0: not lower
     only_now = {R.LONG_TERM_DEBT: (None, 150.0), R.TOTAL_DEBT: (0.0, 150.0)}
     assert run(**only_now)["lt_debt_assets"].status == Status.PASS  # 0 < 0.15
-    unknown = {R.LONG_TERM_DEBT: (None, 150.0), R.TOTAL_DEBT: (80.0, 150.0)}
-    assert run(**unknown)["lt_debt_assets"].status == Status.NA
+    fell = {R.LONG_TERM_DEBT: (None, None), R.TOTAL_DEBT: (80.0, 150.0)}
+    assert run(**fell)["lt_debt_assets"].status == Status.PASS  # 0.08 < 0.15
+    current = {
+        R.LONG_TERM_DEBT: (None, None),
+        R.TOTAL_DEBT: (200.0, 150.0),
+        R.SHORT_TERM_DEBT: (150.0, 0.0),
+    }
+    assert run(**current)["lt_debt_assets"].status == Status.PASS  # (200-150)=50 < 150
+    unknown = {R.LONG_TERM_DEBT: (None, None)}
+    assert run(**unknown)["lt_debt_assets"].status == Status.NA  # no Total Debt either
 
 
 def test_missing_previous_year_is_na_not_pass():

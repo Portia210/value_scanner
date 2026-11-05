@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from value_scanner.analysis import rows
 from value_scanner.analysis.criteria import Criterion, Result, Status, evaluate, is_missing
+from value_scanner.analysis.debt import long_term_debt
 from value_scanner.analysis.statements import Statements
 
 GURU = "graham"
@@ -108,18 +109,10 @@ def _working_capital_vs_debt(s: Statements) -> Result:
     liabilities = s.current(rows.TOTAL_CURRENT_LIABILITIES)
     if is_missing(assets) or is_missing(liabilities):
         return evaluate(c, None)
-    working_capital = assets - liabilities
-    long_term = s.current(rows.LONG_TERM_DEBT)
-    if not is_missing(long_term):
-        return evaluate(c, working_capital - long_term, "working capital minus long-term debt")
-    total_debt = s.current(rows.TOTAL_DEBT)
-    if is_missing(total_debt):
+    long_term = long_term_debt(s.current)
+    if long_term is None:
         return evaluate(c, None, "no debt data")
-    if total_debt == 0:
-        return evaluate(c, working_capital, "no debt")
-    if working_capital - total_debt > 0:  # beats even all debt, so it beats the long-term part
-        return evaluate(c, working_capital - total_debt, "compared with Total Debt")
-    return evaluate(c, None, "long-term debt not reported; working capital below Total Debt")
+    return evaluate(c, assets - liabilities - long_term, "working capital minus long-term debt")
 
 
 def evaluate_graham(

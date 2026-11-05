@@ -115,7 +115,25 @@ def roe_5y_avg_pct(s: Statements) -> float | None:
     return sum(values) / len(values) if len(values) >= MIN_ROE_YEARS else None
 
 
-def evaluate_screen(s: Statements, market_cap: float | None, pe: float | None) -> list[Result]:
+def _prefer_screener(
+    criterion: Criterion, screener: float | None, computed: float | None
+) -> Result:
+    """The screener's own 5-year figure (its window reaches years the free statement pages hide)
+    decides; the figure computed from our 5 fiscal years is only a fallback."""
+    if not is_missing(screener):
+        return evaluate(criterion, screener, "screener value (5-year window)")
+    return evaluate(criterion, computed, "computed from 5 fiscal years")
+
+
+def evaluate_screen(
+    s: Statements,
+    market_cap: float | None,
+    pe: float | None,
+    *,
+    revenue_growth_5y: float | None = None,
+    eps_growth_5y: float | None = None,
+    roe_5y: float | None = None,
+) -> list[Result]:
     c = CRITERIA
     margin = _ratio(s.current(rows.NET_INCOME), s.current(rows.REVENUE))
     equity = s.current(rows.EQUITY)
@@ -137,15 +155,17 @@ def evaluate_screen(s: Statements, market_cap: float | None, pe: float | None) -
     return [
         evaluate(c["market_cap"], market_cap),
         evaluate(c["pe"], pe),
-        evaluate(
-            c["revenue_growth_5y"], cagr_pct(s.series(rows.REVENUE, 5)), "needs 5 fiscal years"
+        _prefer_screener(
+            c["revenue_growth_5y"], revenue_growth_5y, cagr_pct(s.series(rows.REVENUE, 5))
         ),
         evaluate(c["profit_margin"], None if margin is None else margin * 100),
-        evaluate(c["eps_growth_5y"], cagr_pct(s.series(rows.EPS_DILUTED, 5))),
+        _prefer_screener(
+            c["eps_growth_5y"], eps_growth_5y, cagr_pct(s.series(rows.EPS_DILUTED, 5))
+        ),
         de_result,
         evaluate(
             c["current_ratio"],
             _ratio(s.current(rows.TOTAL_CURRENT_ASSETS), s.current(rows.TOTAL_CURRENT_LIABILITIES)),
         ),
-        evaluate(c["roe_5y"], roe_5y_avg_pct(s)),
+        _prefer_screener(c["roe_5y"], roe_5y, roe_5y_avg_pct(s)),
     ]

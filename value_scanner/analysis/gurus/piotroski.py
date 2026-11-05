@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from value_scanner.analysis import rows
 from value_scanner.analysis.criteria import Criterion, Result, Status, compare, is_missing
+from value_scanner.analysis.debt import long_term_debt
 from value_scanner.analysis.statements import Statements
 
 GURU = "piotroski"
@@ -38,7 +39,7 @@ CRITERIA = {
             "lt_debt_assets",
             "Long-term debt / assets fell",
             "Long-Term Debt / Total Assets: FY0 < FY1",
-            "a missing debt row counts as 0 only when Total Debt is 0",
+            "no Long-Term Debt row: Total Debt minus its current parts",
         ),
         _c(
             "cash_flow",
@@ -69,10 +70,7 @@ def _ratio(num: float | None, den: float | None) -> float | None:
 
 
 def _lt_debt(s: Statements, n: int) -> float | None:
-    value = s.fy(rows.LONG_TERM_DEBT, n)
-    if not is_missing(value):
-        return value
-    return 0.0 if s.fy(rows.TOTAL_DEBT, n) == 0 else None
+    return long_term_debt(lambda item: s.fy(item, n))
 
 
 def evaluate_piotroski(

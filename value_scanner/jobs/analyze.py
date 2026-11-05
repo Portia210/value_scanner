@@ -56,7 +56,14 @@ def analyse_stock(
     """All criteria for one stock; `snap` is its screener_snapshots row."""
     pe, pb, ps = snap["pe_ratio"], snap["pb_ratio"], snap["ps_ratio"]
     results = [
-        *evaluate_screen(stmts, snap["market_cap"], pe),
+        *evaluate_screen(
+            stmts,
+            snap["market_cap"],
+            pe,
+            revenue_growth_5y=snap["revenue_growth_5y"],
+            eps_growth_5y=snap["eps_growth_5y"],
+            roe_5y=snap["roe_5y"],
+        ),
         *evaluate_graham(stmts, pe, pb, cls.pe_limit),
         *evaluate_fisher(
             stmts, ps, snap["market_cap"], cyclical=cls.cyclical, rd_applies=cls.rd_applies

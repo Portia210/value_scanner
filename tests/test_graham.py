@@ -62,16 +62,23 @@ def test_working_capital_vs_long_term_debt():
     assert neg.status == Status.FAIL and neg.value < 0
 
 
-def test_working_capital_without_long_term_debt_row():
+def test_working_capital_without_long_term_debt_row_uses_total_debt_minus_current_parts():
     no_lt = {R.LONG_TERM_DEBT: {"FY": [None] * 5}}
     debt_free = run(**no_lt, **{R.TOTAL_DEBT: {"TTM": 0.0, "FY": [0.0] * 5}})["working_capital"]
     assert debt_free.status == Status.PASS and debt_free.value == pytest.approx(300.0)
     covers = run(**no_lt, **{R.TOTAL_DEBT: {"TTM": 250.0, "FY": [250.0] * 5}})["working_capital"]
-    assert covers.status == Status.PASS  # 300 > even all debt
-    unclear = run(**no_lt, **{R.TOTAL_DEBT: {"TTM": 350.0, "FY": [350.0] * 5}})["working_capital"]
-    assert unclear.status == Status.NA  # might be short-term debt: do not guess
-    unknown = run(**no_lt)["working_capital"]
-    assert unknown.status == Status.NA
+    assert covers.status == Status.PASS and covers.value == pytest.approx(50.0)
+    too_much = run(**no_lt, **{R.TOTAL_DEBT: {"TTM": 350.0, "FY": [350.0] * 5}})["working_capital"]
+    assert too_much.status == Status.FAIL and too_much.value == pytest.approx(-50.0)
+    with_current = run(
+        **no_lt,
+        **{
+            R.TOTAL_DEBT: {"TTM": 350.0, "FY": [350.0] * 5},
+            R.SHORT_TERM_DEBT: {"TTM": 100.0, "FY": [100.0] * 5},
+        },
+    )["working_capital"]
+    assert with_current.status == Status.PASS  # 300 - (350 - 100)
+    assert run(**no_lt)["working_capital"].status == Status.NA  # no debt data at all
 
 
 @pytest.mark.parametrize(

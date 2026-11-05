@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|
 | 1 | `pb_discount` | Equity cheap versus the sector | P/B <= 0.8 x sector median P/B (financial companies only, D2) | `> 0` | NA for non-financial companies or without a sector median |
 | 2 | `current_ratio` | Current ratio improved | Total Current Assets / Total Current Liabilities: FY0 > FY1 | `> 0` | — |
-| 3 | `lt_debt_assets` | Long-term debt / assets fell | Long-Term Debt / Total Assets: FY0 < FY1 | `> 0` | a missing debt row counts as 0 only when Total Debt is 0 |
+| 3 | `lt_debt_assets` | Long-term debt / assets fell | Long-Term Debt / Total Assets: FY0 < FY1 | `> 0` | no Long-Term Debt row: Total Debt minus its current parts |
 | 4 | `cash_flow` | Operating cash flow positive and above net income | Operating Cash Flow > 0 and > Net Income, FY0 | `> 0` | — |
 | 5 | `roa` | Return on assets positive and higher | Net Income / Total Assets: FY0 > 0 and FY0 > FY1 | `> 0` | — |
 | 6 | `shares` | Fewer shares outstanding | Shares Outstanding (Diluted): FY0 < FY1 | `> 0` | reported in millions, so a small buyback can round to equal (= fail) |

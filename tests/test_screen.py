@@ -128,3 +128,28 @@ def test_roe_average_skips_bad_years_and_needs_three():
 def test_everything_missing_is_na_not_pass():
     res = {r.criterion_id: r for r in evaluate_screen(Statements([]), None, None)}
     assert {r.status for r in res.values()} == {Status.NA}
+
+
+def test_screener_value_wins_over_the_computed_five_year_figures():
+    declining = {R.REVENUE: [500.0, 600.0, 700.0, 800.0, 900.0]}  # computed growth is negative
+    assert run(**declining)["revenue_growth_5y"].status == Status.FAIL  # computed alone: decline
+    data = {**GOOD, **declining}
+    res = {
+        r.criterion_id: r
+        for r in evaluate_screen(
+            stmts(**data), 3e9, 15.0, revenue_growth_5y=9.9, eps_growth_5y=46.4, roe_5y=10.2
+        )
+    }
+    assert res["revenue_growth_5y"].status == Status.PASS and res["revenue_growth_5y"].value == 9.9
+    assert "screener" in res["revenue_growth_5y"].note
+    assert res["eps_growth_5y"].value == 46.4 and res["roe_5y"].value == 10.2
+
+
+def test_screener_value_at_the_threshold_fails_and_missing_falls_back():
+    res = {
+        r.criterion_id: r
+        for r in evaluate_screen(stmts(**GOOD), 3e9, 15.0, roe_5y=10.0, eps_growth_5y=None)
+    }
+    assert res["roe_5y"].status == Status.FAIL  # exactly 10: not above
+    assert res["eps_growth_5y"].note == "computed from 5 fiscal years"
+    assert res["eps_growth_5y"].status == Status.PASS
