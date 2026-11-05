@@ -25,6 +25,7 @@
 | P10 | 🟡 | `validate_cookie` בודק תוקף ה-`access_token` (קצר-מועד) — כנראה יגרום ל-login בכל ריצה. לא מזיק, אבל צריך לדעת. | `playwright_utils/cookie_utils.py:144-155` | קריאת קוד |
 | P12 | 🔴 | **מטבע הדיווח של חברות זרות.** אצל ADR כמו ASR (מקסיקו) ו-ATAT (סין) הדוחות במטבע מקומי ושווי השוק בדולר. כל השוואה של סכום לסף בדולרים (הכנסות >350M$, שווי שוק/מו"פ) שגויה אצלן; מכפיל שמחושב ידנית יוצא שגוי ב-86–95%. המכפילים של האתר עצמם (P/E, P/S...) תקינים כי הם חסרי יחידות. | `benjamin_graham_check.py:57-63`, `ken_fisher_check.py:147-166` | סקריפט: השוואת מכפילים מחושבים מול האתר ל-140 מניות |
 | P13 | 🟠 | **"חריגת קצב" היא בפועל אתגר Cloudflare** (`cf-mitigated: challenge`, דף "Just a moment"), לא 429 עם Retry-After. הקוד מתייחס לזה כ"אין טבלה" ויוצא בלי קובץ (→ P2). | `698c499:rate_limit_debug.txt` | קריאת ה-headers מההיסטוריה |
+| P14 | 🔴 | **דוח רווח והפסד עבר כתובת.** `/financials/` הוא היום עמוד "Overview" בלי טבלת דוח; הדוח עצמו ב-`/financials/income-statement/`, ושולי רווח/FCF למניה עברו ל-`/financials/metrics/`. ה-fetcher הישן היה נתקע בלולאה האינסופית (P2) על כל מניה. | `pipeline/http_reports_fetcher.py:61-62` | probe מקומי + Railway, 2026-11-05: 10/10 `no_table` |
 | P11 | 🟡 | כפילות מניה: `BRK.A` ו-`BRK.B` (אותה חברה, שתי סדרות). | `outputs/filtered_companies.json` | סקריפט |
 
 ## 2. בדיקות הגורואים (reports_checks)

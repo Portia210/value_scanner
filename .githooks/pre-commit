@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Block commits that add secrets. Installed via: git config core.hooksPath .githooks
 set -euo pipefail
-files=$(git diff --cached --name-only --diff-filter=ACM)
+# Lockfiles hold package integrity hashes (high-entropy, not secrets), so they are skipped.
+files=$(git diff --cached --name-only --diff-filter=ACM | grep -vE '(^|/)(pnpm-lock\.yaml|uv\.lock|package-lock\.json)$' || true)
 [ -z "$files" ] && exit 0
 for f in $files; do
   case "$f" in
