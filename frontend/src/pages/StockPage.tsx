@@ -6,7 +6,7 @@ import { Link, useParams } from "react-router-dom";
 import { CriterionGauge } from "../components/CriterionGauge";
 import { GuruBadge } from "../components/GuruBadge";
 import { Prose, SourceLink } from "../components/Prose";
-import { useStock } from "../api/hooks";
+import { useStock, useStocks } from "../api/hooks";
 import { ApiError } from "../api/client";
 import { asOf, dateTime, daysFromToday, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
 
@@ -14,6 +14,9 @@ export function StockPage() {
   const { symbol = "" } = useParams();
   const { data: d, isLoading, error } = useStock(symbol.toUpperCase());
   const dark = useComputedColorScheme("light") === "dark";
+  const stockList = useStocks();
+  const qualityMin = stockList.data?.quality_min ?? 0.7;
+  const oppMin = stockList.data?.opportunity_min ?? 0.2;
   if (isLoading) return <Loader />;
   if (error instanceof ApiError && error.status === 404)
     return (
@@ -25,17 +28,31 @@ export function StockPage() {
     );
   if (error || !d) return <Alert color="red">לא הצלחתי לטעון את המניה.</Alert>;
 
+  const text = dark ? "#e0e0e0" : "#212529";
+  const muted = dark ? "#adb5bd" : "#495057";
+  const grid = dark ? "#444" : "#dee2e6";
+  const BLUE = "#4c6ef5", GREEN = "#12b886", YELLOW = "#fab005";
   const trend = {
-    textStyle: { fontFamily: "Heebo" },
-    legend: { top: 0 },
-    grid: { left: 44, right: 44, top: 36, bottom: 28 },
+    textStyle: { fontFamily: "Heebo", color: muted },
+    legend: { top: 0, textStyle: { color: text } },
+    grid: { left: 52, right: 52, top: 44, bottom: 30 },
     tooltip: { trigger: "axis" },
-    xAxis: { type: "category", data: d.series.years },
-    yAxis: [{ type: "value", name: "EPS $" }, { type: "value", name: "%", splitLine: { show: false } }],
+    xAxis: { type: "category", data: d.series.years, axisLabel: { color: muted } },
+    yAxis: [
+      { type: "value", name: "EPS ($)", nameTextStyle: { color: BLUE }, axisLabel: { color: BLUE },
+        splitLine: { lineStyle: { color: grid } } },
+      { type: "value", name: "אחוזים (%)", nameTextStyle: { color: muted }, axisLabel: { color: muted, formatter: "{value}%" },
+        splitLine: { show: false } },
+    ],
     series: [
-      { name: "EPS", type: "bar", data: d.series.eps, itemStyle: { color: "#1f6de2", borderRadius: [4, 4, 0, 0] } },
-      { name: "שולי רווח נקי", type: "line", yAxisIndex: 1, smooth: true, data: d.series.net_margin, itemStyle: { color: "#12b886" } },
-      { name: "ROE", type: "line", yAxisIndex: 1, smooth: true, data: d.series.roe, itemStyle: { color: "#fab005" } },
+      { name: "EPS מדולל ($)", type: "bar", data: d.series.eps, itemStyle: { color: BLUE, borderRadius: [4, 4, 0, 0] },
+        label: { show: true, position: "insideBottom", color: "#fff", fontSize: 11, formatter: (p: { value: number | null }) => (p.value === null ? "" : String(p.value)) } },
+      { name: "שולי רווח נקי (%)", type: "line", yAxisIndex: 1, data: d.series.net_margin, symbolSize: 7,
+        itemStyle: { color: GREEN }, lineStyle: { width: 2 },
+        label: { show: true, position: "bottom", color: GREEN, fontSize: 10, fontWeight: "bold", formatter: (p: { value: number | null }) => (p.value === null ? "" : `\u200E${p.value}%`) } },
+      { name: "תשואה להון, ROE (%)", type: "line", yAxisIndex: 1, data: d.series.roe, symbolSize: 7,
+        itemStyle: { color: YELLOW }, lineStyle: { width: 2 },
+        label: { show: true, position: "top", color: YELLOW, fontSize: 10, fontWeight: "bold", formatter: (p: { value: number | null }) => (p.value === null ? "" : `\u200E${p.value}%`) } },
     ],
   };
   const qHistory = d.history.quality ?? [];
@@ -154,8 +171,12 @@ export function StockPage() {
               )}
             </Card>
             <Card>
-              <Title order={4} mb="sm">מגמות (שנות FY)</Title>
-              <ReactECharts option={trend} style={{ height: 260 }} />
+              <Title order={4} mb={4}>מגמות לאורך שנות הכספים</Title>
+              <Text size="xs" c="dimmed" mb="xs">
+                עמודות כחולות: רווח למניה (EPS מדולל, בדולרים). קו ירוק: שולי רווח נקי, כלומר כמה אחוזים מההכנסות נשארו
+                כרווח. קו צהוב: ROE, כלומר הרווח הנקי באחוזים מההון העצמי. הספרות מסומנות על כל נקודה.
+              </Text>
+              <ReactECharts option={trend} style={{ height: 300 }} notMerge />
             </Card>
             {(qHistory.length > 1 || oHistory.length > 1) && (
               <Card>
@@ -163,23 +184,34 @@ export function StockPage() {
                 <Text size="xs" c="dimmed" mb="xs">
                   איכות: ממוצע ציוני הגורואים, 0 עד 100 (כמה קריטריונים עוברים ובאיזה מרווח).
                   מרווח ביטחון: כמה המחיר זול מהשווי ההוגן, באחוזים (שלילי = יקר מהשווי ההוגן).
-                  כל נקודה היא ריצה אחת.
+                  כל נקודה היא ריצה אחת, והקווים המקווקווים הם הספים של "מועמדת לקנייה": צריך להיות מעליהם בשניהם.
                 </Text>
-                <ReactECharts style={{ height: 240 }} notMerge option={{
-                  textStyle: { fontFamily: "Heebo", color: dark ? "#c9c9c9" : "#495057" },
-                  legend: { top: 0, textStyle: { color: dark ? "#e0e0e0" : "#212529" } },
+                <ReactECharts style={{ height: 280 }} notMerge option={{
+                  textStyle: { fontFamily: "Heebo", color: muted },
+                  legend: { top: 0, textStyle: { color: text } },
                   tooltip: { trigger: "axis", valueFormatter: (v: number | null) => (v === null || v === undefined ? "—" : String(v)) },
-                  grid: { left: 48, right: 24, top: 40, bottom: 44 },
+                  grid: { left: 48, right: 84, top: 44, bottom: 56 },
                   xAxis: {
-                    type: "category", name: "ריצה (תאריך)", nameLocation: "middle", nameGap: 28,
-                    data: qHistory.map((h) => `#${h.run_id} · ${dateTime(h.started_at).slice(0, 5)}`),
+                    type: "category", name: "ריצה (תאריך)", nameLocation: "middle", nameGap: 40,
+                    nameTextStyle: { color: muted }, axisLabel: { color: muted, lineHeight: 15 },
+                    data: qHistory.map((h) => `#${h.run_id}\n${dateTime(h.started_at).slice(0, 5)}`),
                   },
-                  yAxis: { type: "value",
-                    splitLine: { lineStyle: { color: dark ? "#444" : "#dee2e6" } } },
+                  yAxis: { type: "value", axisLabel: { color: muted, formatter: (v: number) => `\u200E${v}` },
+                    min: (v: { min: number }) => Math.floor((Math.min(v.min, 0) - 20) / 10) * 10,
+                    max: (v: { max: number }) => Math.ceil((Math.max(v.max, 100) + 5) / 10) * 10,
+                    splitLine: { lineStyle: { color: grid } } },
                   series: [
-                    { name: "איכות, 0 עד 100", type: "line", symbolSize: 8, itemStyle: { color: "#4c6ef5" },
+                    { name: "איכות (נקודות, 0 עד 100)", type: "line", symbolSize: 9, itemStyle: { color: BLUE },
+                      label: { show: true, position: "top", color: BLUE, fontWeight: "bold" },
+                      markLine: { silent: true, symbol: "none", lineStyle: { type: "dashed", color: BLUE, opacity: 0.6 },
+                        label: { formatter: `סף איכות ${Math.round(qualityMin * 100)}`, color: BLUE, position: "insideEndTop" },
+                        data: [{ yAxis: Math.round(qualityMin * 100) }] },
                       data: qHistory.map((h) => (h.score === null ? null : Math.round(h.score * 100))) },
-                    { name: "מרווח ביטחון, באחוזים", type: "line", symbolSize: 8, itemStyle: { color: "#51cf66" },
+                    { name: "מרווח ביטחון (אחוזים)", type: "line", symbolSize: 9, itemStyle: { color: GREEN },
+                      label: { show: true, position: "top", color: GREEN, fontWeight: "bold", formatter: (p: { value: number | null }) => (p.value === null ? "" : `\u200E${p.value}%`) },
+                      markLine: { silent: true, symbol: "none", lineStyle: { type: "dashed", color: GREEN, opacity: 0.6 },
+                        label: { formatter: `סף מרווח ${Math.round(oppMin * 100)}%`, color: GREEN, position: "insideEndTop" },
+                        data: [{ yAxis: Math.round(oppMin * 100) }] },
                       data: oHistory.map((h) => (h.score === null ? null : Math.round(h.score * 100))) },
                   ],
                 }} />
