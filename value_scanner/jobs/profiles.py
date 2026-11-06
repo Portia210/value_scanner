@@ -7,6 +7,7 @@ billing is an alert ("billing"). One company failing never stops the others.
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
@@ -107,24 +108,45 @@ def refresh_profiles(
     return summary
 
 
-def start_profile(settings: Settings, symbol: str) -> None:
-    """Create or refresh one company's profile in a background thread (the dashboard button)."""
-    import threading
+_JOBS: dict[str, str] = {}  # symbol -> running | ok | unsupported | failed | billing | busy
+_JOBS_LOCK = threading.Lock()
 
+
+def profile_job_status(symbol: str) -> str:
+    """Status of the newest on-demand profile job of this process ('none' if there was none)."""
+    with _JOBS_LOCK:
+        return _JOBS.get(symbol, "none")
+
+
+def start_profile(settings: Settings, symbol: str) -> bool:
+    """Create or refresh one company's profile in a background thread (the dashboard button).
+    False if a job for this symbol is already running."""
     from value_scanner.storage import db
 
+    with _JOBS_LOCK:
+        if _JOBS.get(symbol) == "running":
+            return False
+        _JOBS[symbol] = "running"
+
     def work() -> None:
+        outcome = "failed"
         conn = db.connect(settings.db_path)
         try:
-            refresh_profile(
+            result = refresh_profile(
                 Repository(conn), settings, symbol, SecClient(settings.require("my_email"))
             )
-        except Exception:  # noqa: BLE001 - alerts are stored by refresh_profile; nothing to raise
-            pass
+            outcome = "ok" if result in ("created", "fresh") else result
+        except gemini.BillingError:
+            outcome = "billing"
+        except Exception:  # noqa: BLE001 - alerts are stored by refresh_profile
+            outcome = "failed"
         finally:
             conn.close()
+            with _JOBS_LOCK:
+                _JOBS[symbol] = outcome
 
     threading.Thread(target=work, daemon=True).start()
+    return True
 
 
 def candidate_symbols(repo: Repository) -> list[str]:

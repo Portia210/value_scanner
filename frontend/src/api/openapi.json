@@ -584,6 +584,24 @@
         "title": "LoginBody",
         "type": "object"
       },
+      "ProfileJob": {
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "status"
+        ],
+        "title": "ProfileJob",
+        "type": "object"
+      },
       "ProfileOut": {
         "properties": {
           "created_at": {
@@ -1724,6 +1742,45 @@
           }
         },
         "summary": "Start Profile"
+      }
+    },
+    "/api/profiles/{symbol}/status": {
+      "get": {
+        "operationId": "profile_status_api_profiles__symbol__status_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "title": "Symbol",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileJob"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Profile Status"
       }
     },
     "/api/runs": {

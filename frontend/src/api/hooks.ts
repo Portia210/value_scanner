@@ -68,3 +68,13 @@ export function useStartProfile() {
     mutationFn: (symbol: string) => api<{ symbol: string }>(`/profiles/${encodeURIComponent(symbol)}`, { method: "POST" }),
   });
 }
+
+type ProfileJob = components["schemas"]["ProfileJob"];
+
+/** Status of the on-demand profile job; polls every 3 s while `poll` is true. */
+export const useProfileJob = (symbol: string, poll: boolean) =>
+  useQuery({
+    queryKey: ["profilejob", symbol],
+    queryFn: () => api<ProfileJob>(`/profiles/${encodeURIComponent(symbol)}/status`),
+    refetchInterval: poll ? 3000 : false,
+  });

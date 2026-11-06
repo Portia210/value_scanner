@@ -1,5 +1,5 @@
-import { Alert, Anchor, Badge, Button, Card, Grid, Group, Loader, RingProgress, SimpleGrid, Spoiler, Stack, Table, Tabs, Text, Title } from "@mantine/core";
-import { IconArrowRight, IconCalendarEvent, IconDoorExit } from "@tabler/icons-react";
+import { Alert, Anchor, Badge, Button, Card, Collapse, Divider, Grid, Group, Loader, RingProgress, SimpleGrid, Stack, Table, Tabs, Text, Title, UnstyledButton } from "@mantine/core";
+import { IconArrowRight, IconCalendarEvent, IconChevronDown, IconChevronUp, IconDoorExit } from "@tabler/icons-react";
 import ReactECharts from "echarts-for-react";
 import { useComputedColorScheme } from "@mantine/core";
 import { useEffect, useState } from "react";
@@ -10,8 +10,8 @@ import { CriterionGauge } from "../components/CriterionGauge";
 import { GuruBadge } from "../components/GuruBadge";
 import { Prose, SourceLink } from "../components/Prose";
 import { TickerAnalyzer } from "../components/TickerAnalyzer";
-import { useStartProfile, useStock, useStocks } from "../api/hooks";
-import { ApiError } from "../api/client";
+import { useProfileJob, useStartProfile, useStock, useStocks } from "../api/hooks";
+import { ApiError, type StockDetail } from "../api/client";
 import { asOf, dateTime, daysFromToday, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
 
 export function StockPage() {
@@ -119,21 +119,7 @@ export function StockPage() {
       </Group>
 
       {!d.profile && <ProfileButton symbol={d.symbol} />}
-      {d.profile && (
-        <Card>
-          <Group justify="space-between" mb="xs" align="baseline">
-            <Title order={4}>על החברה</Title>
-            <Text size="xs" c="dimmed">
-              מבוסס על הדוח השנתי שהוגש ב-{d.profile.filing_date ? fullDate(d.profile.filing_date) : "—"} · סיכום AI, לא ייעוץ
-              {d.sic_description ? ` · SIC: ${d.sic_description}` : ""}
-            </Text>
-          </Group>
-          <Spoiler maxHeight={320} showLabel="הצג הכול" hideLabel="הסתר">
-            <Prose text={d.profile.text} />
-          </Spoiler>
-          {d.profile.source_url && <SourceLink href={d.profile.source_url} />}
-        </Card>
-      )}
+      {d.profile && <ProfileCard profile={d.profile} sic={d.sic_description} />}
 
       <SimpleGrid cols={{ base: 2, md: 4 }}>
         {GURU_ORDER.map((g) => (
@@ -261,30 +247,108 @@ export function StockPage() {
   );
 }
 
+const PROFILE_OPEN_KEY = "profile-open";
+
+function readOpen(): boolean {
+  try { return localStorage.getItem(PROFILE_OPEN_KEY) === "1"; } catch { return false; }
+}
+
+/** "במשפט אחד": the one-line summary of the generated profile, shown while the card is folded. */
+function oneLiner(text: string): string | null {
+  const lines = text.split("\n");
+  const i = lines.findIndex((l) => l.startsWith("## ") && l.includes("במשפט אחד"));
+  if (i < 0) return null;
+  const rest: string[] = [];
+  for (const l of lines.slice(i + 1)) {
+    if (l.startsWith("#") || /^-{3,}$/.test(l.trim())) break;
+    if (l.trim()) rest.push(l.trim());
+  }
+  return rest.join(" ").replace(/\*\*/g, "") || null;
+}
+
+/** The company profile, foldable. Folded by default (it is long); the choice is remembered. */
+function ProfileCard({ profile, sic }: { profile: NonNullable<StockDetail["profile"]>; sic: string | null }) {
+  const [open, setOpen] = useState(readOpen);
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    try { localStorage.setItem(PROFILE_OPEN_KEY, next ? "1" : "0"); } catch { /* private mode */ }
+  };
+  const summary = oneLiner(profile.text);
+  return (
+    <Card>
+      <UnstyledButton onClick={toggle} w="100%" aria-expanded={open} aria-label={open ? "הסתר את תיאור החברה" : "הצג את תיאור החברה"}>
+        <Group justify="space-between" wrap="nowrap" align="flex-start">
+          <div>
+            <Title order={4}>על החברה</Title>
+            <Text size="xs" c="dimmed">
+              מבוסס על הדוח השנתי שהוגש ב-{profile.filing_date ? fullDate(profile.filing_date) : "—"} · סיכום AI, לא ייעוץ
+              {sic ? ` · SIC: ${sic}` : ""}
+            </Text>
+          </div>
+          <Group gap={4} wrap="nowrap">
+            <Text size="sm" c="brand">{open ? "הסתר" : "הצג הכול"}</Text>
+            {open ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
+          </Group>
+        </Group>
+      </UnstyledButton>
+      {!open && summary && <Text size="sm" mt="xs" lineClamp={3}>{summary}</Text>}
+      <Collapse in={open}>
+        <Divider my="sm" />
+        <Prose text={profile.text} />
+        {profile.source_url && <SourceLink href={profile.source_url} />}
+      </Collapse>
+    </Card>
+  );
+}
+
+const PROFILE_MESSAGES: Record<string, string> = {
+  unsupported: "אין לחברה דוח שנתי מסוג 10-K או 20-F (למשל חברה קנדית שמגישה 40-F), ולכן אי אפשר ליצור לה תיאור.",
+  failed: "יצירת התיאור נכשלה: חילוץ הפרקים מהדוח או הקריאה ל-Gemini. הפרטים נשמרו בהתראות.",
+  billing: "בעיית חיוב בחשבון של Gemini (HTTP 402).",
+};
+
 /** Create the business profile on request (SEC annual report -> Gemini, about two minutes). */
 function ProfileButton({ symbol }: { symbol: string }) {
   const start = useStartProfile();
   const qc = useQueryClient();
   const [waiting, setWaiting] = useState(false);
+  const job = useProfileJob(symbol, waiting);
+  const status = job.data?.status ?? "none";
+
   useEffect(() => {
-    if (!waiting) return;
-    const t = setInterval(() => void qc.invalidateQueries({ queryKey: ["stock", symbol] }), 8000);
-    const stop = setTimeout(() => setWaiting(false), 6 * 60 * 1000);
-    return () => { clearInterval(t); clearTimeout(stop); };
-  }, [waiting, symbol, qc]);
+    if (!waiting || status === "running" || status === "none") return;
+    setWaiting(false);
+    if (status === "ok") void qc.invalidateQueries({ queryKey: ["stock", symbol] });
+  }, [waiting, status, symbol, qc]);
+
+  const onClick = () =>
+    start.mutate(symbol, {
+      onSuccess: () => { setWaiting(true); void job.refetch(); },
+      onError: (e) => {
+        const code = e instanceof ApiError ? e.status : 0;
+        const message =
+          code === 503 ? "חסרה הגדרה בשרת (GOOGLE_API_KEY או MY_EMAIL)"
+          : code === 404 || code === 405 ? "השרת רץ בגרסה ישנה מהממשק. הפעל מחדש את serve ורענן."
+          : code === 409 ? "תיאור לחברה הזו כבר נוצר עכשיו"
+          : "לא ניתן ליצור תיאור כרגע";
+        notifications.show({ color: "red", message });
+      },
+    });
+
+  const failed = !waiting && status !== "none" && status !== "running" && status !== "ok";
   return (
     <Card>
-      <Group justify="space-between">
+      <Group justify="space-between" wrap="nowrap">
         <div>
           <Title order={4}>על החברה</Title>
-          <Text size="xs" c="dimmed">עוד אין תיאור של החברה. אפשר ליצור אחד מהדוח השנתי שלה (סיכום AI, כשתי דקות).</Text>
+          <Text size="xs" c="dimmed">
+            עוד אין תיאור של החברה. אפשר ליצור אחד מהדוח השנתי שלה (סיכום AI, כשתי דקות).
+          </Text>
+          {failed && <Text size="sm" c="red" mt={4}>{PROFILE_MESSAGES[status] ?? "היצירה נכשלה."}</Text>}
         </div>
-        <Button variant="light" loading={waiting || start.isPending}
-          onClick={() => start.mutate(symbol, {
-            onSuccess: () => setWaiting(true),
-            onError: () => notifications.show({ color: "red", message: "לא ניתן ליצור פרופיל: חסרה הגדרה בשרת (GOOGLE_API_KEY)" }),
-          })}>
-          צור תיאור חברה
+        <Button variant="light" loading={waiting || start.isPending} onClick={onClick}>
+          {waiting ? "יוצר…" : failed ? "נסה שוב" : "צור תיאור חברה"}
         </Button>
       </Group>
     </Card>

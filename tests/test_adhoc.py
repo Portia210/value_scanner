@@ -214,3 +214,40 @@ def test_profile_button_needs_configuration(api):
     client, csrf, _, _ = api
     r = client.post("/api/profiles/AAPL", headers={"x-csrf-token": csrf})
     assert r.status_code == 503  # no GOOGLE_API_KEY / MY_EMAIL in this app's settings
+
+
+def test_profile_job_reports_unsupported_and_conflicts_while_running(tmp_path):
+    import threading
+
+    from value_scanner.jobs import profiles as pj
+
+    env = {"DB_PATH": str(tmp_path / "p.db"), "GOOGLE_API_KEY": "k" * 10, "MY_EMAIL": "me@e.com"}
+    settings = load_settings(env)
+    db.open_database(env["DB_PATH"]).close()
+    assert pj.profile_job_status("KGC") == "none"
+
+    gate = threading.Event()
+
+    def slow_refresh(repo, settings, symbol, sec, generate=None):
+        gate.wait(5)
+        return "unsupported"
+
+    original = pj.refresh_profile, pj.SecClient
+    pj.refresh_profile, pj.SecClient = slow_refresh, lambda contact: None
+    try:
+        assert pj.start_profile(settings, "KGC") is True
+        assert pj.profile_job_status("KGC") == "running"
+        assert pj.start_profile(settings, "KGC") is False  # one at a time per stock
+        gate.set()
+        for _ in range(100):
+            if pj.profile_job_status("KGC") != "running":
+                break
+            threading.Event().wait(0.02)
+        assert pj.profile_job_status("KGC") == "unsupported"
+    finally:
+        pj.refresh_profile, pj.SecClient = original
+
+
+def test_profile_status_endpoint(api):
+    client, csrf, _, _ = api
+    assert client.get("/api/profiles/QQQQ/status").json() == {"symbol": "QQQQ", "status": "none"}

@@ -223,8 +223,14 @@ def create_app(
             raise HTTPException(422, "not a ticker")
         if not (settings.google_api_key and settings.my_email):
             raise HTTPException(503, "profiles are not configured (GOOGLE_API_KEY, MY_EMAIL)")
-        profile_starter(settings, symbol)
+        if profile_starter(settings, symbol) is False:
+            raise HTTPException(409, "a profile for this stock is already being created")
         return {"symbol": symbol}
+
+    @app.get("/api/profiles/{symbol}/status", dependencies=[Depends(session_csrf)])
+    def profile_status(symbol: str) -> schemas.ProfileJob:
+        symbol = (adhoc_jobs.normalise(symbol) or "").upper()
+        return schemas.ProfileJob(symbol=symbol, status=profile_jobs.profile_job_status(symbol))
 
     # ── the built frontend (Vite output), served from the same origin ──────────────────────
     if frontend_dist is not None and (frontend_dist / "index.html").is_file():

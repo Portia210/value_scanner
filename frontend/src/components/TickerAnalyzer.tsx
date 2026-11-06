@@ -7,10 +7,13 @@ import { useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { useAnalysis, useStartAnalysis } from "../api/hooks";
 
+const STALE = "השרת רץ בגרסה ישנה מהממשק (חסרה לו היכולת הזו). הפעל מחדש את serve ורענן.";
 const REASONS: Record<number, string> = {
   409: "ריצה אחרת פועלת כרגע. נסה שוב בעוד כמה דקות.",
   429: "הגעת למגבלת הניתוחים היומית. נסה מחר.",
   422: "זה לא נראה כמו סימול של מניה.",
+  404: STALE,
+  405: STALE,
 };
 
 /**

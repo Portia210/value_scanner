@@ -192,6 +192,11 @@ class AnalysisStatus(BaseModel):
     analyses_left_today: int
 
 
+class ProfileJob(BaseModel):
+    symbol: str
+    status: str  # none | running | ok | unsupported | failed | billing
+
+
 class RunOut(BaseModel):
     id: int
     kind: str
