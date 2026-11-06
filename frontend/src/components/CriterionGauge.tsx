@@ -1,4 +1,4 @@
-import { Badge, Box, Group, Stack, Text, Tooltip } from "@mantine/core";
+import { Badge, Box, Code, Divider, Group, HoverCard, Stack, Text } from "@mantine/core";
 import type { Criterion } from "../api/client";
 import { strengthColor } from "../theme";
 import { num } from "../format";
@@ -9,6 +9,55 @@ function verdict(c: Criterion): string {
   if (c.status === "NA") return c.result_note ?? "אין נתון";
   if (c.status === "PASS") return (c.strength ?? 0) >= 1 ? "עובר בביטחון" : "עובר, קרוב לסף";
   return (c.strength ?? 0) > 0 ? "נכשל, קרוב לסף" : "נכשל";
+}
+
+
+const DIRECTION_TEXT: Record<string, string> = { ">": "גדול מ", ">=": "לפחות", "<": "קטן מ", "<=": "לכל היותר" };
+
+function Line({ label, children, words = false }: { label: string; children: React.ReactNode; words?: boolean }) {
+  return (
+    <Group justify="space-between" wrap="nowrap" gap="md">
+      <Text size="xs" c="dimmed">{label}</Text>
+      <Text size="xs" fw={600} ff={words ? undefined : "monospace"} dir={words ? "rtl" : "ltr"} ta={words ? "left" : "right"}>{children}</Text>
+    </Group>
+  );
+}
+
+/** What a hover on the criterion's title shows: the formula, the rule, and this stock's numbers. */
+function Explanation({ c }: { c: Criterion }) {
+  const need = c.comparative ? "גבוה מהשנה הקודמת" : `${DIRECTION_TEXT[c.direction] ?? c.direction} ${num(c.threshold)}`;
+  return (
+    <Stack gap={8}>
+      <div>
+        <Text size="sm" fw={700} dir="ltr" ta="right">{c.title}</Text>
+        <Text size="xs" c="dimmed" ff="monospace">{c.id}</Text>
+      </div>
+      <div>
+        <Text size="xs" c="dimmed" mb={2}>איך מחשבים</Text>
+        <Code block dir="ltr" style={{ whiteSpace: "pre-wrap", textAlign: "left", fontSize: 12 }}>{c.formula}</Code>
+      </div>
+      {c.note && (
+        <div>
+          <Text size="xs" c="dimmed" mb={2}>שימו לב</Text>
+          <Text size="xs" dir="ltr" ta="right">{c.note}</Text>
+        </div>
+      )}
+      <Divider />
+      <Stack gap={4}>
+        <Line label="הכלל" words>{need}</Line>
+        {c.comparative ? (
+          <>
+            <Line label="השנה">{num(c.value, 3)}</Line>
+            <Line label="שנה קודמת">{num(c.threshold, 3)}</Line>
+          </>
+        ) : (
+          <Line label="בפועל">{num(c.value)}</Line>
+        )}
+        {c.strength !== null && <Line label="תרומה לציון">{Math.round(c.strength * 100)}%</Line>}
+      </Stack>
+      {c.result_note && <Text size="xs" c="dimmed" dir="ltr" ta="right">{c.result_note}</Text>}
+    </Stack>
+  );
 }
 
 /** One criterion: title, value, and (for threshold criteria) a bar showing value against the threshold. */
@@ -29,12 +78,15 @@ export function CriterionGauge({ c }: { c: Criterion }) {
   return (
     <Stack gap={6} py="sm" style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}>
       <Group justify="space-between" wrap="nowrap" align="flex-start">
-        <Tooltip label={c.formula + (c.note ? ` — ${c.note}` : "")} multiline w={340} withArrow events={{ hover: true, focus: true, touch: true }}>
-          <Group gap="xs" wrap="nowrap">
-            <Text size="xs" c="dimmed" ff="monospace">{c.id}</Text>
-            <Text size="sm" dir="ltr">{c.title}</Text>
-          </Group>
-        </Tooltip>
+        <HoverCard width={340} shadow="md" withArrow openDelay={120} closeDelay={80} position="bottom-start">
+          <HoverCard.Target>
+            <Group gap="xs" wrap="nowrap" style={{ cursor: "help" }}>
+              <Text size="xs" c="dimmed" ff="monospace">{c.id}</Text>
+              <Text size="sm" dir="ltr" style={{ textDecoration: "underline dotted", textUnderlineOffset: 3 }}>{c.title}</Text>
+            </Group>
+          </HoverCard.Target>
+          <HoverCard.Dropdown><Explanation c={c} /></HoverCard.Dropdown>
+        </HoverCard>
         <Group gap="xs" wrap="nowrap">
           {c.comparative && c.status !== "NA" ? (
             <Text size="sm" fw={600} ff="monospace" dir="ltr">{num(c.value, 3)} vs {num(c.threshold, 3)}</Text>
