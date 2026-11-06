@@ -1,12 +1,16 @@
-import { Alert, Anchor, Badge, Card, Grid, Group, Loader, RingProgress, SimpleGrid, Spoiler, Stack, Table, Tabs, Text, Title } from "@mantine/core";
+import { Alert, Anchor, Badge, Button, Card, Grid, Group, Loader, RingProgress, SimpleGrid, Spoiler, Stack, Table, Tabs, Text, Title } from "@mantine/core";
 import { IconArrowRight, IconCalendarEvent, IconDoorExit } from "@tabler/icons-react";
 import ReactECharts from "echarts-for-react";
 import { useComputedColorScheme } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { notifications } from "@mantine/notifications";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { CriterionGauge } from "../components/CriterionGauge";
 import { GuruBadge } from "../components/GuruBadge";
 import { Prose, SourceLink } from "../components/Prose";
-import { useStock, useStocks } from "../api/hooks";
+import { TickerAnalyzer } from "../components/TickerAnalyzer";
+import { useStartProfile, useStock, useStocks } from "../api/hooks";
 import { ApiError } from "../api/client";
 import { asOf, dateTime, daysFromToday, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
 
@@ -22,8 +26,10 @@ export function StockPage() {
     return (
       <Stack>
         <Anchor component={Link} to="/">חזרה לדשבורד</Anchor>
-        <Text>המניה {symbol} אינה במעקב בריצה האחרונה (לא עוברת כרגע את הסינון הראשוני, או שאינה מוכרת).</Text>
-        <Anchor component={Link} to="/history" size="sm">אולי יצאה מהסינון: ראה כניסות ויציאות</Anchor>
+        <Title order={3} ff="monospace">{symbol.toUpperCase()}</Title>
+        <Text>עדיין אין ניתוח של המניה הזו. אפשר לנתח אותה עכשיו, גם אם היא לא עוברת את הסינון הראשוני.</Text>
+        <TickerAnalyzer symbol={symbol.toUpperCase()} />
+        <Anchor component={Link} to="/history" size="sm">אולי יצאה מהסינון? ראה כניסות ויציאות</Anchor>
       </Stack>
     );
   if (error || !d) return <Alert color="red">לא הצלחתי לטעון את המניה.</Alert>;
@@ -65,9 +71,17 @@ export function StockPage() {
     <Stack gap="lg">
       <Anchor component={Link} to="/" size="sm"><Group gap={4}><IconArrowRight size={14} />חזרה לדשבורד</Group></Anchor>
       {d.in_latest_run === false && (
-        <Alert color="gray" icon={<IconDoorExit size={18} />} title="המניה אינה במעקב כרגע">
-          היא יצאה מהסינון הראשוני. הנתונים בדף הם מריצה #{d.run.id}, האחרונה שבה נותחה.
-          {" "}<Anchor component={Link} to="/history" size="sm">למה יצאה? ראה כניסות ויציאות</Anchor>
+        <Alert color="gray" icon={<IconDoorExit size={18} />}
+          title={d.adhoc ? "ניתוח לפי טיקר: המניה אינה במעקב של הסריקה הרגילה" : "המניה אינה במעקב כרגע"}>
+          <Stack gap="xs" align="flex-start">
+            <Text size="sm">
+              {d.adhoc
+                ? `הנתונים הם מניתוח שהתבקש (ריצה #${d.run.id}, ${dateTime(d.run.started_at)}) ולא מחכים לסריקה הבאה.`
+                : `היא יצאה מהסינון הראשוני. הנתונים בדף הם מריצה #${d.run.id}, האחרונה שבה נותחה.`}
+              {" "}<Anchor component={Link} to="/history" size="sm">כניסות ויציאות</Anchor>
+            </Text>
+            <TickerAnalyzer symbol={d.symbol} reanalyse />
+          </Stack>
         </Alert>
       )}
       {soon && snap?.next_earnings_date && (
@@ -104,6 +118,7 @@ export function StockPage() {
         </Group>
       </Group>
 
+      {!d.profile && <ProfileButton symbol={d.symbol} />}
       {d.profile && (
         <Card>
           <Group justify="space-between" mb="xs" align="baseline">
@@ -243,5 +258,35 @@ export function StockPage() {
         )}
       </Card>
     </Stack>
+  );
+}
+
+/** Create the business profile on request (SEC annual report -> Gemini, about two minutes). */
+function ProfileButton({ symbol }: { symbol: string }) {
+  const start = useStartProfile();
+  const qc = useQueryClient();
+  const [waiting, setWaiting] = useState(false);
+  useEffect(() => {
+    if (!waiting) return;
+    const t = setInterval(() => void qc.invalidateQueries({ queryKey: ["stock", symbol] }), 8000);
+    const stop = setTimeout(() => setWaiting(false), 6 * 60 * 1000);
+    return () => { clearInterval(t); clearTimeout(stop); };
+  }, [waiting, symbol, qc]);
+  return (
+    <Card>
+      <Group justify="space-between">
+        <div>
+          <Title order={4}>על החברה</Title>
+          <Text size="xs" c="dimmed">עוד אין תיאור של החברה. אפשר ליצור אחד מהדוח השנתי שלה (סיכום AI, כשתי דקות).</Text>
+        </div>
+        <Button variant="light" loading={waiting || start.isPending}
+          onClick={() => start.mutate(symbol, {
+            onSuccess: () => setWaiting(true),
+            onError: () => notifications.show({ color: "red", message: "לא ניתן ליצור פרופיל: חסרה הגדרה בשרת (GOOGLE_API_KEY)" }),
+          })}>
+          צור תיאור חברה
+        </Button>
+      </Group>
+    </Card>
   );
 }

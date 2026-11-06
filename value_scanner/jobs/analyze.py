@@ -78,6 +78,35 @@ def analyse_stock(
     return results
 
 
+def analyse_and_store(
+    repo: Repository, run_id: int, symbol: str, company, snap, sector_pb_median: float | None
+) -> tuple[float | None, float | None]:
+    """Classify, evaluate and score one stock and store everything for the run.
+    Returns (quality, opportunity). The caller owns the transaction."""
+    cls = classify(company["sector"], company["industry"])
+    results = analyse_stock(Statements.from_repo(repo, symbol), cls, snap, sector_pb_median)
+
+    repo.save_classification(run_id, symbol, cls.labels or {"regular": "no special class"})
+    repo.save_results(run_id, symbol, [r.as_row() for r in results])
+    scores = {}
+    for guru in ("screen", "graham", "fisher", "piotroski"):
+        scores[guru] = guru_score(r for r in results if r.guru == guru)
+        repo.save_score(run_id, symbol, guru, scores[guru].score, scores[guru].coverage)
+    q = quality(scores)
+    repo.save_score(run_id, symbol, "quality", q, None)
+    components = opportunity_components(
+        snap["pe_ratio"],
+        snap["pb_ratio"],
+        snap["ps_ratio"],
+        snap["pe_ratio_5y"],
+        tech=cls.tech,
+        cyclical=cls.cyclical,
+    )
+    opp = opportunity(components)
+    repo.save_score(run_id, symbol, "opportunity", opp, None, components)
+    return q, opp
+
+
 def analyse_run(repo: Repository, run_id: int) -> AnalysisSummary:
     snaps = repo.snapshots_for_run(run_id)
     companies = {r["symbol"]: r for r in repo.conn.execute("SELECT * FROM companies")}
@@ -94,29 +123,9 @@ def analyse_run(repo: Repository, run_id: int) -> AnalysisSummary:
             if not snap["in_screen"]:
                 continue
             company = companies[symbol]
-            cls = classify(company["sector"], company["industry"])
             pbs = pb_by_sector.get(company["sector"] or "", [])
             median = statistics.median(pbs) if len(pbs) >= 3 else None
-            results = analyse_stock(Statements.from_repo(repo, symbol), cls, snap, median)
-
-            repo.save_classification(run_id, symbol, cls.labels or {"regular": "no special class"})
-            repo.save_results(run_id, symbol, [r.as_row() for r in results])
-            scores = {}
-            for guru in ("screen", "graham", "fisher", "piotroski"):
-                scores[guru] = guru_score(r for r in results if r.guru == guru)
-                repo.save_score(run_id, symbol, guru, scores[guru].score, scores[guru].coverage)
-            q = quality(scores)
-            repo.save_score(run_id, symbol, "quality", q, None)
-            components = opportunity_components(
-                snap["pe_ratio"],
-                snap["pb_ratio"],
-                snap["ps_ratio"],
-                snap["pe_ratio_5y"],
-                tech=cls.tech,
-                cyclical=cls.cyclical,
-            )
-            opp = opportunity(components)
-            repo.save_score(run_id, symbol, "opportunity", opp, None, components)
+            q, opp = analyse_and_store(repo, run_id, symbol, company, snap, median)
             count += 1
             if q is None:
                 unranked.append(symbol)

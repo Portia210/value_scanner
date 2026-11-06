@@ -1,3 +1,4 @@
+import type { components } from "./schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type CriteriaOut, type EventOut, type LogLine, type RunOut, type SettingsOut, type StockDetail, type StocksOut } from "./client";
 
@@ -37,5 +38,33 @@ export function useSaveSettings() {
   return useMutation({
     mutationFn: (days: number) => api<SettingsOut>("/settings", { method: "PUT", json: { days_between_runs: days } }),
     onSuccess: (data) => qc.setQueryData(["settings"], data),
+  });
+}
+
+type Analysis = components["schemas"]["AnalysisStatus"];
+
+/** Status of the newest ticker analysis; polls every 2 s while `poll` is true. */
+export const useAnalysis = (symbol: string, poll: boolean) =>
+  useQuery({
+    queryKey: ["analysis", symbol],
+    queryFn: () => api<Analysis>(`/analyses/${encodeURIComponent(symbol)}`),
+    enabled: symbol.length > 0,
+    refetchInterval: poll ? 2000 : false,
+  });
+
+export function useStartAnalysis() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (symbol: string) => api<{ symbol: string }>("/analyses", { method: "POST", json: { symbol } }),
+    onSuccess: (r) => {
+      void qc.invalidateQueries({ queryKey: ["analysis", r.symbol] });
+      void qc.invalidateQueries({ queryKey: ["runs"] });
+    },
+  });
+}
+
+export function useStartProfile() {
+  return useMutation({
+    mutationFn: (symbol: string) => api<{ symbol: string }>(`/profiles/${encodeURIComponent(symbol)}`, { method: "POST" }),
   });
 }

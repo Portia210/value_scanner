@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+    "/api/analyses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Analysis */
+        post: operations["start_analysis_api_analyses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/analyses/{symbol}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Analysis Status */
+        get: operations["analysis_status_api_analyses__symbol__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -106,6 +140,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profiles/{symbol}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Profile */
+        post: operations["start_profile_api_profiles__symbol__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs": {
         parameters: {
             query?: never;
@@ -197,6 +248,34 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnalysisBody */
+        AnalysisBody: {
+            /** Symbol */
+            symbol: string;
+        };
+        /** AnalysisStatus */
+        AnalysisStatus: {
+            /** Analyses Left Today */
+            analyses_left_today: number;
+            /** Message */
+            message?: string | null;
+            /**
+             * Progress Done
+             * @default 0
+             */
+            progress_done: number;
+            /**
+             * Progress Total
+             * @default 0
+             */
+            progress_total: number;
+            /** Started At */
+            started_at?: string | null;
+            /** Status */
+            status: string;
+            /** Symbol */
+            symbol: string;
+        };
         /** ComponentOut */
         ComponentOut: {
             /** Formula */
@@ -452,6 +531,8 @@ export interface components {
         };
         /** StockDetailOut */
         StockDetailOut: {
+            /** Adhoc */
+            adhoc: boolean;
             /** Candidate */
             candidate: boolean;
             /** Components */
@@ -534,6 +615,8 @@ export interface components {
         };
         /** StocksOut */
         StocksOut: {
+            /** Adhoc */
+            adhoc: components["schemas"]["ExitedOut"][];
             /** Exited */
             exited: components["schemas"]["ExitedOut"][];
             /** Opportunity Min */
@@ -566,6 +649,72 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    start_analysis_api_analyses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnalysisBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    analysis_status_api_analyses__symbol__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                symbol: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     login_api_auth_login_post: {
         parameters: {
             query?: never;
@@ -703,6 +852,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HistoryOut"];
+                };
+            };
+        };
+    };
+    start_profile_api_profiles__symbol__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                symbol: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

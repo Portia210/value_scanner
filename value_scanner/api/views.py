@@ -54,7 +54,7 @@ def stocks_view(repo: Repository) -> schemas.StocksOut:
     run = repo.latest_analysed_run()
     base = {"quality_min": CANDIDATE_QUALITY, "opportunity_min": CANDIDATE_OPPORTUNITY}
     if run is None:
-        return schemas.StocksOut(run=None, stocks=[], exited=[], **base)
+        return schemas.StocksOut(run=None, stocks=[], exited=[], adhoc=[], **base)
     counts = repo.result_counts(run["id"])
     out = []
     for row in repo.stock_table(run["id"]):
@@ -86,7 +86,13 @@ def stocks_view(repo: Repository) -> schemas.StocksOut:
         )
         for r in repo.exited_stocks(run["id"])
     ]
-    return schemas.StocksOut(run=run_ref(run), stocks=out, exited=exited, **base)
+    adhoc = [
+        schemas.ExitedOut(
+            symbol=r["symbol"], name=r["name"], sector=r["sector"], last_run_id=r["last_run_id"]
+        )
+        for r in repo.adhoc_stocks(run["id"])
+    ]
+    return schemas.StocksOut(run=run_ref(run), stocks=out, exited=exited, adhoc=adhoc, **base)
 
 
 def _series(stmts: Statements) -> schemas.SeriesOut:
@@ -195,6 +201,7 @@ def stock_view(repo: Repository, symbol: str) -> schemas.StockDetailOut | None:
         exchange=company["exchange"],
         run=run_ref(run),
         in_latest_run=run["id"] == latest["id"],
+        adhoc=repo.is_adhoc_run(run["id"]),
         labels=[
             schemas.LabelOut(label=r["label"], reason=r["reason"])
             for r in repo.classification_for(run["id"], symbol)

@@ -107,6 +107,26 @@ def refresh_profiles(
     return summary
 
 
+def start_profile(settings: Settings, symbol: str) -> None:
+    """Create or refresh one company's profile in a background thread (the dashboard button)."""
+    import threading
+
+    from value_scanner.storage import db
+
+    def work() -> None:
+        conn = db.connect(settings.db_path)
+        try:
+            refresh_profile(
+                Repository(conn), settings, symbol, SecClient(settings.require("my_email"))
+            )
+        except Exception:  # noqa: BLE001 - alerts are stored by refresh_profile; nothing to raise
+            pass
+        finally:
+            conn.close()
+
+    threading.Thread(target=work, daemon=True).start()
+
+
 def candidate_symbols(repo: Repository) -> list[str]:
     """Candidates of the latest analysed run (quality and opportunity above their thresholds)."""
     from value_scanner.analysis.scoring import is_candidate

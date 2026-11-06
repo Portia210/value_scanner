@@ -11,6 +11,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from value_scanner.api import schemas, security, views
+from value_scanner.jobs import adhoc as adhoc_jobs
+from value_scanner.jobs import profiles as profile_jobs
 from value_scanner.jobs import scheduler as jobs
 from value_scanner.settings import Settings
 from value_scanner.storage import db
@@ -33,6 +35,8 @@ def create_app(
     settings: Settings,
     runner: jobs.Runner = jobs.default_runner,
     frontend_dist: Path | None = FRONTEND_DIST,
+    adhoc_runner: adhoc_jobs.AdhocRunner = adhoc_jobs.default_adhoc_runner,
+    profile_starter=profile_jobs.start_profile,
 ) -> FastAPI:
     # Local mode: no DASHBOARD_PASSWORD means no login, but only for requests addressed to
     # localhost (the CLI also refuses to bind a non-loopback host in this mode).
@@ -176,6 +180,51 @@ def create_app(
     def put_settings(body: SettingsBody, repo: RepoDep) -> schemas.SettingsOut:
         repo.set_setting(SETTING_DAYS, str(body.days_between_runs))
         return settings_view(repo)
+
+    # ── analysis of one ticker on request (E8) ─────────────────────────────────────────────
+    def analyses_left(repo: Repository) -> int:
+        since = (datetime.now(UTC) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return max(0, adhoc_jobs.DAILY_LIMIT - repo.adhoc_runs_since(since))
+
+    @app.post("/api/analyses", status_code=202, dependencies=[Csrf])
+    def start_analysis(body: schemas.AnalysisBody, repo: RepoDep) -> dict[str, str]:
+        symbol = adhoc_jobs.normalise(body.symbol)
+        if symbol is None:
+            raise HTTPException(422, "not a ticker")
+        if analyses_left(repo) == 0:
+            raise HTTPException(429, f"daily limit of {adhoc_jobs.DAILY_LIMIT} analyses reached")
+        if not adhoc_jobs.start_adhoc(settings, symbol, adhoc_runner):
+            raise HTTPException(409, "a run is already in progress")
+        return {"symbol": symbol}
+
+    @app.get("/api/analyses/{symbol}", dependencies=[Depends(session_csrf)])
+    def analysis_status(symbol: str, repo: RepoDep) -> schemas.AnalysisStatus:
+        symbol = (adhoc_jobs.normalise(symbol) or "").upper()
+        run = repo.latest_adhoc_run(symbol) if symbol else None
+        left = analyses_left(repo)
+        if run is None:
+            return schemas.AnalysisStatus(symbol=symbol, status="none", analyses_left_today=left)
+        summary = run["summary"] or ""
+        message = summary.split(": ", 1)[1] if ": " in summary else None
+        return schemas.AnalysisStatus(
+            symbol=symbol,
+            status=run["status"] if run["status"] in ("running", "ok", "blocked") else "failed",
+            message=message,
+            progress_done=run["progress_done"],
+            progress_total=run["progress_total"],
+            started_at=run["started_at"],
+            analyses_left_today=left,
+        )
+
+    @app.post("/api/profiles/{symbol}", status_code=202, dependencies=[Csrf])
+    def start_profile(symbol: str) -> dict[str, str]:
+        symbol = adhoc_jobs.normalise(symbol)
+        if symbol is None:
+            raise HTTPException(422, "not a ticker")
+        if not (settings.google_api_key and settings.my_email):
+            raise HTTPException(503, "profiles are not configured (GOOGLE_API_KEY, MY_EMAIL)")
+        profile_starter(settings, symbol)
+        return {"symbol": symbol}
 
     # ── the built frontend (Vite output), served from the same origin ──────────────────────
     if frontend_dist is not None and (frontend_dist / "index.html").is_file():

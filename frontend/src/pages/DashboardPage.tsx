@@ -6,6 +6,7 @@ import {
 import { IconSearch } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { GuruBadge } from "../components/GuruBadge";
+import { TickerAnalyzer } from "../components/TickerAnalyzer";
 import { QualityOpportunityScatter } from "../components/QualityOpportunityScatter";
 import { useStocks } from "../api/hooks";
 import { dateTime, GURU_LABELS, GURU_ORDER, pct, score100, TYPE_LABELS } from "../format";
@@ -47,6 +48,10 @@ export function DashboardPage() {
   const candidates = filtered.filter((s) => isCandidate(s.quality, s.opportunity)).sort((a, b) => b.opportunity! - a.opportunity!);
   const ranked = [...filtered].sort((a, b) => (b.quality ?? -1) - (a.quality ?? -1));
   const unranked = all.filter((s) => s.quality === null).length;
+  const q = query.trim().toUpperCase();
+  const tickerLike = /^[A-Z0-9][A-Z0-9.-]{0,9}$/.test(q);
+  const tracked = all.some((s) => s.symbol === q);
+  const previous = [...(data.exited ?? []), ...(data.adhoc ?? [])].some((s) => s.symbol === q);
 
   return (
     <Stack gap="lg">
@@ -85,6 +90,29 @@ export function DashboardPage() {
           </Card>
         </Grid.Col>
       </Grid>
+
+      {/* filters apply to the chart, the KPIs and the matrix */}
+      <Group gap="xs" maw="100%">
+          <TextInput leftSection={<IconSearch size={16} />} placeholder="חיפוש סימול או שם" value={query} onChange={(e) => setQuery(e.currentTarget.value)} w={220} aria-label="חיפוש מניה" />
+          <Select placeholder="כל הסקטורים" data={sectors} value={sector} onChange={setSector} clearable w={200} />
+          <Box maw="100%" style={{ overflowX: "auto" }}>
+          <SegmentedControl
+            value={ctype} onChange={setCtype}
+            data={[{ value: "all", label: "הכול" }, ...["tech", "pharma", "cyclical", "regular", "financial"].map((t) => ({ value: t, label: TYPE_LABELS[t] }))]}
+          />
+          </Box>
+        </Group>
+      {tickerLike && !tracked && (
+        <Card>
+          <Stack gap="xs">
+            <Text size="sm">
+              <b dir="ltr">{q}</b> אינה ברשימת המניות במעקב.
+              {previous && <> כבר יש לה ניתוח קודם: <Text span component={Link} to={`/stocks/${q}`} c="brand">פתח את הדף שלה</Text>.</>}
+            </Text>
+            <TickerAnalyzer symbol={q} reanalyse={!!previous} />
+          </Stack>
+        </Card>
+      )}
 
       <Card p={0}>
         <Group justify="space-between" p="lg" pb="sm">
@@ -133,18 +161,6 @@ export function DashboardPage() {
         </Table.ScrollContainer>
       </Card>
 
-      {/* filters apply to the chart, the KPIs and the matrix above */}
-      <Group gap="xs" maw="100%">
-          <TextInput leftSection={<IconSearch size={16} />} placeholder="חיפוש סימול או שם" value={query} onChange={(e) => setQuery(e.currentTarget.value)} w={220} aria-label="חיפוש מניה" />
-          <Select placeholder="כל הסקטורים" data={sectors} value={sector} onChange={setSector} clearable w={200} />
-          <Box maw="100%" style={{ overflowX: "auto" }}>
-          <SegmentedControl
-            value={ctype} onChange={setCtype}
-            data={[{ value: "all", label: "הכול" }, ...["tech", "pharma", "cyclical", "regular", "financial"].map((t) => ({ value: t, label: TYPE_LABELS[t] }))]}
-          />
-          </Box>
-        </Group>
-
       {(data.exited ?? []).length > 0 && (
         <Card>
           <Title order={4} mb={4}>יצאו מהמעקב</Title>
@@ -157,6 +173,20 @@ export function DashboardPage() {
                   <span style={{ fontFamily: "monospace" }}>{e.symbol}</span>
                 </Badge>
               ))}
+          </Group>
+        </Card>
+      )}
+
+      {(data.adhoc ?? []).length > 0 && (
+        <Card>
+          <Title order={4} mb={4}>נותחו לפי טיקר</Title>
+          <Text size="xs" c="dimmed" mb="sm">מניות שביקשת לנתח ואינן במעקב של הסריקה הרגילה. הן לא נספרות בכרטיסי הסיכום, בגרף ובמטריצה.</Text>
+          <Group gap="xs">
+            {(data.adhoc ?? []).map((e) => (
+              <Badge key={e.symbol} component={Link} to={`/stocks/${e.symbol}`} variant="default" size="lg" radius="sm" style={{ cursor: "pointer" }} title={`${e.name ?? ""} · ניתוח אחרון בריצה #${e.last_run_id}`}>
+                <span style={{ fontFamily: "monospace" }}>{e.symbol}</span>
+              </Badge>
+            ))}
           </Group>
         </Card>
       )}

@@ -56,6 +56,7 @@ class StocksOut(BaseModel):
     quality_min: float
     opportunity_min: float
     exited: list[ExitedOut]
+    adhoc: list[ExitedOut]  # analysed by ticker, never in the screen's latest run
 
 
 class CriterionOut(BaseModel):
@@ -138,6 +139,7 @@ class StockDetailOut(BaseModel):
     exchange: str | None
     run: RunRef  # the run the figures below come from
     in_latest_run: bool  # False = the stock left the screen; figures are from its last run
+    adhoc: bool  # the figures come from an analysis on request (by ticker)
     labels: list[LabelOut]
     quality: float | None
     opportunity: float | None
@@ -174,6 +176,20 @@ class CriteriaOut(BaseModel):
     scoring: list[str]
     quality_min: float
     opportunity_min: float
+
+
+class AnalysisBody(BaseModel):
+    symbol: str = Field(min_length=1, max_length=12)
+
+
+class AnalysisStatus(BaseModel):
+    symbol: str
+    status: str  # none | running | ok | failed | blocked
+    message: str | None = None
+    progress_done: int = 0
+    progress_total: int = 0
+    started_at: str | None = None
+    analyses_left_today: int
 
 
 class RunOut(BaseModel):

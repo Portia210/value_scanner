@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-06 (לילה) — **איבוד נתונים (באג שלי, שוחזר)**, E8, גרפים, מסנן
+- **תקלה:** מיגרציה 0002 (בנייה מחדש של `runs`) הורצה ע"י `serve` ישן (המתזמן קורא `open_database` כל 15 דק' וקרא את קובץ המיגרציה החדש מהדיסק) עם המריץ הישן, מפתחות זרים דולקים: `DROP TABLE runs` מחק בשרשרת scores/results/snapshots/run_log/classifications/membership_events. **שוחזר** מעותק שנלקח שניות לפני (`var/value_scanner.db.wiped-backup` = המצב הריק, אפשר למחוק). `statement_*`, companies, profiles לא נפגעו.
+- **מניעה:** `db._KNOWN_MIGRATIONS` נטען פעם אחת בעליית התהליך; קוד ישן מסרב ל-DB חדש ממנו (`SchemaTooNew`); טסטים (מיגרציה על DB עם נתונים; "תהליך ישן"). **כלל:** אחרי שינוי backend/מיגרציה — להפעיל מחדש `serve`; לא לכתוב מיגרציה הרסנית בלי בדיקה על DB עם נתונים.
+- Changed: **E8 מומש** (ר' `plans/ticker-analysis.md`): `jobs/adhoc.py`, `POST /api/analyses`, `GET /api/analyses/{symbol}`, `POST /api/profiles/{symbol}`, `TickerAnalyzer` בחיפוש ובדף מניה לא מוכרת, "נותחו לפי טיקר". סרגל המסננים **מעל** המטריצה. גרפי דף המניה: שמות צירים, ספרות על הנקודות, ספי "מועמדת". ריחוף עשיר בגרף איכות/הזדמנות (רשימת המועמדות הוסרה). favicon, `ErrorBoundary`.
+- Verified: 361 טסטים; AAPL מקצה לקצה בדפדפן headless (חיפוש → "נתח" → דף עם 28 קריטריונים); הדשבורד לא הושפע (ריצה 3, 106 מניות; ריצות adhoc לא ברשימת הריצות ולא ב-"הבאה").
+- NOT verified: מניות זרות/פיננסיות בניתוח לפי טיקר; חסימת Cloudflare תחת שימוש חוזר; "צור תיאור חברה" מהכפתור (רק הפונקציה נבדקה); ה-`serve` שלך עדיין ישן — להפעיל מחדש.
+
 ## 2026-11-06 (ערב) — ריצה 2, E7, חיפוש, תוכנית E8
 - Verified (ריצה 2, אמיתית): `ok` ב-81 שנ': 107 במעקב, 15 דוחות הורדו, **306 דולגו כטריים** (כללי D18 עובדים), אותן 11 מועמדות, VTMX בלי ציון. **אירוע כניסה/יציאה אמיתי ראשון:** NMIH יצאה (סיבה "דוחות": current ratio 2.03→1.75). המייל שנשלח הגיע (אישרת).
 - Changed: **E7 נבנה** — `sources/sec.py`, `profile/gemini.py`, `jobs/profiles.py`, `python -m value_scanner profiles [סימולים]`, הסריקה מרעננת פרופילים למועמדות בלבד (רק כש-`GOOGLE_API_KEY` ו-`MY_EMAIL` מוגדרים; כשל לא מפיל ריצה), כרטיס "על החברה" בדף המניה. שדה החיפוש של הדשבורד עבר לשורה העליונה (מסנן גם גרף ומועמדות). `.claude/plans/ticker-analysis.md` — תוכנית E8 **לדיון, לא ממומש**.

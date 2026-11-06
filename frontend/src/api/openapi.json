@@ -1,6 +1,76 @@
 {
   "components": {
     "schemas": {
+      "AnalysisBody": {
+        "properties": {
+          "symbol": {
+            "maxLength": 12,
+            "minLength": 1,
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol"
+        ],
+        "title": "AnalysisBody",
+        "type": "object"
+      },
+      "AnalysisStatus": {
+        "properties": {
+          "analyses_left_today": {
+            "title": "Analyses Left Today",
+            "type": "integer"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "progress_done": {
+            "default": 0,
+            "title": "Progress Done",
+            "type": "integer"
+          },
+          "progress_total": {
+            "default": 0,
+            "title": "Progress Total",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "status",
+          "analyses_left_today"
+        ],
+        "title": "AnalysisStatus",
+        "type": "object"
+      },
       "ComponentOut": {
         "properties": {
           "formula": {
@@ -906,6 +976,10 @@
       },
       "StockDetailOut": {
         "properties": {
+          "adhoc": {
+            "title": "Adhoc",
+            "type": "boolean"
+          },
           "candidate": {
             "title": "Candidate",
             "type": "boolean"
@@ -1087,6 +1161,7 @@
           "exchange",
           "run",
           "in_latest_run",
+          "adhoc",
           "labels",
           "quality",
           "opportunity",
@@ -1284,6 +1359,13 @@
       },
       "StocksOut": {
         "properties": {
+          "adhoc": {
+            "items": {
+              "$ref": "#/components/schemas/ExitedOut"
+            },
+            "title": "Adhoc",
+            "type": "array"
+          },
           "exited": {
             "items": {
               "$ref": "#/components/schemas/ExitedOut"
@@ -1322,7 +1404,8 @@
           "stocks",
           "quality_min",
           "opportunity_min",
-          "exited"
+          "exited",
+          "adhoc"
         ],
         "title": "StocksOut",
         "type": "object"
@@ -1375,6 +1458,87 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/analyses": {
+      "post": {
+        "operationId": "start_analysis_api_analyses_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Start Analysis Api Analyses Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Analysis"
+      }
+    },
+    "/api/analyses/{symbol}": {
+      "get": {
+        "operationId": "analysis_status_api_analyses__symbol__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "title": "Symbol",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Analysis Status"
+      }
+    },
     "/api/auth/login": {
       "post": {
         "operationId": "login_api_auth_login_post",
@@ -1517,6 +1681,49 @@
           }
         },
         "summary": "History"
+      }
+    },
+    "/api/profiles/{symbol}": {
+      "post": {
+        "operationId": "start_profile_api_profiles__symbol__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "title": "Symbol",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Start Profile Api Profiles  Symbol  Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Profile"
       }
     },
     "/api/runs": {
