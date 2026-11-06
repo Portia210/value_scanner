@@ -50,6 +50,21 @@ def _migrations() -> list[tuple[int, Path]]:
     return found
 
 
+class SchemaTooNew(RuntimeError):
+    """The database was migrated by newer code than this process is running."""
+
+
+def _load_known() -> list[tuple[int, str]]:
+    return [(v, f.read_text(encoding="utf-8")) for v, f in _migrations()]
+
+
+# Read ONCE, when the process starts. A long-running server must never apply a migration that was
+# written to disk after it started: it would run it with its own (older) runner. On 2026-11-06 an
+# old `serve` process did exactly that with migration 0002 (a table rebuild that needs foreign keys
+# off, which only the newer runner knew) and the cascade wiped every table that references `runs`.
+_KNOWN_MIGRATIONS = _load_known()
+
+
 def schema_version(conn: sqlite3.Connection) -> int:
     row = conn.execute(
         "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'"
@@ -67,24 +82,44 @@ def migrate(conn: sqlite3.Connection) -> int:
             "CREATE TABLE IF NOT EXISTS schema_migrations "
             "(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)"
         )
-    for version, file in _migrations():
+    newest = _KNOWN_MIGRATIONS[-1][0]
+    if current > newest:
+        raise SchemaTooNew(
+            f"database schema v{current} is newer than this code (v{newest}): restart the server"
+        )
+    for version, statements in _KNOWN_MIGRATIONS:
         if version <= current:
             continue
-        statements = file.read_text(encoding="utf-8")
-        conn.execute("BEGIN")
+        # A table rebuild needs foreign keys off, which cannot be changed inside a transaction.
+        fk_off = statements.lstrip().startswith("-- foreign_keys: off")
+        if fk_off:
+            conn.execute("PRAGMA foreign_keys = OFF")
         try:
-            # executescript would COMMIT first; split on ";" at line ends instead.
-            for stmt in _split_statements(statements):
-                conn.execute(stmt)
-            conn.execute(
-                "INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)",
-                (version, datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")),
-            )
-        except Exception:
-            conn.execute("ROLLBACK")
-            raise
-        conn.execute("COMMIT")
+            _apply(conn, version, statements, verify_foreign_keys=fk_off)
+        finally:
+            if fk_off:
+                conn.execute("PRAGMA foreign_keys = ON")
     return schema_version(conn)
+
+
+def _apply(conn: sqlite3.Connection, version: int, statements: str, verify_foreign_keys: bool):
+    conn.execute("BEGIN")
+    try:
+        # executescript would COMMIT first; split on ";" at line ends instead.
+        for stmt in _split_statements(statements):
+            conn.execute(stmt)
+        conn.execute(
+            "INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)",
+            (version, datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")),
+        )
+        if verify_foreign_keys:
+            broken = conn.execute("PRAGMA foreign_key_check").fetchall()
+            if broken:
+                raise RuntimeError(f"migration {version} broke foreign keys: {len(broken)} rows")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+    conn.execute("COMMIT")
 
 
 def _split_statements(script: str) -> list[str]:

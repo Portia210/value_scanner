@@ -93,7 +93,9 @@ def record_universe(repo: Repository, run_id: int, universe: Universe) -> Univer
     kept, dropped = dedupe_share_classes(candidates)
 
     row = repo.conn.execute(
-        "SELECT MAX(run_id) FROM screener_snapshots WHERE run_id < ?", (run_id,)
+        "SELECT MAX(run_id) FROM screener_snapshots WHERE run_id < ? "
+        "AND run_id IN (SELECT id FROM runs WHERE kind <> 'adhoc')",
+        (run_id,),
     ).fetchone()
     previous_run = row[0]
     previous = repo.snapshots_for_run(previous_run) if previous_run else {}

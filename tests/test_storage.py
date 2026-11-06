@@ -315,3 +315,54 @@ def test_transaction_rolls_back_on_error(repo):
         repo.set_setting("k", "v")
         raise RuntimeError("fail")
     assert repo.get_setting("k") is None
+
+
+def _v1_database_with_children(path):
+    """A database as it was before migration 0002, with rows that reference `runs`."""
+    conn = db.connect(path)
+    conn.execute(
+        "CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)"
+    )
+    first = db._KNOWN_MIGRATIONS[0][1]
+    conn.execute("BEGIN")
+    for stmt in db._split_statements(first):
+        conn.execute(stmt)
+    conn.execute("INSERT INTO schema_migrations VALUES (1, 'x')")
+    conn.execute("COMMIT")
+    conn.execute("INSERT INTO runs (kind, status, started_at) VALUES ('cli', 'ok', 'x')")
+    conn.execute("INSERT INTO companies (symbol, first_seen_at, last_seen_at) VALUES ('A','x','x')")
+    conn.execute("INSERT INTO run_log (run_id, ts, level, message) VALUES (1, 'x', 'info', 'm')")
+    conn.execute("INSERT INTO scores (run_id, symbol, kind, score) VALUES (1, 'A', 'quality', .5)")
+    conn.execute(
+        "INSERT INTO membership_events (run_id, symbol, direction, reason_type, created_at)"
+        " VALUES (1, 'A', 'exit', 'price', 'x')"
+    )
+    conn.close()
+
+
+def test_table_rebuild_migration_keeps_every_row_that_references_runs(tmp_path):
+    """Regression (2026-11-06): migration 0002 rebuilds `runs`; the cascade must not fire."""
+    path = tmp_path / "old.db"
+    _v1_database_with_children(path)
+    conn = db.open_database(path)
+    assert db.schema_version(conn) >= 2
+    for table in ("runs", "run_log", "scores", "membership_events"):
+        assert conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] == 1, table
+    assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1  # switched back on
+    assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+    conn.execute("INSERT INTO runs (kind, status, started_at) VALUES ('adhoc', 'ok', 'x')")
+
+
+def test_old_code_refuses_a_newer_database_and_never_applies_migrations_added_later(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / "new.db"
+    db.open_database(path).close()  # fully migrated by current code
+    monkeypatch.setattr(db, "_KNOWN_MIGRATIONS", db._KNOWN_MIGRATIONS[:1])  # an "older process"
+    with pytest.raises(db.SchemaTooNew):
+        db.open_database(path)
+    # and an older process on an older database applies only what it knew at start
+    old = tmp_path / "old.db"
+    _v1_database_with_children(old)
+    conn = db.open_database(old)
+    assert db.schema_version(conn) == 1

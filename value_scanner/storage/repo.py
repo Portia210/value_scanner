@@ -109,7 +109,8 @@ class Repository:
 
     def last_successful_run(self) -> sqlite3.Row | None:
         return self.conn.execute(
-            "SELECT * FROM runs WHERE status = 'ok' ORDER BY started_at DESC, id DESC LIMIT 1"
+            "SELECT * FROM runs WHERE status = 'ok' AND kind <> 'adhoc' "
+            "ORDER BY started_at DESC, id DESC LIMIT 1"
         ).fetchone()
 
     def log(self, run_id: int, level: str, message: str) -> None:
@@ -397,7 +398,8 @@ class Repository:
     def latest_analysed_run(self) -> sqlite3.Row | None:
         """The newest run that produced scores (a finished 'ok' run)."""
         return self.conn.execute(
-            "SELECT * FROM runs WHERE status = 'ok' AND id IN (SELECT run_id FROM scores) "
+            "SELECT * FROM runs WHERE status = 'ok' AND kind <> 'adhoc' "
+            "AND id IN (SELECT run_id FROM scores) "
             "ORDER BY started_at DESC, id DESC LIMIT 1"
         ).fetchone()
 
@@ -466,9 +468,58 @@ class Repository:
             """SELECT r.symbol, c.name, c.sector, MAX(r.run_id) AS last_run_id
                FROM results r JOIN companies c ON c.symbol = r.symbol
                WHERE r.symbol NOT IN (SELECT symbol FROM scores WHERE run_id = ?)
+                 AND r.run_id IN (SELECT id FROM runs WHERE kind <> 'adhoc')
                GROUP BY r.symbol ORDER BY last_run_id DESC, r.symbol""",
             (latest_run_id,),
         ).fetchall()
+
+    def adhoc_stocks(self, latest_run_id: int) -> list[sqlite3.Row]:
+        """Stocks analysed on request (by ticker) that are not in the latest regular run."""
+        return self.conn.execute(
+            """SELECT r.symbol, c.name, c.sector, MAX(r.run_id) AS last_run_id
+               FROM results r JOIN companies c ON c.symbol = r.symbol
+               WHERE r.run_id IN (SELECT id FROM runs WHERE kind = 'adhoc')
+                 AND r.symbol NOT IN (SELECT symbol FROM scores WHERE run_id = ?)
+               GROUP BY r.symbol ORDER BY last_run_id DESC, r.symbol""",
+            (latest_run_id,),
+        ).fetchall()
+
+    def is_adhoc_run(self, run_id: int) -> bool:
+        row = self.conn.execute("SELECT kind FROM runs WHERE id = ?", (run_id,)).fetchone()
+        return bool(row and row["kind"] == "adhoc")
+
+    def set_run_summary(self, run_id: int, summary: str) -> None:
+        self.conn.execute("UPDATE runs SET summary = ? WHERE id = ?", (summary, run_id))
+
+    def latest_adhoc_run(self, symbol: str) -> sqlite3.Row | None:
+        """The newest ad hoc run for a ticker (its summary starts with the symbol)."""
+        return self.conn.execute(
+            "SELECT * FROM runs WHERE kind = 'adhoc' AND (summary = ? OR summary LIKE ?) "
+            "ORDER BY id DESC LIMIT 1",
+            (symbol, f"{symbol}: %"),
+        ).fetchone()
+
+    def adhoc_runs_since(self, since_iso: str) -> int:
+        return self.conn.execute(
+            "SELECT COUNT(*) FROM runs WHERE kind = 'adhoc' AND started_at >= ?", (since_iso,)
+        ).fetchone()[0]
+
+    def sector_pb_values(self, sector: str) -> list[float]:
+        """Positive P/B of the sector's stocks in the latest regular run's snapshots."""
+        run = self.conn.execute(
+            "SELECT MAX(id) FROM runs WHERE kind <> 'adhoc' AND id IN "
+            "(SELECT run_id FROM screener_snapshots)"
+        ).fetchone()[0]
+        if run is None:
+            return []
+        return [
+            r[0]
+            for r in self.conn.execute(
+                "SELECT s.pb_ratio FROM screener_snapshots s "
+                "JOIN companies c ON c.symbol = s.symbol WHERE s.run_id = ? AND c.sector = ? AND s.pb_ratio > 0",
+                (run, sector),
+            )
+        ]
 
     def snapshot_for(self, run_id: int, symbol: str) -> sqlite3.Row | None:
         return self.conn.execute(
@@ -477,7 +528,8 @@ class Repository:
 
     def recent_runs(self, limit: int = 50) -> list[sqlite3.Row]:
         return self.conn.execute(
-            "SELECT * FROM runs ORDER BY started_at DESC, id DESC LIMIT ?", (limit,)
+            "SELECT * FROM runs WHERE kind <> 'adhoc' ORDER BY started_at DESC, id DESC LIMIT ?",
+            (limit,),
         ).fetchall()
 
     def score_components_for(self, run_id: int, symbol: str) -> list[sqlite3.Row]:
