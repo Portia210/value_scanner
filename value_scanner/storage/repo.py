@@ -516,7 +516,8 @@ class Repository:
             r[0]
             for r in self.conn.execute(
                 "SELECT s.pb_ratio FROM screener_snapshots s "
-                "JOIN companies c ON c.symbol = s.symbol WHERE s.run_id = ? AND c.sector = ? AND s.pb_ratio > 0",
+                "JOIN companies c ON c.symbol = s.symbol "
+                "WHERE s.run_id = ? AND c.sector = ? AND s.pb_ratio > 0",
                 (run, sector),
             )
         ]
