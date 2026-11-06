@@ -84,7 +84,7 @@ def test_cli_refuses_open_dashboard_on_public_interface(monkeypatch, tmp_path):
 
 
 def test_health_is_public_and_everything_else_needs_login(client):
-    assert client.get("/api/health").json() == {"ok": True}
+    assert client.get("/api/health").json()["ok"] is True  # public; version covered below
     for path in (
         "/api/stocks",
         "/api/stocks/AAA",
@@ -302,3 +302,14 @@ def test_stock_that_left_the_screen_is_still_viewable_and_listed_as_exited(clien
     assert gone["in_latest_run"] is False and gone["run"]["id"] == first
     assert gone["criteria"] and gone["snapshot"] is not None
     assert client.get("/api/stocks/AAA").json()["in_latest_run"] is True
+
+
+def test_frontend_expects_the_api_version_the_server_reports(client):
+    import re
+    from pathlib import Path
+
+    from value_scanner.api.app import API_VERSION
+
+    ts = Path("frontend/src/api/version.ts").read_text(encoding="utf-8")
+    assert int(re.search(r"EXPECTED_API_VERSION = (\d+)", ts).group(1)) == API_VERSION
+    assert client.get("/api/health").json() == {"ok": True, "api_version": API_VERSION}

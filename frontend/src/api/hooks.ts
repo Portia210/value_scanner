@@ -78,3 +78,7 @@ export const useProfileJob = (symbol: string, poll: boolean) =>
     queryFn: () => api<ProfileJob>(`/profiles/${encodeURIComponent(symbol)}/status`),
     refetchInterval: poll ? 3000 : false,
   });
+
+/** Server liveness and API version (the frontend warns when the running server is older). */
+export const useHealth = () =>
+  useQuery({ queryKey: ["health"], queryFn: () => api<{ ok: boolean; api_version?: number }>("/health"), staleTime: Infinity, retry: false });

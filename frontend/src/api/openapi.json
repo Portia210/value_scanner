@@ -1670,7 +1670,14 @@
               "application/json": {
                 "schema": {
                   "additionalProperties": {
-                    "type": "boolean"
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
                   },
                   "title": "Response Health Api Health Get",
                   "type": "object"

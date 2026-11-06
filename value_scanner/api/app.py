@@ -20,6 +20,9 @@ from value_scanner.storage.repo import Repository
 
 SETTING_DAYS = "days_between_runs"
 DEFAULT_DAYS = 7
+# Bump together with frontend/src/api/version.ts whenever the API changes in a way the frontend
+# depends on; the frontend warns when it meets a server that reports another (or no) version.
+API_VERSION = 4
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
@@ -119,8 +122,8 @@ def create_app(
         return {"csrf": csrf}
 
     @app.get("/api/health")
-    def health() -> dict[str, bool]:
-        return {"ok": True}
+    def health() -> dict[str, bool | int]:
+        return {"ok": True, "api_version": API_VERSION}
 
     # ── data ────────────────────────────────────────────────────────────────────────────────
     @app.get("/api/stocks", dependencies=[Depends(session_csrf)])

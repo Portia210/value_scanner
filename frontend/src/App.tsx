@@ -1,10 +1,11 @@
-import { ActionIcon, AppShell, Burger, Button, Container, Drawer, Group, Loader, Stack, Text, Center, useMantineColorScheme } from "@mantine/core";
+import { ActionIcon, Alert, AppShell, Burger, Button, Container, Drawer, Group, Loader, Stack, Text, Center, useMantineColorScheme } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconHistory, IconLayoutDashboard, IconLogout, IconMath, IconMoon, IconPlayerPlay, IconScale, IconSun, IconTransfer } from "@tabler/icons-react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
 import { ApiError } from "./api/client";
-import { useRuns, useSettings, useStartRun } from "./api/hooks";
+import { useHealth, useRuns, useSettings, useStartRun } from "./api/hooks";
+import { EXPECTED_API_VERSION } from "./api/version";
 import { useAuth } from "./auth";
 import { dateTime } from "./format";
 import { CriteriaPage } from "./pages/CriteriaPage";
@@ -51,6 +52,8 @@ export function App() {
   const { loggedIn, loading, logout } = useAuth();
   const [drawer, { toggle, close }] = useDisclosure(false);
   const settings = useSettings();
+  const health = useHealth();
+  const staleServer = health.isSuccess && health.data.api_version !== EXPECTED_API_VERSION;
 
   if (loading) return <Center h="100vh"><Loader /></Center>;
   if (!loggedIn) return <LoginPage />;
@@ -84,6 +87,11 @@ export function App() {
       <Drawer opened={drawer} onClose={close} size="xs" title="תפריט"><Stack><NavButtons onNavigate={close} /></Stack></Drawer>
       <AppShell.Main>
         <Container size="xl">
+          {staleServer && (
+            <Alert color="red" variant="filled" mb="md" title="השרת רץ בגרסה ישנה מהממשק">
+              חלק מהפעולות לא יעבדו (ניתוח לפי טיקר, תיאור חברה, מניות שיצאו מהמעקב). עצור את serve והפעל אותו מחדש, ואז רענן.
+            </Alert>
+          )}
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/stocks/:symbol" element={<StockPage />} />
