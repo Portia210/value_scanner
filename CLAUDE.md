@@ -63,6 +63,9 @@ developer): current behavior, what the lessons say, the default in effect, the q
   current: "עדכני להיום (16:40)" / "לאתמול" / "ל-05.11.2026" (`updated()`, `asOf()` in
   `frontend/src/format.ts`). Run ids stay only on the runs screen. Dates of prices/earnings: today /
   yesterday / tomorrow, else the date.
+- **Keep it simple for the user (2026-11-06).** Few lines, plain words, one meaning per label; no
+  technical terms (period end, TTM, run ids). Around reports/dates show only what the user must act on
+  (e.g. "a new report is waiting"). When a screen feels crowded or confusing: cut, don't explain.
 - Closable banners where they are informational; explain what a chart shows (axes, units, legend).
 - After any backend/API change: bump `API_VERSION` + `frontend/src/api/version.ts` and tell the
   developer to restart `serve` (a stale server breaks the page; the UI warns about it).

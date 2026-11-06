@@ -95,22 +95,13 @@ export function StockPage() {
             <Badge variant="light" color="gray" dir="ltr">{d.sector}</Badge>
           </Group>
           <Text c="dimmed" dir="ltr" ta="right">{d.name} · {d.industry}{d.country ? ` · ${d.country}` : ""}</Text>
-          <Text size="xs" c="dimmed">מחיר נכון {asOf(snap?.price_date)} · דוחות אחרונים: {relativeDay(snap?.last_earnings_date)}</Text>
-          <Text size="xs" c="dimmed">
-            {d.reports.have
-              ? `הדוחות הכספיים כוללים תקופה שנסגרה ב-${fullDate(d.reports.have)}`
-              : "התקופה האחרונה בדוחות עוד לא ידועה (תירשם בהורדה הבאה)"}
-            {d.reports.downloaded_at ? ` · הורדו ${relativeDay(localDay(d.reports.downloaded_at))}` : ""}
+          <Text size="xs" c="dimmed">מחיר נכון {asOf(snap?.price_date)}</Text>
+          <Text size="xs" c={soon ? "orange" : "dimmed"} fw={soon ? 700 : 400}>
+            דוחות אחרונים: {relativeDay(snap?.last_earnings_date)}
+            {snap?.next_earnings_date ? ` · הבאים: ${relativeDay(snap.next_earnings_date)}${nextIn !== null && nextIn > 1 && nextIn < 60 ? ` (בעוד ${nextIn} ימים)` : ""}` : ""}
           </Text>
-          {d.reports.behind && d.reports.site && (
-            <Text size="xs" c="orange" fw={700}>
-              באתר כבר יש דוח לתקופה שנסגרה ב-{fullDate(d.reports.site)}; הוא ירד בריצה הבאה.
-            </Text>
-          )}
-          {snap?.next_earnings_date && (
-            <Text size="xs" c={soon ? "orange" : "dimmed"} fw={soon ? 700 : 400}>
-              דוחות הבאים: {relativeDay(snap.next_earnings_date)}{nextIn !== null && nextIn > 1 && nextIn < 60 ? ` (בעוד ${nextIn} ימים)` : ""}
-            </Text>
+          {d.reports.behind && (
+            <Text size="xs" c="orange" fw={700}>יצא דוח חדש שעוד לא נטען; יתעדכן בריצה הבאה.</Text>
           )}
         </div>
         <Group gap="xl">
