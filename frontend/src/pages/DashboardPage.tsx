@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Alert, Avatar, Badge, Box, Card, Grid, Group, Loader, Progress, SegmentedControl, Select, SimpleGrid, Slider, Stack,
-  Table, Text, TextInput, Title, UnstyledButton,
+  Alert, Badge, Box, Card, Grid, Group, Loader, Progress, SegmentedControl, Select, SimpleGrid, Slider, Stack,
+  Table, Text, TextInput, Title,
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { GuruBadge } from "../components/GuruBadge";
 import { QualityOpportunityScatter } from "../components/QualityOpportunityScatter";
 import { useStocks } from "../api/hooks";
-import { dateTime, GURU_LABELS, GURU_ORDER, pct, primaryType, score100, TYPE_LABELS } from "../format";
+import { dateTime, GURU_LABELS, GURU_ORDER, pct, score100, TYPE_LABELS } from "../format";
 
 function Kpi({ label, value, hint, accent }: { label: string; value: string; hint: string; accent?: boolean }) {
   return (
@@ -75,7 +75,7 @@ export function DashboardPage() {
       </SimpleGrid>
 
       <Grid>
-        <Grid.Col span={{ base: 12, lg: 8 }}>
+        <Grid.Col span={12}>
           <Card h="100%">
             <Group justify="space-between" mb="xs">
               <Title order={4}>איכות מול הזדמנות</Title>
@@ -92,30 +92,6 @@ export function DashboardPage() {
                 <Slider min={0} max={0.6} step={0.05} value={mosMin} onChange={setMosMin} label={(v) => pct(v, false)} />
               </Stack>
             </SimpleGrid>
-          </Card>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, lg: 4 }}>
-          <Card h="100%" p={0}>
-            <Title order={4} p="lg" pb="xs">מועמדות לקנייה</Title>
-            {candidates.length === 0 && <Text c="dimmed" size="sm" px="lg" pb="lg">אין מניות שעומדות בשני הספים. נסה להוריד את אחד מהם.</Text>}
-            {candidates.map((s) => (
-              <UnstyledButton key={s.symbol} component={Link} to={`/stocks/${s.symbol}`} px="lg" py="sm"
-                style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}>
-                <Group justify="space-between" wrap="nowrap">
-                  <Group gap="sm" wrap="nowrap">
-                    <Avatar color="teal" radius="md" ff="monospace">{s.symbol.slice(0, 2)}</Avatar>
-                    <div>
-                      <Text fw={600} ff="monospace">{s.symbol}</Text>
-                      <Text size="xs" c="dimmed">{TYPE_LABELS[primaryType(s.labels)]} · <span dir="ltr">{s.sector}</span></Text>
-                    </div>
-                  </Group>
-                  <div style={{ textAlign: "left" }}>
-                    <Text fw={700} c="teal" ff="monospace" dir="ltr">{pct(s.opportunity)}</Text>
-                    <Text size="xs" c="dimmed">איכות {score100(s.quality)}</Text>
-                  </div>
-                </Group>
-              </UnstyledButton>
-            ))}
           </Card>
         </Grid.Col>
       </Grid>
@@ -167,12 +143,12 @@ export function DashboardPage() {
         </Table.ScrollContainer>
       </Card>
 
-      {data.exited.length > 0 && (
+      {(data.exited ?? []).length > 0 && (
         <Card>
           <Title order={4} mb={4}>יצאו מהמעקב</Title>
           <Text size="xs" c="dimmed" mb="sm">מניות שנותחו בריצה קודמת ואינן עוברות כרגע את הסינון. אפשר עדיין לפתוח את הדף שלהן (נתונים מהריצה האחרונה שבה נותחו).</Text>
           <Group gap="xs">
-            {data.exited
+            {(data.exited ?? [])
               .filter((e) => !query || e.symbol.toLowerCase().includes(query.toLowerCase()) || (e.name ?? "").toLowerCase().includes(query.toLowerCase()))
               .map((e) => (
                 <Badge key={e.symbol} component={Link} to={`/stocks/${e.symbol}`} variant="default" size="lg" radius="sm" style={{ cursor: "pointer" }} title={`${e.name ?? ""} · ריצה אחרונה #${e.last_run_id}`}>

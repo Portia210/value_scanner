@@ -47,7 +47,7 @@ export function StockPage() {
   return (
     <Stack gap="lg">
       <Anchor component={Link} to="/" size="sm"><Group gap={4}><IconArrowRight size={14} />חזרה לדשבורד</Group></Anchor>
-      {!d.in_latest_run && (
+      {d.in_latest_run === false && (
         <Alert color="gray" icon={<IconDoorExit size={18} />} title="המניה אינה במעקב כרגע">
           היא יצאה מהסינון הראשוני. הנתונים בדף הם מריצה #{d.run.id}, האחרונה שבה נותחה.
           {" "}<Anchor component={Link} to="/history" size="sm">למה יצאה? ראה כניסות ויציאות</Anchor>

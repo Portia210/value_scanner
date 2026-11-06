@@ -2,7 +2,7 @@ import ReactECharts from "echarts-for-react";
 import { useComputedColorScheme, useMantineTheme } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import type { StockRow } from "../api/client";
-import { marketCapB } from "../format";
+import { GURU_LABELS, GURU_ORDER, marketCapB, num, pct, score100, TYPE_LABELS } from "../format";
 
 interface Props {
   stocks: StockRow[];
@@ -22,6 +22,7 @@ export function QualityOpportunityScatter({ stocks, qualityMin, mosMin, height =
   const text = dark ? theme.colors.dark[0] : theme.colors.dark[7];
   const pass = theme.colors.teal[6];
 
+  const bySymbol = new Map(stocks.map((s) => [s.symbol, s]));
   const points = stocks
     .filter((s) => s.quality !== null && s.opportunity !== null)
     .map((s) => ({
@@ -34,8 +35,12 @@ export function QualityOpportunityScatter({ stocks, qualityMin, mosMin, height =
     textStyle: { fontFamily: "Heebo" },
     grid: { left: 52, right: 24, top: 20, bottom: 48 },
     tooltip: {
-      formatter: (p: { name: string; value: number[] }) =>
-        `<b>${p.name}</b><br/>איכות ${Math.round(p.value[0] * 100)} · מרווח ביטחון ${Math.round(p.value[1] * 100)}%`,
+      confine: true,
+      extraCssText: "direction: rtl; text-align: right; max-width: 340px; white-space: normal;",
+      formatter: (p: { name: string }) => {
+        const s = bySymbol.get(p.name);
+        return s ? tooltipHtml(s) : esc(p.name);
+      },
     },
     xAxis: {
       name: "איכות (ציון קריטריונים)", nameLocation: "middle", nameGap: 30, min: 0, max: 1,
@@ -81,4 +86,34 @@ export function QualityOpportunityScatter({ stocks, qualityMin, mosMin, height =
       onEvents={{ click: (p: { name: string }) => navigate(`/stocks/${p.name}`) }}
     />
   );
+}
+
+/** Names come from a scraped site: never put them into HTML unescaped. */
+const esc = (t: string | null | undefined): string =>
+  (t ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+function tooltipHtml(s: StockRow): string {
+  const row = (label: string, value: string) =>
+    `<div style="display:flex;justify-content:space-between;gap:16px"><span style="opacity:.7">${label}</span><b dir="ltr">${value}</b></div>`;
+  const rule = '<div style="border-top:1px solid rgba(128,128,128,.3);margin:6px 0"></div>';
+  const types = s.labels.map((l) => TYPE_LABELS[l] ?? l).join(", ");
+  const gurus = GURU_ORDER.map((g) => {
+    const v = s.gurus[g];
+    return row(GURU_LABELS[g], `${v.passed}/${v.computed} · ${score100(v.score)}`);
+  }).join("");
+  return `
+    <div style="font-size:13px;line-height:1.5">
+      <div style="font-size:15px"><b>${esc(s.symbol)}</b> ${s.candidate ? '<span style="color:#12b886">· מועמדת לקנייה</span>' : ""}</div>
+      <div dir="ltr" style="text-align:right;opacity:.8">${esc(s.name)}</div>
+      <div style="opacity:.7;margin-bottom:6px">${esc(s.sector)} · ${esc(s.industry)} · ${esc(types)}</div>
+      ${row("איכות", score100(s.quality))}
+      ${row("מרווח ביטחון", pct(s.opportunity))}
+      ${rule}
+      ${gurus}
+      ${rule}
+      ${row("מחיר", s.price === null ? "—" : `$${num(s.price)}`)}
+      ${row("שווי שוק", s.market_cap === null ? "—" : `$${num(s.market_cap)}`)}
+      ${row("P/E · P/B · P/S", `${num(s.pe_ratio, 1)} · ${num(s.pb_ratio, 1)} · ${num(s.ps_ratio, 1)}`)}
+      <div style="opacity:.6;margin-top:4px">לחיצה פותחת את דף המניה</div>
+    </div>`;
 }
