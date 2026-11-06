@@ -391,6 +391,8 @@ export interface components {
         };
         /** ExitedOut */
         ExitedOut: {
+            /** Last Analysed At */
+            last_analysed_at: string;
             /** Last Run Id */
             last_run_id: number;
             /** Name */

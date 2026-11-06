@@ -48,6 +48,7 @@ class ExitedOut(BaseModel):
     name: str | None
     sector: str | None
     last_run_id: int  # the last run in which it was analysed
+    last_analysed_at: str  # when that was (the UI shows this, not the run number)
 
 
 class StocksOut(BaseModel):

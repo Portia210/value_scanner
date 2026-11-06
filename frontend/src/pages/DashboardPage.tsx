@@ -9,7 +9,7 @@ import { GuruBadge } from "../components/GuruBadge";
 import { TickerAnalyzer } from "../components/TickerAnalyzer";
 import { QualityOpportunityScatter } from "../components/QualityOpportunityScatter";
 import { useStocks } from "../api/hooks";
-import { dateTime, GURU_LABELS, GURU_ORDER, num, pct, score100, TYPE_LABELS } from "../format";
+import { GURU_LABELS, GURU_ORDER, num, pct, score100, TYPE_LABELS, updated } from "../format";
 
 function Kpi({ label, value, hint, accent }: { label: string; value: string; hint: string; accent?: boolean }) {
   return (
@@ -57,7 +57,7 @@ export function DashboardPage() {
     <Stack gap="lg">
       <Group justify="space-between" align="end">
         <div>
-          <Text size="xs" c="dimmed">ריצה #{data.run.id} · {all.length} מניות במעקב · {dateTime(data.run.started_at)}</Text>
+          <Text size="xs" c="dimmed">{all.length} מניות במעקב · {updated(data.run.started_at)}</Text>
           <Title order={2}>מי עומדת בהכי הרבה קריטריונים, ובכמה היא זולה</Title>
         </div>
       </Group>
@@ -171,7 +171,7 @@ export function DashboardPage() {
             {(data.exited ?? [])
               .filter((e) => !query || e.symbol.toLowerCase().includes(query.toLowerCase()) || (e.name ?? "").toLowerCase().includes(query.toLowerCase()))
               .map((e) => (
-                <Badge key={e.symbol} component={Link} to={`/stocks/${e.symbol}`} variant="default" size="lg" radius="sm" style={{ cursor: "pointer" }} title={`${e.name ?? ""} · ריצה אחרונה #${e.last_run_id}`}>
+                <Badge key={e.symbol} component={Link} to={`/stocks/${e.symbol}`} variant="default" size="lg" radius="sm" style={{ cursor: "pointer" }} title={`${e.name ?? ""} · ${updated(e.last_analysed_at)}`}>
                   <span style={{ fontFamily: "monospace" }}>{e.symbol}</span>
                 </Badge>
               ))}
@@ -185,7 +185,7 @@ export function DashboardPage() {
           <Text size="xs" c="dimmed" mb="sm">מניות שביקשת לנתח ואינן במעקב של הסריקה הרגילה. הן לא נספרות בכרטיסי הסיכום, בגרף ובמטריצה.</Text>
           <Group gap="xs">
             {(data.adhoc ?? []).map((e) => (
-              <Badge key={e.symbol} component={Link} to={`/stocks/${e.symbol}`} variant="default" size="lg" radius="sm" style={{ cursor: "pointer" }} title={`${e.name ?? ""} · ניתוח אחרון בריצה #${e.last_run_id}`}>
+              <Badge key={e.symbol} component={Link} to={`/stocks/${e.symbol}`} variant="default" size="lg" radius="sm" style={{ cursor: "pointer" }} title={`${e.name ?? ""} · ${updated(e.last_analysed_at)}`}>
                 <span style={{ fontFamily: "monospace" }}>{e.symbol}</span>
               </Badge>
             ))}

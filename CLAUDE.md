@@ -57,6 +57,16 @@ check/adjust before using it. Claude in Chrome is the developer's own browser an
 **Classification doubts** go to `docs/classification-doubts.md` (Hebrew, written for the
 developer): current behavior, what the lessons say, the default in effect, the question.
 
+## UI conventions (from the developer)
+
+- **Show freshness, not run numbers.** Run ids mean nothing to the developer; say *when* the data is
+  current: "עדכני להיום (16:40)" / "לאתמול" / "ל-05.11.2026" (`updated()`, `asOf()` in
+  `frontend/src/format.ts`). Run ids stay only on the runs screen. Dates of prices/earnings: today /
+  yesterday / tomorrow, else the date.
+- Closable banners where they are informational; explain what a chart shows (axes, units, legend).
+- After any backend/API change: bump `API_VERSION` + `frontend/src/api/version.ts` and tell the
+  developer to restart `serve` (a stale server breaks the page; the UI warns about it).
+
 ## Session start
 
 - Read `.claude/NEXTSESSION.md` and run `git status`.

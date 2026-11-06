@@ -20,6 +20,7 @@ from value_scanner.storage.repo import Repository
 
 GURU_KEYS = ("screen", "graham", "fisher", "piotroski")
 
+
 def _all_criteria() -> dict[tuple[str, str], Criterion]:
     return {(g, c.id): c for g, (_, crit) in GURUS.items() for c in crit.values()}
 
@@ -82,13 +83,21 @@ def stocks_view(repo: Repository) -> schemas.StocksOut:
         )
     exited = [
         schemas.ExitedOut(
-            symbol=r["symbol"], name=r["name"], sector=r["sector"], last_run_id=r["last_run_id"]
+            symbol=r["symbol"],
+            name=r["name"],
+            sector=r["sector"],
+            last_run_id=r["last_run_id"],
+            last_analysed_at=r["last_at"],
         )
         for r in repo.exited_stocks(run["id"])
     ]
     adhoc = [
         schemas.ExitedOut(
-            symbol=r["symbol"], name=r["name"], sector=r["sector"], last_run_id=r["last_run_id"]
+            symbol=r["symbol"],
+            name=r["name"],
+            sector=r["sector"],
+            last_run_id=r["last_run_id"],
+            last_analysed_at=r["last_at"],
         )
         for r in repo.adhoc_stocks(run["id"])
     ]

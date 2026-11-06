@@ -295,9 +295,8 @@ def test_stock_that_left_the_screen_is_still_viewable_and_listed_as_exited(clien
 
     data = client.get("/api/stocks").json()
     assert [s["symbol"] for s in data["stocks"]] == ["AAA"]
-    assert data["exited"] == [
-        {"symbol": "BBB", "name": "BBB", "sector": "Industrials", "last_run_id": first}
-    ]
+    assert [(e["symbol"], e["last_run_id"]) for e in data["exited"]] == [("BBB", first)]
+    assert data["exited"][0]["last_analysed_at"].endswith("Z")  # the UI shows this, not the id
     gone = client.get("/api/stocks/BBB").json()
     assert gone["in_latest_run"] is False and gone["run"]["id"] == first
     assert gone["criteria"] and gone["snapshot"] is not None

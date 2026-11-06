@@ -1,2 +1,2 @@
 // Must equal API_VERSION in value_scanner/api/app.py (a test checks it).
-export const EXPECTED_API_VERSION = 4;
+export const EXPECTED_API_VERSION = 5;

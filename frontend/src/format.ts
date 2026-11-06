@@ -105,6 +105,17 @@ export function asOf(day: string | null | undefined, today = new Date()): string
   return r === "היום" || r === "אתמול" ? `ל${r}` : `ל-${r}`;
 }
 
+/** "עדכני להיום (16:40)" / "עדכני לאתמול (16:40)" / "עדכני ל-05.11.2026" for a timestamp. */
+export function updated(iso: string | null | undefined, today = new Date()): string {
+  if (!iso) return "—";
+  const day = localDay(iso);
+  const r = relativeDay(day, today);
+  if (r !== "היום" && r !== "אתמול") return `עדכני ל-${r}`;
+  const d = new Date(iso);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `עדכני ל${r} (${p(d.getHours())}:${p(d.getMinutes())})`;
+}
+
 /** The local calendar day ("2026-11-06") of an ISO timestamp such as "2026-11-06T15:09:00Z". */
 export function localDay(iso: string): string {
   const d = new Date(iso);

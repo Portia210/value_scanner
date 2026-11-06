@@ -22,7 +22,7 @@ SETTING_DAYS = "days_between_runs"
 DEFAULT_DAYS = 7
 # Bump together with frontend/src/api/version.ts whenever the API changes in a way the frontend
 # depends on; the frontend warns when it meets a server that reports another (or no) version.
-API_VERSION = 4
+API_VERSION = 5
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 

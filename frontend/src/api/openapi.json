@@ -372,6 +372,10 @@
       },
       "ExitedOut": {
         "properties": {
+          "last_analysed_at": {
+            "title": "Last Analysed At",
+            "type": "string"
+          },
           "last_run_id": {
             "title": "Last Run Id",
             "type": "integer"
@@ -407,7 +411,8 @@
           "symbol",
           "name",
           "sector",
-          "last_run_id"
+          "last_run_id",
+          "last_analysed_at"
         ],
         "title": "ExitedOut",
         "type": "object"

@@ -465,22 +465,30 @@ class Repository:
     def exited_stocks(self, latest_run_id: int) -> list[sqlite3.Row]:
         """Stocks analysed in an earlier run but not in `latest_run_id`, newest exit first."""
         return self.conn.execute(
-            """SELECT r.symbol, c.name, c.sector, MAX(r.run_id) AS last_run_id
-               FROM results r JOIN companies c ON c.symbol = r.symbol
-               WHERE r.symbol NOT IN (SELECT symbol FROM scores WHERE run_id = ?)
-                 AND r.run_id IN (SELECT id FROM runs WHERE kind <> 'adhoc')
-               GROUP BY r.symbol ORDER BY last_run_id DESC, r.symbol""",
+            """SELECT g.symbol, c.name, c.sector, g.last_run_id, ru.started_at AS last_at
+               FROM (SELECT r.symbol AS symbol, MAX(r.run_id) AS last_run_id
+                     FROM results r
+                     WHERE r.symbol NOT IN (SELECT symbol FROM scores WHERE run_id = ?)
+                       AND r.run_id IN (SELECT id FROM runs WHERE kind <> 'adhoc')
+                     GROUP BY r.symbol) g
+               JOIN companies c ON c.symbol = g.symbol
+               JOIN runs ru ON ru.id = g.last_run_id
+               ORDER BY g.last_run_id DESC, g.symbol""",
             (latest_run_id,),
         ).fetchall()
 
     def adhoc_stocks(self, latest_run_id: int) -> list[sqlite3.Row]:
         """Stocks analysed on request (by ticker) that are not in the latest regular run."""
         return self.conn.execute(
-            """SELECT r.symbol, c.name, c.sector, MAX(r.run_id) AS last_run_id
-               FROM results r JOIN companies c ON c.symbol = r.symbol
-               WHERE r.run_id IN (SELECT id FROM runs WHERE kind = 'adhoc')
-                 AND r.symbol NOT IN (SELECT symbol FROM scores WHERE run_id = ?)
-               GROUP BY r.symbol ORDER BY last_run_id DESC, r.symbol""",
+            """SELECT g.symbol, c.name, c.sector, g.last_run_id, ru.started_at AS last_at
+               FROM (SELECT r.symbol AS symbol, MAX(r.run_id) AS last_run_id
+                     FROM results r
+                     WHERE r.run_id IN (SELECT id FROM runs WHERE kind = 'adhoc')
+                       AND r.symbol NOT IN (SELECT symbol FROM scores WHERE run_id = ?)
+                     GROUP BY r.symbol) g
+               JOIN companies c ON c.symbol = g.symbol
+               JOIN runs ru ON ru.id = g.last_run_id
+               ORDER BY g.last_run_id DESC, g.symbol""",
             (latest_run_id,),
         ).fetchall()
 

@@ -12,7 +12,7 @@ import { Prose, SourceLink } from "../components/Prose";
 import { TickerAnalyzer } from "../components/TickerAnalyzer";
 import { useProfileJob, useStartProfile, useStock, useStocks } from "../api/hooks";
 import { ApiError, type StockDetail } from "../api/client";
-import { asOf, dateTime, daysFromToday, localDay, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
+import { asOf, dateTime, daysFromToday, localDay, updated, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
 
 export function StockPage() {
   const { symbol = "" } = useParams();
@@ -77,7 +77,7 @@ export function StockPage() {
             <Text size="sm">
               {d.adhoc
                 ? `עדכני ${asOf(localDay(d.run.started_at))}.`
-                : `היא יצאה מהסינון הראשוני. הנתונים בדף הם מריצה #${d.run.id}, האחרונה שבה נותחה.`}
+                : `היא יצאה מהסינון הראשוני. הנתונים בדף: ${updated(d.run.started_at)}.`}
               {" "}<Anchor component={Link} to="/history" size="sm">כניסות ויציאות</Anchor>
             </Text>
             <TickerAnalyzer symbol={d.symbol} reanalyse />
@@ -94,7 +94,7 @@ export function StockPage() {
             <Badge variant="light" color="gray" dir="ltr">{d.sector}</Badge>
           </Group>
           <Text c="dimmed" dir="ltr" ta="right">{d.name} · {d.industry}{d.country ? ` · ${d.country}` : ""}</Text>
-          <Text size="xs" c="dimmed">ריצה #{d.run.id} · מחיר נכון {asOf(snap?.price_date)} · דוחות אחרונים: {relativeDay(snap?.last_earnings_date)}</Text>
+          <Text size="xs" c="dimmed">מחיר נכון {asOf(snap?.price_date)} · דוחות אחרונים: {relativeDay(snap?.last_earnings_date)}</Text>
           {snap?.next_earnings_date && (
             <Text size="xs" c={soon ? "orange" : "dimmed"} fw={soon ? 700 : 400}>
               דוחות הבאים: {relativeDay(snap.next_earnings_date)}{nextIn !== null && nextIn > 1 && nextIn < 60 ? ` (בעוד ${nextIn} ימים)` : ""}
@@ -189,9 +189,9 @@ export function StockPage() {
                   tooltip: { trigger: "axis", valueFormatter: (v: number | null) => (v === null || v === undefined ? "—" : String(v)) },
                   grid: { left: 48, right: 84, top: 44, bottom: 56 },
                   xAxis: {
-                    type: "category", name: "ריצה (תאריך)", nameLocation: "middle", nameGap: 40,
+                    type: "category", name: "מתי חושב", nameLocation: "middle", nameGap: 40,
                     nameTextStyle: { color: muted }, axisLabel: { color: muted, lineHeight: 15 },
-                    data: qHistory.map((h) => `#${h.run_id}\n${dateTime(h.started_at).slice(0, 5)}`),
+                    data: qHistory.map((h) => dateTime(h.started_at).replace(" ", "\n").replace(/\.\d{4}/, "")),
                   },
                   yAxis: { type: "value", axisLabel: { color: muted, formatter: (v: number) => `\u200E${v}` },
                     min: (v: { min: number }) => Math.floor((Math.min(v.min, 0) - 20) / 10) * 10,
