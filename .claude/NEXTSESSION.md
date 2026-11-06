@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-06 (ערב) — R5: הורדה לפי `lastReportDate`
+- Changed: מיגרציה **0003 תוספתית** (`screener_snapshots.last_report_date`, `statement_fetches.report_date`); הסורק מבקש `lastReportDate`; `jobs/refresh.py`: הורדה כשהתאריך בסורק חדש יותר ממה ששמור, תאריך ישן נשמר אם הדף עוד לא התעדכן (עד 3 ניסיונות), D18 כגיבוי, ריענון מלא כל **120** יום (היה 45), "אימוץ" הורדות ישנות שנעשו ≥3 ימים אחרי הדיווח; API `reports` ושורה בדף מניה ("הדוחות כוללים תקופה שנסגרה ב-…", ו"באתר כבר יש דוח…"). `API_VERSION` 7. תוכנית: `plans/report-date-detection.md`.
+- Verified: 381 טסטים (גבולות: זהה/חדש/ישן יותר/חסר/דף שלא התעדכן/אימוץ/גיבוי; מיגרציה על DB עם נתונים); צילומי מסך headless על עותק DB: מצב "מאחור" ומצב "לא ידוע".
+- NOT verified: **מחזור דיווח אמיתי** (האם הסורק והעמוד מתעדכנים באותו רגע; פיזור ההשהיה); מניות זרות; המיגרציה על ה-DB בשרת (תרוץ בפריסה).
+- Traps: מיגרציה 0003 רצה בעליית התהליך; **`serve` מקומי ישן יסרב ל-DB חדש** (`SchemaTooNew`) — להפעיל מחדש. `test_adhoc` שבדק D18 פוצל.
+- Next: פריסה (דחיפה) כשאין ריצה פעילה; אחרי הריצה הראשונה עם הקוד החדש לבדוק ב-DB שהורדות קיבלו `report_date`; R6 (האצת הורדה), R4 (תצוגה פתוחה).
+
 ## 2026-11-06 (אחה"צ) — פריסה ל-Railway, פרופילים רק בלחיצה
 - Changed: **F2 (חלקי):** שירות `dashboard` ב-Railway (פרויקט `value-scanner`, ענף `v2`, Volume `dashboard-data` על `/data`, `DB_PATH=/data/value_scanner.db`, דומיין ציבורי, healthcheck `/api/health`); `probe` נמחק. Dockerfile: הוסר `VOLUME` (Railway דוחה אותו). **סריקה לא יוצרת עוד פרופילי חברה** (`pipeline.py`) — רק הכפתור "צור תיאור חברה" או `python -m value_scanner profiles` (החלטת המפתח; Gemini עולה כסף). `API_VERSION` 6. תיקון תצוגת "פירוט" באירועי כניסה/יציאה (RTL, `FilterChanges.tsx`). R4, R5 ב-ROADMAP.
 - Verified: ריצה אמיתית מהשרת (ריצה 2, 288 דוחות, 0 חסימות, `ok` ב-33 דק'); האתר עונה, 401 בלי התחברות; טסט חדש נכשל על הקוד הישן ועובר על החדש.
