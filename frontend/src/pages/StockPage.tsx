@@ -84,11 +84,7 @@ export function StockPage() {
           </Stack>
         </Alert>
       )}
-      {soon && snap?.next_earnings_date && (
-        <Alert color="orange" variant="filled" icon={<IconCalendarEvent size={22} />} title={`דוחות רבעוניים ${nextIn === 0 ? "היום" : nextIn === 1 ? "מחר" : `בעוד ${nextIn} ימים`} · ${fullDate(snap.next_earnings_date)}`}>
-          המחיר והמכפילים עלולים להשתנות משמעותית אחרי הפרסום, והנתונים בדף ישתנו בריצה הבאה.
-        </Alert>
-      )}
+      {soon && snap?.next_earnings_date && <EarningsBanner symbol={d.symbol} day={snap.next_earnings_date} daysLeft={nextIn} />}
       <Group justify="space-between" align="center">
         <div>
           <Group gap="sm">
@@ -352,5 +348,28 @@ function ProfileButton({ symbol }: { symbol: string }) {
         </Button>
       </Group>
     </Card>
+  );
+}
+
+/** Orange banner for earnings less than 15 days away. Closable; the choice is kept per stock and date. */
+function EarningsBanner({ symbol, day, daysLeft }: { symbol: string; day: string; daysLeft: number }) {
+  const key = `earnings-closed:${symbol}:${day}`;
+  const [closed, setClosed] = useState(() => {
+    try { return localStorage.getItem(key) === "1"; } catch { return false; }
+  });
+  if (closed) return null;
+  const when = daysLeft === 0 ? "היום" : daysLeft === 1 ? "מחר" : `בעוד ${daysLeft} ימים`;
+  return (
+    <Alert
+      color="orange" variant="filled" icon={<IconCalendarEvent size={22} />}
+      title={`דוחות רבעוניים ${when} · ${fullDate(day)}`}
+      withCloseButton closeButtonLabel="סגור"
+      onClose={() => {
+        setClosed(true);
+        try { localStorage.setItem(key, "1"); } catch { /* private mode: closes for this view only */ }
+      }}
+    >
+      המחיר והמכפילים עלולים להשתנות משמעותית אחרי הפרסום, והנתונים בדף ישתנו בריצה הבאה.
+    </Alert>
   );
 }
