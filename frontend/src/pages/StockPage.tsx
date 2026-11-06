@@ -12,7 +12,8 @@ import { Prose, SourceLink } from "../components/Prose";
 import { TickerAnalyzer } from "../components/TickerAnalyzer";
 import { useProfileJob, useStartProfile, useStock, useStocks } from "../api/hooks";
 import { ApiError, type StockDetail } from "../api/client";
-import { asOf, dateTime, daysFromToday, localDay, updated, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
+import { FilterChanges } from "../components/FilterChanges";
+import { asOf, dateTime, daysFromToday, localDay, updated, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
 
 export function StockPage() {
   const { symbol = "" } = useParams();
@@ -228,11 +229,7 @@ export function StockPage() {
                   <Table.Td>{dateTime(e.created_at)}</Table.Td>
                   <Table.Td><Badge color={e.direction === "enter" ? "teal" : "red"} variant="light">{e.direction === "enter" ? "נכנסה" : "יצאה"}</Badge></Table.Td>
                   <Table.Td>{REASON_LABELS[e.reason_type] ?? e.reason_type}</Table.Td>
-                  <Table.Td dir="ltr" ta="right">
-                    {Object.entries((e.detail ?? {}) as Record<string, { before: number | null; after: number | null }>)
-                      .filter(([, v]) => v && typeof v === "object" && "after" in v)
-                      .map(([k, v]) => `${FILTER_LABELS[k] ?? k}: ${num(v.before)} → ${num(v.after)}`).join(" · ")}
-                  </Table.Td>
+                  <Table.Td><FilterChanges detail={e.detail} /></Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>

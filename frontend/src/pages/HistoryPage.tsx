@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Alert, Badge, Box, Card, Group, Loader, SegmentedControl, Stack, Table, Text, Title } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { useHistory } from "../api/hooks";
-import { dateTime, FILTER_LABELS, num, REASON_LABELS } from "../format";
-
-type Detail = Record<string, { before: number | null; after: number | null }>;
+import { FilterChanges } from "../components/FilterChanges";
+import { dateTime, REASON_LABELS } from "../format";
 
 /** E6: when a stock entered or left the initial screen, and why. */
 export function HistoryPage() {
@@ -43,13 +42,7 @@ export function HistoryPage() {
                     </Table.Td>
                     <Table.Td><Badge variant="light" color={e.direction === "enter" ? "teal" : "red"}>{e.direction === "enter" ? "נכנסה" : "יצאה"}</Badge></Table.Td>
                     <Table.Td>{REASON_LABELS[e.reason_type] ?? e.reason_type}</Table.Td>
-                    <Table.Td dir="ltr" ta="right">
-                      <Text size="sm">
-                        {Object.entries((e.detail ?? {}) as Detail)
-                          .filter(([, v]) => v && typeof v === "object" && "after" in v)
-                          .map(([k, v]) => `${FILTER_LABELS[k] ?? k}: ${num(v.before)} → ${num(v.after)}`).join(" · ") || "—"}
-                      </Text>
-                    </Table.Td>
+                    <Table.Td><FilterChanges detail={e.detail} /></Table.Td>
                   </Table.Tr>
                 ))}
               </Table.Tbody>
