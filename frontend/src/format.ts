@@ -104,3 +104,10 @@ export function asOf(day: string | null | undefined, today = new Date()): string
   const r = relativeDay(day, today);
   return r === "היום" || r === "אתמול" ? `ל${r}` : `ל-${r}`;
 }
+
+/** The local calendar day ("2026-11-06") of an ISO timestamp such as "2026-11-06T15:09:00Z". */
+export function localDay(iso: string): string {
+  const d = new Date(iso);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}

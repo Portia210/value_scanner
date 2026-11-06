@@ -12,7 +12,7 @@ import { Prose, SourceLink } from "../components/Prose";
 import { TickerAnalyzer } from "../components/TickerAnalyzer";
 import { useProfileJob, useStartProfile, useStock, useStocks } from "../api/hooks";
 import { ApiError, type StockDetail } from "../api/client";
-import { asOf, dateTime, daysFromToday, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
+import { asOf, dateTime, daysFromToday, localDay, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
 
 export function StockPage() {
   const { symbol = "" } = useParams();
@@ -76,7 +76,7 @@ export function StockPage() {
           <Stack gap="xs" align="flex-start">
             <Text size="sm">
               {d.adhoc
-                ? `הנתונים הם מניתוח שהתבקש (ריצה #${d.run.id}, ${dateTime(d.run.started_at)}) ולא מחכים לסריקה הבאה.`
+                ? `עדכני ${asOf(localDay(d.run.started_at))}.`
                 : `היא יצאה מהסינון הראשוני. הנתונים בדף הם מריצה #${d.run.id}, האחרונה שבה נותחה.`}
               {" "}<Anchor component={Link} to="/history" size="sm">כניסות ויציאות</Anchor>
             </Text>
