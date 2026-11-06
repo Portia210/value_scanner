@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-06 (אחה"צ) — פריסה ל-Railway, פרופילים רק בלחיצה
+- Changed: **F2 (חלקי):** שירות `dashboard` ב-Railway (פרויקט `value-scanner`, ענף `v2`, Volume `dashboard-data` על `/data`, `DB_PATH=/data/value_scanner.db`, דומיין ציבורי, healthcheck `/api/health`); `probe` נמחק. Dockerfile: הוסר `VOLUME` (Railway דוחה אותו). **סריקה לא יוצרת עוד פרופילי חברה** (`pipeline.py`) — רק הכפתור "צור תיאור חברה" או `python -m value_scanner profiles` (החלטת המפתח; Gemini עולה כסף). `API_VERSION` 6. תיקון תצוגת "פירוט" באירועי כניסה/יציאה (RTL, `FilterChanges.tsx`). R4, R5 ב-ROADMAP.
+- Verified: ריצה אמיתית מהשרת (ריצה 2, 288 דוחות, 0 חסימות, `ok` ב-33 דק'); האתר עונה, 401 בלי התחברות; טסט חדש נכשל על הקוד הישן ועובר על החדש.
+- NOT verified: שהנתונים שורדים restart של הקונטיינר; כניסה עם הסיסמה (רק המפתח); קומיטים מקומיים **לא נדחפו** — כל דחיפה מפעילה פריסה שמפילה ריצה רצה.
+- Traps: **פריסה באמצע ריצה = `interrupted`** (ההורדות נשמרות; ריצה חדשה ממשיכה, אבל אין ניתוח/מייל ואז 6 שעות המתנה). ריצה ראשונה בשרת מתחילה אוטומטית. `railway ssh` לא מעביר stdin (רק פקודה בשורת הפקודה). אל תריץ `pkill -f` עם טקסט שמופיע בפקודה עצמה.
+- Next: דחיפה אחרי שאין ריצה פעילה; R5 (תוכנית ב-`plans/report-date-detection.md`); האצת הורדה (R6).
+
 ## 2026-11-06 (לילה) — **איבוד נתונים (באג שלי, שוחזר)**, E8, גרפים, מסנן
 - **תקלה:** מיגרציה 0002 (בנייה מחדש של `runs`) הורצה ע"י `serve` ישן (המתזמן קורא `open_database` כל 15 דק' וקרא את קובץ המיגרציה החדש מהדיסק) עם המריץ הישן, מפתחות זרים דולקים: `DROP TABLE runs` מחק בשרשרת scores/results/snapshots/run_log/classifications/membership_events. **שוחזר** מעותק שנלקח שניות לפני (`var/value_scanner.db.wiped-backup` = המצב הריק, אפשר למחוק). `statement_*`, companies, profiles לא נפגעו.
 - **מניעה:** `db._KNOWN_MIGRATIONS` נטען פעם אחת בעליית התהליך; קוד ישן מסרב ל-DB חדש ממנו (`SchemaTooNew`); טסטים (מיגרציה על DB עם נתונים; "תהליך ישן"). **כלל:** אחרי שינוי backend/מיגרציה — להפעיל מחדש `serve`; לא לכתוב מיגרציה הרסנית בלי בדיקה על DB עם נתונים.

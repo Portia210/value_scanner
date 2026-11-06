@@ -66,6 +66,33 @@ def test_successful_run_end_to_end(repo):
     assert any("finished: ok" in r["message"] for r in repo.run_log(out.run_id))
 
 
+def test_scan_never_creates_company_profiles(repo, monkeypatch):
+    """Profiles cost Gemini money: only the 'create description' button makes one, never a scan,
+    even with the key and the contact address configured."""
+    calls = []
+    monkeypatch.setattr(
+        "value_scanner.profile.gemini.generate", lambda *a, **k: calls.append(a) or "text"
+    )
+    monkeypatch.setattr(
+        "value_scanner.sources.sec.SecClient.latest_annual_filing",
+        lambda *a, **k: calls.append(a),
+    )
+    settings = load_settings({"MY_EMAIL": "me@example.com", "GOOGLE_API_KEY": "k"})
+    out = run_scan(
+        repo,
+        settings,
+        fetch=universe_of({"AAA": {}, "BBB": {}}),
+        fetcher=fetcher(),
+        pacing=NO_PAUSE,
+        sleep=lambda s: None,
+        sender=Outbox(),
+        log=lambda m: None,
+    )
+    assert out.status == "ok"
+    assert calls == []
+    assert not any("profiles" in r["message"] for r in repo.run_log(out.run_id))
+
+
 def test_second_run_downloads_nothing_new(repo):
     scan(repo, {"AAA": {}})
     out = scan(repo, {"AAA": {}})

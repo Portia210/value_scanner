@@ -45,7 +45,7 @@ only until C9 (old-vs-new comparison) is closed; v2 does not import it.
 ## Data (SQLite, `storage/migrations/0001_initial.sql`)
 settings, runs, run_log, alerts, parse_failures · companies · screener_snapshots ·
 statement_fetches/statement_values · classifications, results, scores, score_components ·
-membership_events · profiles (E7, unused yet). `storage/repo.py` is the only module that talks to
+membership_events · profiles (E7: created only on demand, never by a scan). `storage/repo.py` is the only module that talks to
 the DB. Retention: run_log 90 d, snapshots 400 d, 4 latest good statement fetches per stock/statement.
 No CSV/JSON/cookie files; `var/` (git-ignored) holds the local DB and legacy v1 snapshots.
 
@@ -62,7 +62,7 @@ definitions through `/api/criteria`.
 |---|---|---|
 | StockAnalysis.com | screener JSON + statement pages (anonymous) | — |
 | SMTP (Gmail) | alert emails | `MY_EMAIL`, `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` (`GOOGLE_APP_PASSWORD` shortcut) |
-| Gemini | company profiles (E7, not built) | `GOOGLE_API_KEY` |
+| Gemini | company profiles (E7): only the "create description" button or `python -m value_scanner profiles` | `GOOGLE_API_KEY` |
 | SEC | contact address in User-Agent (E7) | `MY_EMAIL` |
 
 ## Environments & deploy
