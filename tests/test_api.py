@@ -312,3 +312,29 @@ def test_frontend_expects_the_api_version_the_server_reports(client):
     ts = Path("frontend/src/api/version.ts").read_text(encoding="utf-8")
     assert int(re.search(r"EXPECTED_API_VERSION = (\d+)", ts).group(1)) == API_VERSION
     assert client.get("/api/health").json() == {"ok": True, "api_version": API_VERSION}
+
+
+def _reports_of(client, repo, have, site):
+    run = run_with(repo, [seed(repo, "AAA", last_report_date=site)])
+    analyse_run(repo, run)
+    repo.finish_run(run, "ok")
+    if have:
+        repo.conn.execute("UPDATE statement_fetches SET report_date = ?", (have,))
+    return client.get("/api/stocks/AAA").json()["reports"]
+
+
+def test_stock_detail_says_when_the_site_has_a_newer_report_than_we_hold(client, repo):
+    login(client)
+    r = _reports_of(client, repo, have="2026-06-30", site="2026-09-30")
+    assert (r["have"], r["site"], r["behind"]) == ("2026-06-30", "2026-09-30", True)
+    assert r["downloaded_at"].endswith("Z")
+
+
+def test_stock_detail_reports_up_to_date_and_unknown(client, repo):
+    login(client)
+    r = _reports_of(client, repo, have="2026-09-30", site="2026-09-30")
+    assert r["behind"] is False
+    repo.conn.execute("UPDATE statement_fetches SET report_date = NULL")
+    r = client.get("/api/stocks/AAA").json()["reports"]
+    # unknown is not "behind"
+    assert (r["have"], r["site"], r["behind"]) == (None, "2026-09-30", False)

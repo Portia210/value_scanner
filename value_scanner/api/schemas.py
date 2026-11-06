@@ -99,6 +99,16 @@ class SnapshotOut(BaseModel):
     pe_ratio_5y: float | None
     last_earnings_date: str | None
     next_earnings_date: str | None
+    last_report_date: str | None  # period end of the latest report the screener shows (R5)
+
+
+class ReportsOut(BaseModel):
+    """How current our statements are against StockAnalysis (R5)."""
+
+    have: str | None  # period end of the report our statements contain (None = not known yet)
+    site: str | None  # period end of the latest report StockAnalysis shows
+    downloaded_at: str | None  # when we last downloaded this stock's statements
+    behind: bool  # the site shows a newer report than we hold
 
 
 class LabelOut(BaseModel):
@@ -147,6 +157,7 @@ class StockDetailOut(BaseModel):
     candidate: bool
     gurus: dict[str, GuruScoreOut]
     snapshot: SnapshotOut | None
+    reports: ReportsOut
     criteria: list[CriterionOut]
     components: list[ComponentOut]
     series: SeriesOut

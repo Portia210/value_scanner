@@ -16,6 +16,7 @@ from value_scanner.analysis.scoring import (
 )
 from value_scanner.analysis.statements import Statements
 from value_scanner.api import schemas
+from value_scanner.sources.stockanalysis import DEFAULT_STATEMENTS
 from value_scanner.storage.repo import Repository
 
 GURU_KEYS = ("screen", "graham", "fisher", "piotroski")
@@ -154,6 +155,21 @@ def _profile(row: sqlite3.Row | None) -> schemas.ProfileOut | None:
     )
 
 
+def _reports(repo: Repository, symbol: str) -> schemas.ReportsOut:
+    fetches = [repo.latest_statement_fetch(symbol, st) for st in DEFAULT_STATEMENTS]
+    fetches = [f for f in fetches if f is not None]
+    dates = [f["report_date"] for f in fetches if f["report_date"]]
+    # known only when every statement has a date; the oldest one is what the figures rest on
+    have = min(dates) if fetches and len(dates) == len(fetches) else None
+    site = repo.latest_report_date(symbol)
+    return schemas.ReportsOut(
+        have=have,
+        site=site,
+        downloaded_at=max((f["fetched_at"] for f in fetches), default=None),
+        behind=bool(have and site and site > have),
+    )
+
+
 def stock_view(repo: Repository, symbol: str) -> schemas.StockDetailOut | None:
     company = repo.get_company(symbol)
     latest = repo.latest_analysed_run()
@@ -229,6 +245,7 @@ def stock_view(repo: Repository, symbol: str) -> schemas.StockDetailOut | None:
             if snap
             else None
         ),
+        reports=_reports(repo, symbol),
         criteria=criteria,
         components=components,
         series=_series(Statements.from_repo(repo, symbol)),

@@ -654,6 +654,56 @@
         "title": "ProfileOut",
         "type": "object"
       },
+      "ReportsOut": {
+        "description": "How current our statements are against StockAnalysis (R5).",
+        "properties": {
+          "behind": {
+            "title": "Behind",
+            "type": "boolean"
+          },
+          "downloaded_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downloaded At"
+          },
+          "have": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Have"
+          },
+          "site": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Site"
+          }
+        },
+        "required": [
+          "have",
+          "site",
+          "downloaded_at",
+          "behind"
+        ],
+        "title": "ReportsOut",
+        "type": "object"
+      },
       "RunOut": {
         "properties": {
           "error": {
@@ -894,6 +944,17 @@
             ],
             "title": "Last Earnings Date"
           },
+          "last_report_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Report Date"
+          },
           "market_cap": {
             "anyOf": [
               {
@@ -992,7 +1053,8 @@
           "pb_ratio",
           "pe_ratio_5y",
           "last_earnings_date",
-          "next_earnings_date"
+          "next_earnings_date",
+          "last_report_date"
         ],
         "title": "SnapshotOut",
         "type": "object"
@@ -1132,6 +1194,9 @@
             ],
             "title": "Quality"
           },
+          "reports": {
+            "$ref": "#/components/schemas/ReportsOut"
+          },
           "run": {
             "$ref": "#/components/schemas/RunRef"
           },
@@ -1191,6 +1256,7 @@
           "candidate",
           "gurus",
           "snapshot",
+          "reports",
           "criteria",
           "components",
           "series",

@@ -477,6 +477,20 @@ export interface components {
             /** Text */
             text: string;
         };
+        /**
+         * ReportsOut
+         * @description How current our statements are against StockAnalysis (R5).
+         */
+        ReportsOut: {
+            /** Behind */
+            behind: boolean;
+            /** Downloaded At */
+            downloaded_at: string | null;
+            /** Have */
+            have: string | null;
+            /** Site */
+            site: string | null;
+        };
         /** RunOut */
         RunOut: {
             /** Error */
@@ -538,6 +552,8 @@ export interface components {
         SnapshotOut: {
             /** Last Earnings Date */
             last_earnings_date: string | null;
+            /** Last Report Date */
+            last_report_date: string | null;
             /** Market Cap */
             market_cap: number | null;
             /** Next Earnings Date */
@@ -592,6 +608,7 @@ export interface components {
             profile: components["schemas"]["ProfileOut"] | null;
             /** Quality */
             quality: number | null;
+            reports: components["schemas"]["ReportsOut"];
             run: components["schemas"]["RunRef"];
             /** Sector */
             sector: string | null;
