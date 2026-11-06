@@ -348,6 +348,19 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** ProfileOut */
+        ProfileOut: {
+            /** Created At */
+            created_at: string;
+            /** Filing Date */
+            filing_date: string | null;
+            /** Model */
+            model: string;
+            /** Source Url */
+            source_url: string | null;
+            /** Text */
+            text: string;
+        };
         /** RunOut */
         RunOut: {
             /** Error */
@@ -456,12 +469,15 @@ export interface components {
             name: string | null;
             /** Opportunity */
             opportunity: number | null;
+            profile: components["schemas"]["ProfileOut"] | null;
             /** Quality */
             quality: number | null;
             run: components["schemas"]["RunRef"];
             /** Sector */
             sector: string | null;
             series: components["schemas"]["SeriesOut"];
+            /** Sic Description */
+            sic_description: string | null;
             snapshot: components["schemas"]["SnapshotOut"] | null;
             /** Symbol */
             symbol: string;

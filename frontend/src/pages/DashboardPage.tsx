@@ -56,6 +56,7 @@ export function DashboardPage() {
           <Title order={2}>מי עומדת בהכי הרבה קריטריונים, ובכמה היא זולה</Title>
         </div>
         <Group gap="xs" maw="100%">
+          <TextInput leftSection={<IconSearch size={16} />} placeholder="חיפוש סימול או שם" value={query} onChange={(e) => setQuery(e.currentTarget.value)} w={220} aria-label="חיפוש מניה" />
           <Select placeholder="כל הסקטורים" data={sectors} value={sector} onChange={setSector} clearable w={200} />
           <Box maw="100%" style={{ overflowX: "auto" }}>
           <SegmentedControl
@@ -122,7 +123,7 @@ export function DashboardPage() {
       <Card p={0}>
         <Group justify="space-between" p="lg" pb="sm">
           <Title order={4}>מטריצת קריטריונים</Title>
-          <TextInput leftSection={<IconSearch size={16} />} placeholder="חיפוש סימול או שם" value={query} onChange={(e) => setQuery(e.currentTarget.value)} w={220} />
+          <Text size="xs" c="dimmed">{ranked.length} מתוך {all.length} מניות</Text>
         </Group>
         <Table.ScrollContainer minWidth={820}>
           <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">

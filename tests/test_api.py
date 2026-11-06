@@ -271,3 +271,14 @@ def test_committed_openapi_schema_matches_the_api():
 
     committed = json.loads(Path("frontend/src/api/openapi.json").read_text(encoding="utf-8"))
     assert committed == json.loads(json.dumps(openapi_schema())), "regenerate the OpenAPI schema"
+
+
+def test_stock_detail_includes_the_latest_profile(client, repo):
+    login(client)
+    run = run_with(repo, [seed(repo, "AAA")])
+    analyse_run(repo, run)
+    repo.finish_run(run, "ok")
+    assert client.get("/api/stocks/AAA").json()["profile"] is None
+    repo.save_profile("AAA", "## במשפט אחד\nחברה.", "0001-26-000001", "m", "v0", "2026-02-20", "u")
+    profile = client.get("/api/stocks/AAA").json()["profile"]
+    assert profile["text"].startswith("## ") and profile["filing_date"] == "2026-02-20"

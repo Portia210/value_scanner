@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 from value_scanner.jobs.alerts import Sender, send_pending_alerts
 from value_scanner.jobs.analyze import analyse_run
+from value_scanner.jobs.profiles import candidate_symbols, refresh_profiles
 from value_scanner.jobs.refresh import DownloadSummary, Pacing, download_statements
 from value_scanner.jobs.universe import UniverseResult, refresh_universe
 from value_scanner.settings import Settings
@@ -43,6 +44,7 @@ def run_scan(
     sleep: Callable[[float], None] = time.sleep,
     sender: Sender | None = None,
     log: Callable[[str], None] = print,
+    profiler: Callable[[Repository, Settings, list[str]], object] = refresh_profiles,
 ) -> RunOutcome:
     try:
         run_id = repo.start_run(kind)
@@ -94,6 +96,7 @@ def run_scan(
             f"analysed {analysis.analysed}: {len(analysis.candidates)} candidates, "
             f"{len(analysis.unranked)} without a quality score",
         )
+        _profiles_for_candidates(repo, settings, profiler, note)
         repo.apply_retention()
         status, summary = "ok", _summary(universe, downloads)
     except Blocked as exc:
@@ -111,6 +114,19 @@ def run_scan(
         note("info" if status == "ok" else "error", f"finished: {status} - {summary}")
         send_pending_alerts(repo, settings, sender)
     return RunOutcome(run_id, status, summary)
+
+
+def _profiles_for_candidates(repo, settings, profiler, note) -> None:
+    """Business profiles (E7) for the candidates only, and only when Gemini and the SEC contact
+    address are configured. Never fails the run."""
+    if not (settings.google_api_key and settings.my_email):
+        return
+    try:
+        symbols = candidate_symbols(repo)
+        note("info", f"profiles: checking {len(symbols)} candidates")
+        profiler(repo, settings, symbols)
+    except Exception as exc:  # noqa: BLE001 - a profile problem must not fail the scan
+        note("warning", f"profiles skipped: {type(exc).__name__}")
 
 
 def _progress(repo: Repository, run_id: int, done: int, total: int) -> None:

@@ -121,6 +121,18 @@ def history_view(repo: Repository) -> schemas.HistoryOut:
     return schemas.HistoryOut(events=[_event(r) for r in repo.membership_history()])
 
 
+def _profile(row: sqlite3.Row | None) -> schemas.ProfileOut | None:
+    if row is None:
+        return None
+    return schemas.ProfileOut(
+        text=row["text"],
+        filing_date=row["filing_date"],
+        source_url=row["source_url"],
+        model=row["model"],
+        created_at=row["created_at"],
+    )
+
+
 def stock_view(repo: Repository, symbol: str) -> schemas.StockDetailOut | None:
     company = repo.get_company(symbol)
     run = repo.latest_analysed_run()
@@ -202,6 +214,8 @@ def stock_view(repo: Repository, symbol: str) -> schemas.StockDetailOut | None:
             for kind in ("quality", "opportunity")
         },
         events=[_event(e) for e in repo.membership_events(symbol)],
+        profile=_profile(repo.latest_profile(symbol)),
+        sic_description=company["sic_description"],
     )
 
 

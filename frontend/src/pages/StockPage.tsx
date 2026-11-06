@@ -1,9 +1,10 @@
-import { Alert, Anchor, Badge, Card, Grid, Group, Loader, RingProgress, SimpleGrid, Stack, Table, Tabs, Text, Title } from "@mantine/core";
+import { Alert, Anchor, Badge, Card, Grid, Group, Loader, RingProgress, SimpleGrid, Spoiler, Stack, Table, Tabs, Text, Title } from "@mantine/core";
 import { IconArrowRight } from "@tabler/icons-react";
 import ReactECharts from "echarts-for-react";
 import { Link, useParams } from "react-router-dom";
 import { CriterionGauge } from "../components/CriterionGauge";
 import { GuruBadge } from "../components/GuruBadge";
+import { Prose, SourceLink } from "../components/Prose";
 import { useStock } from "../api/hooks";
 import { ApiError } from "../api/client";
 import { date, dateTime, dirOf, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
@@ -13,7 +14,13 @@ export function StockPage() {
   const { data: d, isLoading, error } = useStock(symbol.toUpperCase());
   if (isLoading) return <Loader />;
   if (error instanceof ApiError && error.status === 404)
-    return <Stack><Anchor component={Link} to="/">חזרה לדשבורד</Anchor><Text>המניה {symbol} לא נותחה בריצה האחרונה (היא לא עברה את הסינון הראשוני).</Text></Stack>;
+    return (
+      <Stack>
+        <Anchor component={Link} to="/">חזרה לדשבורד</Anchor>
+        <Text>המניה {symbol} אינה במעקב בריצה האחרונה (לא עוברת כרגע את הסינון הראשוני, או שאינה מוכרת).</Text>
+        <Anchor component={Link} to="/history" size="sm">אולי יצאה מהסינון: ראה כניסות ויציאות</Anchor>
+      </Stack>
+    );
   if (error || !d) return <Alert color="red">לא הצלחתי לטעון את המניה.</Alert>;
 
   const trend = {
@@ -59,6 +66,22 @@ export function StockPage() {
           </Stack>
         </Group>
       </Group>
+
+      {d.profile && (
+        <Card>
+          <Group justify="space-between" mb="xs" align="baseline">
+            <Title order={4}>על החברה</Title>
+            <Text size="xs" c="dimmed">
+              מבוסס על הדוח השנתי שהוגש ב-{date(d.profile.filing_date)} · סיכום AI, לא ייעוץ
+              {d.sic_description ? ` · SIC: ${d.sic_description}` : ""}
+            </Text>
+          </Group>
+          <Spoiler maxHeight={320} showLabel="הצג הכול" hideLabel="הסתר">
+            <Prose text={d.profile.text} />
+          </Spoiler>
+          {d.profile.source_url && <SourceLink href={d.profile.source_url} />}
+        </Card>
+      )}
 
       <SimpleGrid cols={{ base: 2, md: 4 }}>
         {GURU_ORDER.map((g) => (

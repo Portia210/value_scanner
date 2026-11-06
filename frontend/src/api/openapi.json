@@ -472,6 +472,53 @@
         "title": "LoginBody",
         "type": "object"
       },
+      "ProfileOut": {
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "filing_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Date"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "filing_date",
+          "source_url",
+          "model",
+          "created_at"
+        ],
+        "title": "ProfileOut",
+        "type": "object"
+      },
       "RunOut": {
         "properties": {
           "error": {
@@ -921,6 +968,16 @@
             ],
             "title": "Opportunity"
           },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProfileOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "quality": {
             "anyOf": [
               {
@@ -948,6 +1005,17 @@
           },
           "series": {
             "$ref": "#/components/schemas/SeriesOut"
+          },
+          "sic_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sic Description"
           },
           "snapshot": {
             "anyOf": [
@@ -982,7 +1050,9 @@
           "components",
           "series",
           "history",
-          "events"
+          "events",
+          "profile",
+          "sic_description"
         ],
         "title": "StockDetailOut",
         "type": "object"

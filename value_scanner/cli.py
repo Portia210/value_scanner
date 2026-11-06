@@ -25,6 +25,10 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     sub.add_parser("docs", help="Write docs/criteria/*.md from the criteria definitions")
+    prof = sub.add_parser(
+        "profiles", help="Write/refresh Hebrew business profiles (SEC annual report -> Gemini)"
+    )
+    prof.add_argument("symbols", nargs="*", help="symbols; default: the candidates of the last run")
     sub.add_parser("test-alert", help="Send one test email to MY_EMAIL through the configured SMTP")
     sub.add_parser("openapi", help="Print the API's OpenAPI schema (source of the frontend types)")
     sub.add_parser(
@@ -61,6 +65,22 @@ def _run(limit: int | None) -> int:
     outcome = run_scan(repo, settings, "cli", limit=limit)
     print(f"{outcome.status}: {outcome.summary}")
     return {"ok": 0, "locked": 3, "blocked": 3}.get(outcome.status, 1)
+
+
+def _profiles(symbols: list[str]) -> int:
+    from value_scanner.jobs.profiles import candidate_symbols, refresh_profiles
+    from value_scanner.storage import db
+    from value_scanner.storage.repo import Repository
+
+    settings = load_settings(load_dotenv_file=True)
+    repo = Repository(db.open_database(settings.db_path))
+    symbols = [s.upper() for s in symbols] or candidate_symbols(repo)
+    summary = refresh_profiles(repo, settings, symbols)
+    print(
+        f"created {len(summary.created)}, fresh {len(summary.fresh)}, "
+        f"unsupported {len(summary.unsupported)}, failed {len(summary.failed)}"
+    )
+    return 1 if summary.failed else 0
 
 
 def _test_alert() -> int:
@@ -113,6 +133,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         for path in write_all():
             print(f"wrote {path}")
         return 0
+    if args.command == "profiles":
+        return _profiles(args.symbols)
     if args.command == "test-alert":
         return _test_alert()
     if args.command == "openapi":

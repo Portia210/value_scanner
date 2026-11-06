@@ -113,6 +113,14 @@ class HistoryPoint(BaseModel):
     score: float | None
 
 
+class ProfileOut(BaseModel):
+    text: str  # Markdown, Hebrew
+    filing_date: str | None
+    source_url: str | None
+    model: str
+    created_at: str
+
+
 class StockDetailOut(BaseModel):
     symbol: str
     name: str | None
@@ -132,6 +140,8 @@ class StockDetailOut(BaseModel):
     series: SeriesOut
     history: dict[str, list[HistoryPoint]]
     events: list[EventOut]
+    profile: ProfileOut | None
+    sic_description: str | None
 
 
 class CriteriaGuru(BaseModel):
