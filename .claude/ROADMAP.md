@@ -155,8 +155,9 @@
 
 ## שלב 5 — פריסה
 
-- [~] **F1** — Docker
+- [x] **F1** — Docker
   - Done when: Dockerfile על python slim, בלי דפדפן; `docker run` מקומי מגיש את האתר ומריץ סריקה; healthcheck.
+  - Status (2026-11-06): נבנה ורץ מקומית (Docker Desktop דרך `docker.exe` מ-WSL): healthcheck תקין, התחברות, הגשת האתר, וסריקה אמיתית מוגבלת (`run --limit 3`: 9 דוחות, 0 כשלונות) בתוך הקונטיינר. תוקן: `corepack` התקין pnpm חדש שחוסם את סקריפט ה-build של esbuild, ולכן נעול על 9.15.9. לא נבדק: Volume ושמירה אחרי restart.
   - Depends on: E2–E5
 - [ ] **F2** — Railway
   - Done when: שירות + Volume לקובץ ה-DB (`DB_PATH`) + Variables (בלי סיסמת StockAnalysis); ריצה אמיתית מהשרת הושלמה; D13 אושר.

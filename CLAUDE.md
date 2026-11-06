@@ -49,6 +49,11 @@ developer: a CAPTCHA, StockAnalysis blocking the server, or secrets they haven't
 browser — e.g. to inspect StockAnalysis pages, verify the screener filters, and click
 through the deployed dashboard. Don't change account settings or saved screens there.
 
+**Browsers: always headless.** Any Chromium/Playwright I start (scripts, probes, the Playwright MCP) must
+run headless (`headless=True`, MCP arg `--headless`) — never open a visible window on the developer's
+machine. The Playwright plugin as installed (`npx @playwright/mcp@latest`, no flag) starts headed;
+check/adjust before using it. Claude in Chrome is the developer's own browser and is exempt.
+
 **Classification doubts** go to `docs/classification-doubts.md` (Hebrew, written for the
 developer): current behavior, what the lessons say, the default in effect, the question.
 

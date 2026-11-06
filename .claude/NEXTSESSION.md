@@ -12,6 +12,17 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-06 (ערב) — ריצה 2, E7, חיפוש, תוכנית E8
+- Verified (ריצה 2, אמיתית): `ok` ב-81 שנ': 107 במעקב, 15 דוחות הורדו, **306 דולגו כטריים** (כללי D18 עובדים), אותן 11 מועמדות, VTMX בלי ציון. **אירוע כניסה/יציאה אמיתי ראשון:** NMIH יצאה (סיבה "דוחות": current ratio 2.03→1.75). המייל שנשלח הגיע (אישרת).
+- Changed: **E7 נבנה** — `sources/sec.py`, `profile/gemini.py`, `jobs/profiles.py`, `python -m value_scanner profiles [סימולים]`, הסריקה מרעננת פרופילים למועמדות בלבד (רק כש-`GOOGLE_API_KEY` ו-`MY_EMAIL` מוגדרים; כשל לא מפיל ריצה), כרטיס "על החברה" בדף המניה. שדה החיפוש של הדשבורד עבר לשורה העליונה (מסנן גם גרף ומועמדות). `.claude/plans/ticker-analysis.md` — תוכנית E8 **לדיון, לא ממומש**.
+- Verified (E7): 12 טסטים חדשים (קיצוץ פרקים, 20-F, כשל חילוץ, 402/503, רענון רק בדוח חדש, מפתח ב-header); חי: AAON (10-K, כולל נתוני מגזרים מה-MD&A) ו-DHT (20-F). **פרומפט v0** = הפרומפט מהבדיקה + סקטור/ענף + פסקת "מיקום בענף" — **לא סוכם איתך**. שגיאת תרגום ב-DHT: "הכנסות מספנות" במקום "הכנסות מהובלה"; פתיח "להלן פרופיל…" ו-`---` מיותרים.
+- NOT verified: פרופיל לחברת פארמה/פיננסית (RJF, NBIX נשלחו; ר' תוצאות למטה אם נוספו), KGC (40-F: צפוי "unsupported"); בדיקת העובדות מול הדוח רק ל-AAON (בסשן הקודם); `docker build`.
+- Skipped (דורש אותך): E8 (שאלות 1–8 בתוכנית), נושאי `formula-decisions.md`, F2/F3, פרומפט E7.
+- Traps: `run-local.sh` בשורש הוא קובץ שלך (לא מעקוב, לא נגעתי).
+- **F1 הושלם:** `docker build` נכשל בהתחלה (pnpm חדש חוסם build של esbuild) ותוקן; הקונטיינר healthy, התחברות, אתר, וסריקה מוגבלת אמיתית עברו. הפעלתי Docker Desktop מ-WSL (`docker.exe`; בתוך WSL עצמו אין `docker`). קונטיינר הבדיקה שלי נמחק; `postgres_db` שעל המכונה אינו שלי ולא נגעתי.
+- **דפדפן:** מעכשיו תמיד headless (נוסף ל-CLAUDE.md). ה-plugin של Playwright MCP מותקן בלי `--headless`, כלומר הוא נפתח headed — לשנות ב-config.
+- Next: תשובות לתוכנית E8 ולפרומפט; F2/F3 (D13).
+
 ## 2026-11-06 — E1–E4, E6, C10, C9 (חלקי): דשבורד על נתוני אמת
 - Changed: `api/schemas.py` + `api/views.py` (מודלי תגובה, `/api/criteria`, `/api/history`, ספירת עוברים לגורו), OpenAPI → טיפוסים (`frontend/src/api/`, טסט נכשל כשהסכמה ישנה), הגשת `frontend/dist` מ-FastAPI, frontend אמיתי (התחברות, דשבורד, דף מניה, ריצות+הגדרות+לוג, כניסות/יציאות, "איך זה מחושב"; ה-mock נמחק), `docs/criteria/opportunity.md`, `tools/compare_v1_v2.py` + `docs/c9-summary.md`, `python -m value_scanner test-alert`, Dockerfile עם שלב בניית frontend, `ARCHITECTURE.md` נכתב מחדש ל-v2. תיקוני באגים: חיבור SQLite עבר בין threads (500 על `/api/runs` ו-`/api/settings`), CSP חסם גופנים inline, logout לא חזר למסך ההתחברות.
 - Verified: gate ירוק (334 טסטים) + `pnpm build`; בדפדפן (Playwright, על עותק DB של ריצה 1): כל המסכים, אור/כהה, מסך 390px בלי גלילה אופקית, התחברות שגויה/נכונה/יציאה, שמירת N ימים. מייל בדיקה נשלח ל-`MY_EMAIL` ב-SMTP האמיתי (השרת קיבל; **הגעה לתיבה לא נבדקה**).

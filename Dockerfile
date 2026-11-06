@@ -1,6 +1,6 @@
 # Stage 1: build the dashboard (Node is only needed here, not in the final image)
 FROM node:20-slim AS frontend
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 WORKDIR /frontend
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
