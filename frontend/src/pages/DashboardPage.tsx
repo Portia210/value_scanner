@@ -55,16 +55,6 @@ export function DashboardPage() {
           <Text size="xs" c="dimmed">ריצה #{data.run.id} · {all.length} מניות במעקב · {dateTime(data.run.started_at)}</Text>
           <Title order={2}>מי עומדת בהכי הרבה קריטריונים, ובכמה היא זולה</Title>
         </div>
-        <Group gap="xs" maw="100%">
-          <TextInput leftSection={<IconSearch size={16} />} placeholder="חיפוש סימול או שם" value={query} onChange={(e) => setQuery(e.currentTarget.value)} w={220} aria-label="חיפוש מניה" />
-          <Select placeholder="כל הסקטורים" data={sectors} value={sector} onChange={setSector} clearable w={200} />
-          <Box maw="100%" style={{ overflowX: "auto" }}>
-          <SegmentedControl
-            value={ctype} onChange={setCtype}
-            data={[{ value: "all", label: "הכול" }, ...["tech", "pharma", "cyclical", "regular", "financial"].map((t) => ({ value: t, label: TYPE_LABELS[t] }))]}
-          />
-          </Box>
-        </Group>
       </Group>
 
       <SimpleGrid cols={{ base: 2, md: 4 }}>
@@ -142,6 +132,18 @@ export function DashboardPage() {
           </Table>
         </Table.ScrollContainer>
       </Card>
+
+      {/* filters apply to the chart, the KPIs and the matrix above */}
+      <Group gap="xs" maw="100%">
+          <TextInput leftSection={<IconSearch size={16} />} placeholder="חיפוש סימול או שם" value={query} onChange={(e) => setQuery(e.currentTarget.value)} w={220} aria-label="חיפוש מניה" />
+          <Select placeholder="כל הסקטורים" data={sectors} value={sector} onChange={setSector} clearable w={200} />
+          <Box maw="100%" style={{ overflowX: "auto" }}>
+          <SegmentedControl
+            value={ctype} onChange={setCtype}
+            data={[{ value: "all", label: "הכול" }, ...["tech", "pharma", "cyclical", "regular", "financial"].map((t) => ({ value: t, label: TYPE_LABELS[t] }))]}
+          />
+          </Box>
+        </Group>
 
       {(data.exited ?? []).length > 0 && (
         <Card>
