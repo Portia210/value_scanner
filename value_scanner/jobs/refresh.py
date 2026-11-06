@@ -1,7 +1,11 @@
-"""Which statements to download, and the slow, bounded download loop (B1, D18).
+"""Which statements to download, and the slow, bounded download loop (B1, D18, R5).
 
-Refresh rules (D18): a new stock immediately; after `lastEarningsDate` passes, try 1, 3 and 7 days
-later until a changed table appears; a full refresh every 45 days regardless.
+R5 (preferred): the screener's `lastReportDate` (period end of the latest report on StockAnalysis)
+is stored with every download; a statement is downloaded again when the screener now shows a newer
+one. If the page has not caught up (identical values) the old date is kept, so the next run tries
+again, at most `NEW_REPORT_TRIES` times. D18 (fallback, when either date is unknown): a new stock
+immediately; after `lastEarningsDate` passes, try 1, 3 and 7 days later until a changed table
+appears. Both: a long backstop refresh (`FULL_REFRESH_DAYS`) for retroactive corrections.
 """
 
 from __future__ import annotations
@@ -11,12 +15,15 @@ import time
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
+from typing import Any
 
 from value_scanner.sources.screener import Blocked
 from value_scanner.sources.stockanalysis import DEFAULT_STATEMENTS, StatementFetcher
 from value_scanner.storage.repo import Repository
 
-FULL_REFRESH_DAYS = 45
+FULL_REFRESH_DAYS = 120  # backstop; D18 used 45 before R5
+NEW_REPORT_TRIES = 3  # R5: downloads that may find the page still old before accepting it
+ADOPT_AFTER_EARNINGS_DAYS = 3  # R5: a download made this long after earnings counts as current
 EARNINGS_RETRY_OFFSETS = (1, 3, 7)  # days after lastEarningsDate
 
 
@@ -64,17 +71,68 @@ def _values(repo: Repository, fetch_id: int) -> set[tuple[str, str, float | None
     return {(r["item"], r["period"], r["value"]) for r in repo.statement_values(fetch_id)}
 
 
+def _day(value: str | None) -> date | None:
+    try:
+        return date.fromisoformat(value) if value else None
+    except ValueError:
+        return None
+
+
+def _adopt_baseline(
+    repo: Repository, fetch: Any, seen: date, last_earnings: date | None
+) -> date | None:
+    """R5 transition: a download made before report dates were stored has none. Trust it as current
+    only when it was made at least `ADOPT_AFTER_EARNINGS_DAYS` after the latest earnings date (so
+    the site had time to publish the report); otherwise leave it unknown and use the D18 rules."""
+    fetched = datetime.strptime(fetch["fetched_at"], "%Y-%m-%dT%H:%M:%SZ").date()
+    if last_earnings is not None and fetched < last_earnings + timedelta(
+        days=ADOPT_AFTER_EARNINGS_DAYS
+    ):
+        return None
+    repo.set_fetch_report_date(fetch["id"], seen.isoformat())
+    return seen
+
+
 def statement_refresh_reason(
     repo: Repository, symbol: str, statement: str, now: datetime, last_earnings: date | None
 ) -> str | None:
     fetches = _fetch_times(repo, symbol, statement)
+    if not fetches:
+        return "new"
+    seen = _day(repo.latest_report_date(symbol))
+    latest = repo.latest_statement_fetch(symbol, statement)
+    have = _day(latest["report_date"])
+    if have is None and seen is not None:
+        have = _adopt_baseline(repo, latest, seen, last_earnings)
+    if seen is not None and have is not None:
+        if seen > have:
+            return "new_report"
+        if now - fetches[0][1] >= timedelta(days=FULL_REFRESH_DAYS):
+            return "full_refresh"
+        return None
     changed = False
-    if fetches and last_earnings is not None:
+    if last_earnings is not None:
         after = [f for f in fetches if f[1].date() > last_earnings]
         before = [f for f in fetches if f[1].date() <= last_earnings]
         if after and before:
             changed = _values(repo, after[0][0]) != _values(repo, before[0][0])
     return refresh_reason(now, [t for _, t in fetches], last_earnings, changed)
+
+
+def _report_date_to_store(
+    repo: Repository, symbol: str, statement: str, reason: str, rows: list
+) -> str | None:
+    """The `lastReportDate` to record with a finished download. For a `new_report` download whose
+    values equal the previous download the page has not caught up yet: keep the old date so the next
+    run retries, until `NEW_REPORT_TRIES` downloads have been made since the new date appeared."""
+    seen = repo.latest_report_date(symbol)
+    if reason != "new_report" or seen is None:
+        return seen
+    previous = repo.latest_statement_fetch(symbol, statement)
+    if previous is None or set(rows) != _values(repo, previous["id"]):
+        return seen
+    tries = repo.downloads_since_report_date_appeared(symbol, statement, seen)
+    return seen if tries + 1 >= NEW_REPORT_TRIES else previous["report_date"]
 
 
 @dataclass
@@ -146,6 +204,11 @@ def download_statements(
                 raise Blocked(f"blocked {blocks_in_a_row} times in a row at {symbol}/{statement}")
             sleep(pacing.block_wait)
 
+        report_date = (
+            _report_date_to_store(repo, symbol, statement, reason, outcome.rows)
+            if outcome.status == "ok"
+            else None
+        )
         repo.save_statement_fetch(
             symbol,
             statement,
@@ -154,6 +217,7 @@ def download_statements(
             outcome.rows,
             outcome.latest_period,
             run_id,
+            report_date,
         )
         if outcome.status == "ok":
             summary.ok += 1

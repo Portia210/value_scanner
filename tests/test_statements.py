@@ -363,3 +363,127 @@ def test_changed_table_after_earnings_stops_retries(repo):
     run_download(repo, lambda r: httpx.Response(200, text=new_html), symbols=("AAA",))
     repo.state["t"] = datetime(2026, 6, 28, 9, tzinfo=UTC)
     assert run_download(repo, OK, symbols=("AAA",))[0].skipped_fresh == 1
+
+
+# ── R5: download when the screener shows a newer lastReportDate ──────────────────────────────
+def snap(repo, symbol, report_date, last_earnings=None):
+    """One more screener snapshot for `symbol` (as a finished run would leave it)."""
+    run = repo.start_run("cli")
+    repo.save_snapshot(
+        run,
+        symbol,
+        {"in_screen": 1, "last_report_date": report_date, "last_earnings_date": last_earnings},
+    )
+    repo.finish_run(run, "ok", "")
+
+
+def counting(response=None):
+    calls = []
+
+    def handler(request):
+        calls.append(request.url.path)
+        return response(request) if response else httpx.Response(200, text=statement_html())
+
+    return calls, handler
+
+
+def stored_date(repo, symbol="AAA"):
+    return repo.latest_statement_fetch(symbol, "income")["report_date"]
+
+
+def test_the_report_date_is_stored_with_the_download(repo):
+    snap(repo, "AAA", "2026-06-30")
+    run_download(repo, OK, symbols=("AAA",))
+    assert stored_date(repo) == "2026-06-30"
+
+
+def test_same_report_date_is_not_downloaded_again(repo):
+    snap(repo, "AAA", "2026-06-30")
+    run_download(repo, OK, symbols=("AAA",))
+    repo.state["t"] = NOW + timedelta(days=30)
+    snap(repo, "AAA", "2026-06-30")
+    calls, handler = counting()
+    summary, _ = run_download(repo, handler, symbols=("AAA",))
+    assert calls == [] and summary.skipped_fresh == 1
+
+
+def test_an_older_report_date_in_the_screener_is_not_downloaded(repo):
+    snap(repo, "AAA", "2026-06-30")
+    run_download(repo, OK, symbols=("AAA",))
+    snap(repo, "AAA", "2026-03-31")  # the screener going backwards is not a new report
+    calls, handler = counting()
+    run_download(repo, handler, symbols=("AAA",))
+    assert calls == []
+
+
+def test_a_newer_report_date_is_downloaded_and_stored(repo):
+    snap(repo, "AAA", "2026-03-31")
+    run_download(repo, OK, symbols=("AAA",))
+    repo.state["t"] = NOW + timedelta(days=7)
+    snap(repo, "AAA", "2026-06-30")
+    changed = lambda r: httpx.Response(200, text=statement_html([["Extra", "1", "2", "3"]]))  # noqa: E731
+    calls, handler = counting(changed)
+    run_download(repo, handler, symbols=("AAA",))
+    assert len(calls) == 1 and stored_date(repo) == "2026-06-30"
+    repo.state["t"] = NOW + timedelta(days=14)
+    run_download(repo, handler, symbols=("AAA",))
+    assert len(calls) == 1  # the new period is in: no more downloads
+
+
+def test_a_page_that_has_not_caught_up_is_retried_and_then_accepted(repo):
+    snap(repo, "AAA", "2026-03-31")
+    run_download(repo, OK, symbols=("AAA",))
+    repo.state["t"] = NOW + timedelta(minutes=1)
+    snap(repo, "AAA", "2026-06-30")  # the screener is ahead of the statement page
+    calls, handler = counting()  # the page keeps returning the same table
+    for week in (1, 2):
+        repo.state["t"] = NOW + timedelta(days=7 * week)
+        run_download(repo, handler, symbols=("AAA",))
+        assert stored_date(repo) == "2026-03-31"  # old date kept, so the next run tries again
+    repo.state["t"] = NOW + timedelta(days=21)
+    run_download(repo, handler, symbols=("AAA",))
+    assert len(calls) == 3 and stored_date(repo) == "2026-06-30"  # third try: accepted
+    repo.state["t"] = NOW + timedelta(days=28)
+    run_download(repo, handler, symbols=("AAA",))
+    assert len(calls) == 3  # and no more retries
+
+
+def test_old_download_without_a_report_date_is_trusted_when_made_after_the_earnings(repo):
+    run_download(repo, OK, symbols=("AAA",))  # downloaded by code that stored no report date
+    assert stored_date(repo) is None
+    repo.state["t"] = NOW + timedelta(days=10)
+    snap(repo, "AAA", "2026-06-30", last_earnings="2026-06-20")  # fetched 10 days after: current
+    calls, handler = counting()
+    run_download(repo, handler, symbols=("AAA",))
+    assert calls == [] and stored_date(repo) == "2026-06-30"
+
+
+def test_old_download_made_just_after_the_earnings_is_not_trusted(repo):
+    repo.state["t"] = datetime(2026, 6, 21, 8, tzinfo=UTC)
+    run_download(repo, OK, symbols=("AAA",))
+    repo.state["t"] = datetime(2026, 6, 22, 8, tzinfo=UTC)
+    snap(repo, "AAA", "2026-06-30", last_earnings="2026-06-20")  # 1 day after: page may lag
+    run_download(repo, lambda r: httpx.Response(200, text="<html>x</html>"), symbols=("AAA",))
+    assert stored_date(repo) is None  # no baseline invented; the D18 rules decide
+
+
+def test_missing_report_date_falls_back_to_the_earnings_rules(repo):
+    run_download(repo, OK, symbols=("AAA",))
+    snap(repo, "AAA", None, last_earnings="2026-06-20")
+    repo.state["t"] = datetime(2026, 7, 5, tzinfo=UTC)  # long after: nothing due, as in D18
+    calls, handler = counting()
+    run_download(repo, handler, symbols=("AAA",))
+    assert calls == []
+
+
+def test_equal_dates_still_get_the_long_backstop_refresh(repo):
+    snap(repo, "AAA", "2026-06-30")
+    run_download(repo, OK, symbols=("AAA",))
+    repo.state["t"] = NOW + timedelta(days=FULL_REFRESH_DAYS - 1)
+    snap(repo, "AAA", "2026-06-30")
+    calls, handler = counting()
+    run_download(repo, handler, symbols=("AAA",))
+    assert calls == []
+    repo.state["t"] = NOW + timedelta(days=FULL_REFRESH_DAYS)
+    run_download(repo, handler, symbols=("AAA",))
+    assert len(calls) == 1

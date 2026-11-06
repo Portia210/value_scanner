@@ -31,6 +31,7 @@ def point(**overrides):
         "peRatio5Y": 18.0,
         "lastEarningsDate": "2026-08-01",
         "nextEarningsDate": "2026-11-20",
+        "lastReportDate": "2026-06-30",
     }
     base.update(overrides)
     return base

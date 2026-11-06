@@ -275,16 +275,36 @@ def test_reanalysis_with_unchanged_reports_downloads_nothing_and_only_updates_th
     assert len(repo.results_for(second.run_id, "CCC")) == 28
 
 
-def test_a_new_report_since_the_last_download_is_downloaded_again(repo):
+def test_a_new_report_date_since_the_last_download_is_downloaded_again(repo):
+    """R5: the screener now shows a newer `lastReportDate` than the one stored with the download."""
     requests = []
 
     def handler(request):
         requests.append(1)
         return httpx.Response(200, text=statement_html())
 
-    analyse(repo, "CCC", {"CCC": {"lastEarningsDate": "2026-08-01"}}, fetcher=fetcher(handler))
+    analyse(repo, "CCC", {"CCC": {"lastReportDate": "2026-06-30"}}, fetcher=fetcher(handler))
+    first = len(requests)
+    analyse(repo, "CCC", {"CCC": {"lastReportDate": "2026-06-30"}}, fetcher=fetcher(handler))
+    assert len(requests) == first  # same report date: nothing to download
+    analyse(repo, "CCC", {"CCC": {"lastReportDate": "2026-09-30"}}, fetcher=fetcher(handler))
+    assert len(requests) > first
+
+
+def test_without_a_report_date_a_new_report_is_still_found_by_the_earnings_date(repo):
+    """D18 fallback: when the screener gives no `lastReportDate`, the earnings-date rules apply."""
+    requests = []
+
+    def handler(request):
+        requests.append(1)
+        return httpx.Response(200, text=statement_html())
+
+    no_date = {"lastReportDate": None}
+    first_stock = {"CCC": {**no_date, "lastEarningsDate": "2026-08-01"}}
+    analyse(repo, "CCC", first_stock, fetcher=fetcher(handler))
     first = len(requests)
     # the company reported again after our download (D18: try again 1 day after the report)
     repo.conn.execute("UPDATE statement_fetches SET fetched_at = '2026-08-02T00:00:00Z'")
-    analyse(repo, "CCC", {"CCC": {"lastEarningsDate": "2026-11-05"}}, fetcher=fetcher(handler))
+    reported_again = {"CCC": {**no_date, "lastEarningsDate": "2026-11-05"}}
+    analyse(repo, "CCC", reported_again, fetcher=fetcher(handler))
     assert len(requests) > first

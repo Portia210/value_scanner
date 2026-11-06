@@ -52,6 +52,7 @@ EXTRA_FIELDS = (
     "peRatio5Y",
     "lastEarningsDate",
     "nextEarningsDate",
+    "lastReportDate",  # R5: period end of the latest financial report
 )
 DATA_POINT_IDS = (*FILTERS, *EXTRA_FIELDS)
 

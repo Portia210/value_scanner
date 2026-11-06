@@ -32,6 +32,7 @@ SNAPSHOT_FIELDS = {
     "peRatio5Y": "pe_ratio_5y",
     "lastEarningsDate": "last_earnings_date",
     "nextEarningsDate": "next_earnings_date",
+    "lastReportDate": "last_report_date",
     "revenueGrowth5Y": "revenue_growth_5y",
     "profitMargin": "profit_margin",
     "epsGrowth5Y": "eps_growth_5y",

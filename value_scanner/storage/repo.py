@@ -229,6 +229,28 @@ class Repository:
         ).fetchone()
         return row["last_report_date"] if row else None
 
+    def downloads_since_report_date_appeared(
+        self, symbol: str, statement: str, report_date: str
+    ) -> int:
+        """Successful downloads of a statement since the screener first showed `report_date`."""
+        row = self.conn.execute(
+            "SELECT MIN(captured_at) AS t FROM screener_snapshots "
+            "WHERE symbol = ? AND last_report_date = ?",
+            (symbol, report_date),
+        ).fetchone()
+        if row is None or row["t"] is None:
+            return 0
+        return self.conn.execute(
+            "SELECT COUNT(*) FROM statement_fetches WHERE symbol = ? AND statement = ? "
+            "AND status = 'ok' AND fetched_at >= ?",
+            (symbol, statement, row["t"]),
+        ).fetchone()[0]
+
+    def set_fetch_report_date(self, fetch_id: int, report_date: str) -> None:
+        self.conn.execute(
+            "UPDATE statement_fetches SET report_date = ? WHERE id = ?", (report_date, fetch_id)
+        )
+
     def snapshots_for_run(self, run_id: int) -> dict[str, sqlite3.Row]:
         rows = self.conn.execute(
             "SELECT * FROM screener_snapshots WHERE run_id = ?", (run_id,)
