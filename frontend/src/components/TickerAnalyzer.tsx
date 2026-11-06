@@ -8,6 +8,15 @@ import { ApiError } from "../api/client";
 import { useAnalysis, useStartAnalysis } from "../api/hooks";
 
 const STALE = "השרת רץ בגרסה ישנה מהממשק (חסרה לו היכולת הזו). הפעל מחדש את serve ורענן.";
+/** What the server is doing, from the "phase=" code in the status message. */
+function phaseText(message: string | null | undefined): string {
+  const phase = message?.startsWith("phase=") ? message.slice(6) : "";
+  if (phase === "fresh") return "הדוחות הכספיים עדכניים, לכן מעדכנים רק את המחיר והמכפילים.";
+  if (phase.startsWith("statements:")) return `יש דוחות חדשים: מוריד ${phase.slice(11)} דוחות מהאתר, בקצב איטי בכוונה (עד כדקה).`;
+  if (phase === "analysing") return "מחשב קריטריונים וציונים…";
+  return "מושך מחיר ומכפילים עדכניים מהסורק…";
+}
+
 const REASONS: Record<number, string> = {
   409: "ריצה אחרת פועלת כרגע. נסה שוב בעוד כמה דקות.",
   429: "הגעת למגבלת הניתוחים היומית. נסה מחר.",
@@ -62,8 +71,8 @@ export function TickerAnalyzer({ symbol, reanalyse = false }: { symbol: string; 
         <Stack gap={0}>
           <Text size="sm" fw={600}>מנתח את <span dir="ltr">{symbol}</span>…</Text>
           <Text size="xs" c="dimmed">
-            מורידים את הדוחות מהאתר בקצב איטי בכוונה: כדקה.
-            {s?.progress_total ? ` (${s.progress_done}/${s.progress_total} דוחות)` : ""}
+            {phaseText(mine ? s?.message : null)}
+            {mine && s?.progress_total ? ` (${s.progress_done}/${s.progress_total})` : ""}
           </Text>
         </Stack>
       </Group>
@@ -82,7 +91,7 @@ export function TickerAnalyzer({ symbol, reanalyse = false }: { symbol: string; 
       </Button>
       {!reanalyse && (
         <Text size="xs" c="dimmed">
-          מביא את הנתונים מהאתר, מריץ את כל הגורואים ומחשב איכות והזדמנות. לא משפיע על הסריקה הרגילה.
+          מושך מחיר ומכפילים עדכניים, מוריד דוחות כספיים רק אם אין לה או אם הופיעו חדשים, ומריץ את כל הגורואים. לא משפיע על הסריקה הרגילה.
           {s ? ` נשארו ${s.analyses_left_today} ניתוחים היום.` : ""}
         </Text>
       )}

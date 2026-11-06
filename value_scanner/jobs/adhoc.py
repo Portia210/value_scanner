@@ -18,11 +18,16 @@ from datetime import UTC, datetime, timedelta
 from value_scanner.jobs.alerts import send_pending_alerts
 from value_scanner.jobs.analyze import analyse_and_store
 from value_scanner.jobs.pipeline import RunOutcome
-from value_scanner.jobs.refresh import Pacing, download_statements
+from value_scanner.jobs.refresh import (
+    Pacing,
+    _last_earnings,
+    download_statements,
+    statement_refresh_reason,
+)
 from value_scanner.jobs.universe import SNAPSHOT_FIELDS
 from value_scanner.settings import Settings
 from value_scanner.sources.screener import Blocked, Universe, evaluate, fetch_universe
-from value_scanner.sources.stockanalysis import StatementFetcher
+from value_scanner.sources.stockanalysis import DEFAULT_STATEMENTS, StatementFetcher
 from value_scanner.storage import db
 from value_scanner.storage.repo import Repository, RunAlreadyRunning
 
@@ -81,6 +86,17 @@ def analyse_ticker(
                 symbol,
                 {**fields, "in_screen": int(outcome.passed), "filters_failed": len(outcome.failed)},
             )
+        # Statements are downloaded only when stale (D18: a new report appeared, or 45 days);
+        # otherwise only the price and multiples (from the screener row above) are refreshed.
+        last_earnings = _last_earnings(repo, symbol)
+        stale = [
+            st
+            for st in DEFAULT_STATEMENTS
+            if statement_refresh_reason(repo, symbol, st, repo._clock(), last_earnings)
+        ]
+        repo.set_run_summary(
+            run_id, f"{symbol}: phase={'statements:' + str(len(stale)) if stale else 'fresh'}"
+        )
         downloads = download_statements(
             repo,
             run_id,
@@ -95,6 +111,7 @@ def analyse_ticker(
             if downloads.failures:
                 message += f" ({downloads.failures[0][:80]})"
             return RunOutcome(run_id, "failed", f"{symbol}: {message}")
+        repo.set_run_summary(run_id, f"{symbol}: phase=analysing")
         company = repo.get_company(symbol)
         snap = repo.snapshot_for(run_id, symbol)
         pbs = repo.sector_pb_values(company["sector"] or "") if company["sector"] else []

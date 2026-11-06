@@ -251,3 +251,40 @@ def test_profile_job_reports_unsupported_and_conflicts_while_running(tmp_path):
 def test_profile_status_endpoint(api):
     client, csrf, _, _ = api
     assert client.get("/api/profiles/QQQQ/status").json() == {"symbol": "QQQQ", "status": "none"}
+
+
+def test_reanalysis_with_unchanged_reports_downloads_nothing_and_only_updates_the_price(repo):
+    requests = []
+
+    def handler(request):
+        requests.append(str(request.url))
+        return httpx.Response(200, text=statement_html())
+
+    first = analyse(repo, "CCC", {"CCC": {"price": 50.0}}, fetcher=fetcher(handler))
+    assert first.status == "ok" and len(requests) == 3  # income, balance sheet, cash flow
+
+    second = analyse(
+        repo, "CCC", {"CCC": {"price": 61.5, "pbRatio": 4.0}}, fetcher=fetcher(handler)
+    )
+    assert second.status == "ok"
+    assert len(requests) == 3  # the reports are fresh: not one more statement request
+    assert repo.snapshot_for(first.run_id, "CCC")["price"] == 50.0
+    new = repo.snapshot_for(second.run_id, "CCC")
+    assert new["price"] == 61.5 and new["pb_ratio"] == 4.0  # price and multiples are current
+    # and the criteria were re-evaluated against the new multiples
+    assert len(repo.results_for(second.run_id, "CCC")) == 28
+
+
+def test_a_new_report_since_the_last_download_is_downloaded_again(repo):
+    requests = []
+
+    def handler(request):
+        requests.append(1)
+        return httpx.Response(200, text=statement_html())
+
+    analyse(repo, "CCC", {"CCC": {"lastEarningsDate": "2026-08-01"}}, fetcher=fetcher(handler))
+    first = len(requests)
+    # the company reported again after our download (D18: try again 1 day after the report)
+    repo.conn.execute("UPDATE statement_fetches SET fetched_at = '2026-08-02T00:00:00Z'")
+    analyse(repo, "CCC", {"CCC": {"lastEarningsDate": "2026-11-05"}}, fetcher=fetcher(handler))
+    assert len(requests) > first
