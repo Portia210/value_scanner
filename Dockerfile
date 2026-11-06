@@ -22,8 +22,7 @@ COPY value_scanner ./value_scanner
 COPY docs ./docs
 COPY --from=frontend /frontend/dist ./frontend/dist
 
-# Railway mounts the volume at /data and sets PORT
-VOLUME /data
+# Railway mounts the volume at /data and sets PORT (its builder rejects the VOLUME keyword)
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD python -c "import os,urllib.request as u; u.urlopen('http://127.0.0.1:%s/api/health' % os.environ.get('PORT','8000'), timeout=4)"
