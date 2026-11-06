@@ -366,3 +366,43 @@ def test_old_code_refuses_a_newer_database_and_never_applies_migrations_added_la
     _v1_database_with_children(old)
     conn = db.open_database(old)
     assert db.schema_version(conn) == 1
+
+
+def test_report_date_migration_is_additive_and_keeps_every_row(tmp_path):
+    """Migration 0003 (R5) only adds columns: existing rows stay, the new columns are NULL."""
+    path = tmp_path / "v2.db"
+    conn = db.connect(path)
+    conn.execute(
+        "CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)"
+    )
+    for version, statements in db._KNOWN_MIGRATIONS[:2]:
+        db._apply(conn, version, statements, verify_foreign_keys=version == 2)
+    conn.execute("INSERT INTO runs (kind, status, started_at) VALUES ('cli', 'ok', 'x')")
+    conn.execute("INSERT INTO companies (symbol, first_seen_at, last_seen_at) VALUES ('A','x','x')")
+    conn.execute(
+        "INSERT INTO screener_snapshots (run_id, symbol, captured_at, in_screen) "
+        "VALUES (1, 'A', 'x', 1)"
+    )
+    conn.execute(
+        "INSERT INTO statement_fetches (run_id, symbol, statement, fetched_at, source, status) "
+        "VALUES (1, 'A', 'income', 'x', 's', 'ok')"
+    )
+    conn.close()
+    conn = db.open_database(path)
+    assert db.schema_version(conn) >= 3
+    for table in ("runs", "companies", "screener_snapshots", "statement_fetches"):
+        assert conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] == 1, table
+    assert conn.execute("SELECT last_report_date FROM screener_snapshots").fetchone()[0] is None
+    assert conn.execute("SELECT report_date FROM statement_fetches").fetchone()[0] is None
+
+
+def test_report_date_is_saved_with_snapshot_and_fetch(repo):
+    run = repo.start_run("cli")
+    repo.save_snapshot(run, "AAA", {"in_screen": 1, "last_report_date": "2026-09-30"})
+    assert repo.latest_report_date("AAA") == "2026-09-30"
+    assert repo.latest_report_date("ZZZ") is None
+    fid = repo.save_statement_fetch(
+        "AAA", "income", "x", "ok", [("Revenue", "TTM", 1.0)], report_date="2026-06-30"
+    )
+    assert repo.latest_statement_fetch("AAA", "income")["report_date"] == "2026-06-30"
+    assert fid

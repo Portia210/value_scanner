@@ -200,6 +200,7 @@ class Repository:
         "pe_ratio_5y",
         "last_earnings_date",
         "next_earnings_date",
+        "last_report_date",
         "revenue_growth_5y",
         "profit_margin",
         "eps_growth_5y",
@@ -218,6 +219,15 @@ class Repository:
         self.conn.execute(
             f"INSERT INTO screener_snapshots ({', '.join(columns)}) VALUES ({marks})", params
         )
+
+    def latest_report_date(self, symbol: str) -> str | None:
+        """The newest `lastReportDate` the screener has shown for this stock (R5)."""
+        row = self.conn.execute(
+            "SELECT last_report_date FROM screener_snapshots WHERE symbol = ? "
+            "AND last_report_date IS NOT NULL ORDER BY captured_at DESC, id DESC LIMIT 1",
+            (symbol,),
+        ).fetchone()
+        return row["last_report_date"] if row else None
 
     def snapshots_for_run(self, run_id: int) -> dict[str, sqlite3.Row]:
         rows = self.conn.execute(
@@ -266,13 +276,15 @@ class Repository:
         values: Iterable[tuple[str, str, float | None]] = (),
         latest_period: str | None = None,
         run_id: int | None = None,
+        report_date: str | None = None,
     ) -> int:
-        """Record one download and its (item, period, value) rows; keep the 4 latest good ones."""
+        """Record one download and its (item, period, value) rows; keep the 4 latest good ones.
+        `report_date`: the screener's `lastReportDate` when the page was downloaded (R5)."""
         with self.transaction():
             cur = self.conn.execute(
                 "INSERT INTO statement_fetches (run_id, symbol, statement, fetched_at, source, "
-                "status, latest_period) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (run_id, symbol, statement, self.now(), source, status, latest_period),
+                "status, latest_period, report_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (run_id, symbol, statement, self.now(), source, status, latest_period, report_date),
             )
             fetch_id = int(cur.lastrowid)
             self.conn.executemany(
