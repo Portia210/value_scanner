@@ -29,7 +29,9 @@ export function QualityOpportunityScatter({ stocks, qualityMin, mosMin, height =
       value: [s.quality!, s.opportunity!, marketCapB(s.market_cap)],
       name: s.symbol,
       inQuadrant: s.quality! >= qualityMin && s.opportunity! >= mosMin,
-    }));
+    }))
+    // big circles first, so the small ones are drawn on top of them and never hidden
+    .sort((a, b) => b.value[2] - a.value[2]);
 
   const option = {
     textStyle: { fontFamily: "Heebo" },
@@ -58,7 +60,8 @@ export function QualityOpportunityScatter({ stocks, qualityMin, mosMin, height =
       type: "scatter",
       data: points.map((p) => ({
         ...p,
-        itemStyle: { color: p.inQuadrant ? pass : muted, opacity: p.inQuadrant ? 0.95 : 0.55 },
+        // translucent fill + solid outline: overlapping circles stay distinguishable
+        itemStyle: { color: `${p.inQuadrant ? pass : muted}${p.inQuadrant ? "aa" : "66"}`, borderColor: p.inQuadrant ? pass : muted, borderWidth: 1.5 },
         label: { show: p.inQuadrant || p.value[0] > 0.8 },
       })),
       symbolSize: (v: number[]) => Math.min(40, 9 + Math.sqrt(v[2]) * 1.2),

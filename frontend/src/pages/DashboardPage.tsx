@@ -9,7 +9,7 @@ import { GuruBadge } from "../components/GuruBadge";
 import { TickerAnalyzer } from "../components/TickerAnalyzer";
 import { QualityOpportunityScatter } from "../components/QualityOpportunityScatter";
 import { useStocks } from "../api/hooks";
-import { dateTime, GURU_LABELS, GURU_ORDER, pct, score100, TYPE_LABELS } from "../format";
+import { dateTime, GURU_LABELS, GURU_ORDER, num, pct, score100, TYPE_LABELS } from "../format";
 
 function Kpi({ label, value, hint, accent }: { label: string; value: string; hint: string; accent?: boolean }) {
   return (
@@ -124,6 +124,7 @@ export function DashboardPage() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>מניה</Table.Th>
+                <Table.Th ta="left">מחיר</Table.Th>
                 <Table.Th>סוג</Table.Th>
                 {GURU_ORDER.map((g) => <Table.Th key={g} ta="center">{GURU_LABELS[g]}</Table.Th>)}
                 <Table.Th w="18%">איכות</Table.Th>
@@ -137,6 +138,7 @@ export function DashboardPage() {
                     <Text component={Link} to={`/stocks/${s.symbol}`} fw={600} ff="monospace" c="brand">{s.symbol}</Text>
                     <Text size="xs" c="dimmed" dir="ltr" ta="right">{s.name}</Text>
                   </Table.Td>
+                  <Table.Td ta="left"><Text ff="monospace" size="sm" dir="ltr">{s.price === null ? "—" : `$${num(s.price)}`}</Text></Table.Td>
                   <Table.Td>
                     <Group gap={4}>{s.labels.map((l) => <Badge key={l} variant="default" radius="sm">{TYPE_LABELS[l] ?? l}</Badge>)}</Group>
                   </Table.Td>
