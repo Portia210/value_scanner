@@ -67,3 +67,40 @@ export function num(v: number | null | undefined, digits = 2): string {
 
 export const marketCapB = (v: number | null | undefined): number => (v ? v / 1e9 : 0);
 export const primaryType = (labels: string[]): string => labels[0] ?? "regular";
+
+/** "2026-11-05" (a calendar date, no time) as a local Date at midnight. */
+function calendarDate(day: string): Date {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** Whole days from today to the given calendar date (negative = in the past). */
+export function daysFromToday(day: string | null | undefined, today = new Date()): number | null {
+  if (!day) return null;
+  const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return Math.round((calendarDate(day).getTime() - t.getTime()) / 86_400_000);
+}
+
+export const fullDate = (day: string) => {
+  const d = calendarDate(day);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
+};
+
+/** A calendar date as "היום" / "אתמול" / "מחר", otherwise dd.mm.yyyy. */
+export function relativeDay(day: string | null | undefined, today = new Date()): string {
+  if (!day) return "—";
+  const n = daysFromToday(day, today);
+  if (n === 0) return "היום";
+  if (n === -1) return "אתמול";
+  if (n === 1) return "מחר";
+  return fullDate(day);
+}
+
+export const EARNINGS_SOON_DAYS = 15;
+
+/** "נכון ל…": להיום / לאתמול / ל-05.11.2026. */
+export function asOf(day: string | null | undefined, today = new Date()): string {
+  const r = relativeDay(day, today);
+  return r === "היום" || r === "אתמול" ? `ל${r}` : `ל-${r}`;
+}

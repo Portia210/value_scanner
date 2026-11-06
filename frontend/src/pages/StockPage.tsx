@@ -1,17 +1,19 @@
 import { Alert, Anchor, Badge, Card, Grid, Group, Loader, RingProgress, SimpleGrid, Spoiler, Stack, Table, Tabs, Text, Title } from "@mantine/core";
-import { IconArrowRight } from "@tabler/icons-react";
+import { IconArrowRight, IconCalendarEvent, IconDoorExit } from "@tabler/icons-react";
 import ReactECharts from "echarts-for-react";
+import { useComputedColorScheme } from "@mantine/core";
 import { Link, useParams } from "react-router-dom";
 import { CriterionGauge } from "../components/CriterionGauge";
 import { GuruBadge } from "../components/GuruBadge";
 import { Prose, SourceLink } from "../components/Prose";
 import { useStock } from "../api/hooks";
 import { ApiError } from "../api/client";
-import { date, dateTime, dirOf, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
+import { asOf, dateTime, daysFromToday, dirOf, EARNINGS_SOON_DAYS, fullDate, relativeDay, FILTER_LABELS, GURU_LABELS, GURU_ORDER, num, pct, REASON_LABELS, score100, TYPE_LABELS } from "../format";
 
 export function StockPage() {
   const { symbol = "" } = useParams();
   const { data: d, isLoading, error } = useStock(symbol.toUpperCase());
+  const dark = useComputedColorScheme("light") === "dark";
   if (isLoading) return <Loader />;
   if (error instanceof ApiError && error.status === 404)
     return (
@@ -39,10 +41,23 @@ export function StockPage() {
   const qHistory = d.history.quality ?? [];
   const oHistory = d.history.opportunity ?? [];
   const snap = d.snapshot;
+  const nextIn = daysFromToday(snap?.next_earnings_date);
+  const soon = nextIn !== null && nextIn >= 0 && nextIn < EARNINGS_SOON_DAYS;
 
   return (
     <Stack gap="lg">
       <Anchor component={Link} to="/" size="sm"><Group gap={4}><IconArrowRight size={14} />חזרה לדשבורד</Group></Anchor>
+      {!d.in_latest_run && (
+        <Alert color="gray" icon={<IconDoorExit size={18} />} title="המניה אינה במעקב כרגע">
+          היא יצאה מהסינון הראשוני. הנתונים בדף הם מריצה #{d.run.id}, האחרונה שבה נותחה.
+          {" "}<Anchor component={Link} to="/history" size="sm">למה יצאה? ראה כניסות ויציאות</Anchor>
+        </Alert>
+      )}
+      {soon && snap?.next_earnings_date && (
+        <Alert color="orange" variant="filled" icon={<IconCalendarEvent size={22} />} title={`דוחות רבעוניים ${nextIn === 0 ? "היום" : nextIn === 1 ? "מחר" : `בעוד ${nextIn} ימים`} · ${fullDate(snap.next_earnings_date)}`}>
+          המחיר והמכפילים עלולים להשתנות משמעותית אחרי הפרסום, והנתונים בדף ישתנו בריצה הבאה.
+        </Alert>
+      )}
       <Group justify="space-between" align="center">
         <div>
           <Group gap="sm">
@@ -52,7 +67,12 @@ export function StockPage() {
             <Badge variant="light" color="gray" dir="ltr">{d.sector}</Badge>
           </Group>
           <Text c="dimmed" dir="ltr" ta="right">{d.name} · {d.industry}{d.country ? ` · ${d.country}` : ""}</Text>
-          <Text size="xs" c="dimmed">ריצה #{d.run.id} · מחיר נכון ל-{date(snap?.price_date)} · דוחות אחרונים: {date(snap?.last_earnings_date)}</Text>
+          <Text size="xs" c="dimmed">ריצה #{d.run.id} · מחיר נכון {asOf(snap?.price_date)} · דוחות אחרונים: {relativeDay(snap?.last_earnings_date)}</Text>
+          {snap?.next_earnings_date && (
+            <Text size="xs" c={soon ? "orange" : "dimmed"} fw={soon ? 700 : 400}>
+              דוחות הבאים: {relativeDay(snap.next_earnings_date)}{nextIn !== null && nextIn > 1 && nextIn < 60 ? ` (בעוד ${nextIn} ימים)` : ""}
+            </Text>
+          )}
         </div>
         <Group gap="xl">
           <Stack align="center" gap={0}>
@@ -72,7 +92,7 @@ export function StockPage() {
           <Group justify="space-between" mb="xs" align="baseline">
             <Title order={4}>על החברה</Title>
             <Text size="xs" c="dimmed">
-              מבוסס על הדוח השנתי שהוגש ב-{date(d.profile.filing_date)} · סיכום AI, לא ייעוץ
+              מבוסס על הדוח השנתי שהוגש ב-{d.profile.filing_date ? fullDate(d.profile.filing_date) : "—"} · סיכום AI, לא ייעוץ
               {d.sic_description ? ` · SIC: ${d.sic_description}` : ""}
             </Text>
           </Group>
@@ -139,15 +159,28 @@ export function StockPage() {
             </Card>
             {(qHistory.length > 1 || oHistory.length > 1) && (
               <Card>
-                <Title order={4} mb="sm">ציון לאורך ריצות</Title>
-                <ReactECharts style={{ height: 200 }} option={{
-                  textStyle: { fontFamily: "Heebo" }, legend: { top: 0 }, tooltip: { trigger: "axis" },
-                  grid: { left: 40, right: 20, top: 36, bottom: 24 },
-                  xAxis: { type: "category", data: qHistory.map((h) => `#${h.run_id}`) },
-                  yAxis: { type: "value" },
+                <Title order={4} mb={4}>איך הציונים השתנו מריצה לריצה</Title>
+                <Text size="xs" c="dimmed" mb="xs">
+                  איכות: ממוצע ציוני הגורואים, 0 עד 100 (כמה קריטריונים עוברים ובאיזה מרווח).
+                  מרווח ביטחון: כמה המחיר זול מהשווי ההוגן, באחוזים (שלילי = יקר מהשווי ההוגן).
+                  כל נקודה היא ריצה אחת.
+                </Text>
+                <ReactECharts style={{ height: 240 }} notMerge option={{
+                  textStyle: { fontFamily: "Heebo", color: dark ? "#c9c9c9" : "#495057" },
+                  legend: { top: 0, textStyle: { color: dark ? "#e0e0e0" : "#212529" } },
+                  tooltip: { trigger: "axis", valueFormatter: (v: number | null) => (v === null || v === undefined ? "—" : String(v)) },
+                  grid: { left: 48, right: 24, top: 40, bottom: 44 },
+                  xAxis: {
+                    type: "category", name: "ריצה (תאריך)", nameLocation: "middle", nameGap: 28,
+                    data: qHistory.map((h) => `#${h.run_id} · ${dateTime(h.started_at).slice(0, 5)}`),
+                  },
+                  yAxis: { type: "value",
+                    splitLine: { lineStyle: { color: dark ? "#444" : "#dee2e6" } } },
                   series: [
-                    { name: "איכות", type: "line", data: qHistory.map((h) => h.score) },
-                    { name: "הזדמנות", type: "line", data: oHistory.map((h) => h.score) },
+                    { name: "איכות, 0 עד 100", type: "line", symbolSize: 8, itemStyle: { color: "#4c6ef5" },
+                      data: qHistory.map((h) => (h.score === null ? null : Math.round(h.score * 100))) },
+                    { name: "מרווח ביטחון, באחוזים", type: "line", symbolSize: 8, itemStyle: { color: "#51cf66" },
+                      data: oHistory.map((h) => (h.score === null ? null : Math.round(h.score * 100))) },
                   ],
                 }} />
               </Card>

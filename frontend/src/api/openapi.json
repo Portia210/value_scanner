@@ -300,6 +300,48 @@
         "title": "EventOut",
         "type": "object"
       },
+      "ExitedOut": {
+        "properties": {
+          "last_run_id": {
+            "title": "Last Run Id",
+            "type": "integer"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "sector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sector"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "name",
+          "sector",
+          "last_run_id"
+        ],
+        "title": "ExitedOut",
+        "type": "object"
+      },
       "GuruScoreOut": {
         "properties": {
           "computed": {
@@ -928,6 +970,10 @@
             "title": "History",
             "type": "object"
           },
+          "in_latest_run": {
+            "title": "In Latest Run",
+            "type": "boolean"
+          },
           "industry": {
             "anyOf": [
               {
@@ -1040,6 +1086,7 @@
           "country",
           "exchange",
           "run",
+          "in_latest_run",
           "labels",
           "quality",
           "opportunity",
@@ -1237,6 +1284,13 @@
       },
       "StocksOut": {
         "properties": {
+          "exited": {
+            "items": {
+              "$ref": "#/components/schemas/ExitedOut"
+            },
+            "title": "Exited",
+            "type": "array"
+          },
           "opportunity_min": {
             "title": "Opportunity Min",
             "type": "number"
@@ -1267,7 +1321,8 @@
           "run",
           "stocks",
           "quality_min",
-          "opportunity_min"
+          "opportunity_min",
+          "exited"
         ],
         "title": "StocksOut",
         "type": "object"

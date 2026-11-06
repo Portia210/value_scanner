@@ -453,6 +453,23 @@ class Repository:
             (limit,),
         ).fetchall()
 
+    def latest_run_with_results(self, symbol: str) -> int | None:
+        """The newest run in which the symbol was analysed (it may have left the screen since)."""
+        row = self.conn.execute(
+            "SELECT MAX(run_id) FROM results WHERE symbol = ?", (symbol,)
+        ).fetchone()
+        return row[0]
+
+    def exited_stocks(self, latest_run_id: int) -> list[sqlite3.Row]:
+        """Stocks analysed in an earlier run but not in `latest_run_id`, newest exit first."""
+        return self.conn.execute(
+            """SELECT r.symbol, c.name, c.sector, MAX(r.run_id) AS last_run_id
+               FROM results r JOIN companies c ON c.symbol = r.symbol
+               WHERE r.symbol NOT IN (SELECT symbol FROM scores WHERE run_id = ?)
+               GROUP BY r.symbol ORDER BY last_run_id DESC, r.symbol""",
+            (latest_run_id,),
+        ).fetchall()
+
     def snapshot_for(self, run_id: int, symbol: str) -> sqlite3.Row | None:
         return self.conn.execute(
             "SELECT * FROM screener_snapshots WHERE run_id = ? AND symbol = ?", (run_id, symbol)

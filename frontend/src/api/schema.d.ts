@@ -293,6 +293,17 @@ export interface components {
             /** Symbol */
             symbol: string;
         };
+        /** ExitedOut */
+        ExitedOut: {
+            /** Last Run Id */
+            last_run_id: number;
+            /** Name */
+            name: string | null;
+            /** Sector */
+            sector: string | null;
+            /** Symbol */
+            symbol: string;
+        };
         /** GuruScoreOut */
         GuruScoreOut: {
             /** Computed */
@@ -461,6 +472,8 @@ export interface components {
             history: {
                 [key: string]: components["schemas"]["HistoryPoint"][];
             };
+            /** In Latest Run */
+            in_latest_run: boolean;
             /** Industry */
             industry: string | null;
             /** Labels */
@@ -521,6 +534,8 @@ export interface components {
         };
         /** StocksOut */
         StocksOut: {
+            /** Exited */
+            exited: components["schemas"]["ExitedOut"][];
             /** Opportunity Min */
             opportunity_min: number;
             /** Quality Min */

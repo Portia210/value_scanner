@@ -282,3 +282,23 @@ def test_stock_detail_includes_the_latest_profile(client, repo):
     repo.save_profile("AAA", "## במשפט אחד\nחברה.", "0001-26-000001", "m", "v0", "2026-02-20", "u")
     profile = client.get("/api/stocks/AAA").json()["profile"]
     assert profile["text"].startswith("## ") and profile["filing_date"] == "2026-02-20"
+
+
+def test_stock_that_left_the_screen_is_still_viewable_and_listed_as_exited(client, repo):
+    login(client)
+    first = run_with(repo, [seed(repo, "AAA"), seed(repo, "BBB")])
+    analyse_run(repo, first)
+    repo.finish_run(first, "ok")
+    second = run_with(repo, [seed(repo, "AAA")])  # BBB is gone from the screen
+    analyse_run(repo, second)
+    repo.finish_run(second, "ok")
+
+    data = client.get("/api/stocks").json()
+    assert [s["symbol"] for s in data["stocks"]] == ["AAA"]
+    assert data["exited"] == [
+        {"symbol": "BBB", "name": "BBB", "sector": "Industrials", "last_run_id": first}
+    ]
+    gone = client.get("/api/stocks/BBB").json()
+    assert gone["in_latest_run"] is False and gone["run"]["id"] == first
+    assert gone["criteria"] and gone["snapshot"] is not None
+    assert client.get("/api/stocks/AAA").json()["in_latest_run"] is True

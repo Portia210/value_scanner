@@ -43,11 +43,19 @@ class StockRowOut(BaseModel):
     candidate: bool
 
 
+class ExitedOut(BaseModel):
+    symbol: str
+    name: str | None
+    sector: str | None
+    last_run_id: int  # the last run in which it was analysed
+
+
 class StocksOut(BaseModel):
     run: RunRef | None
     stocks: list[StockRowOut]
     quality_min: float
     opportunity_min: float
+    exited: list[ExitedOut]
 
 
 class CriterionOut(BaseModel):
@@ -128,7 +136,8 @@ class StockDetailOut(BaseModel):
     industry: str | None
     country: str | None
     exchange: str | None
-    run: RunRef
+    run: RunRef  # the run the figures below come from
+    in_latest_run: bool  # False = the stock left the screen; figures are from its last run
     labels: list[LabelOut]
     quality: float | None
     opportunity: float | None

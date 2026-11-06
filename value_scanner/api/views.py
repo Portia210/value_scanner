@@ -54,7 +54,7 @@ def stocks_view(repo: Repository) -> schemas.StocksOut:
     run = repo.latest_analysed_run()
     base = {"quality_min": CANDIDATE_QUALITY, "opportunity_min": CANDIDATE_OPPORTUNITY}
     if run is None:
-        return schemas.StocksOut(run=None, stocks=[], **base)
+        return schemas.StocksOut(run=None, stocks=[], exited=[], **base)
     counts = repo.result_counts(run["id"])
     out = []
     for row in repo.stock_table(run["id"]):
@@ -80,7 +80,13 @@ def stocks_view(repo: Repository) -> schemas.StocksOut:
                 candidate=is_candidate(q, o),
             )
         )
-    return schemas.StocksOut(run=run_ref(run), stocks=out, **base)
+    exited = [
+        schemas.ExitedOut(
+            symbol=r["symbol"], name=r["name"], sector=r["sector"], last_run_id=r["last_run_id"]
+        )
+        for r in repo.exited_stocks(run["id"])
+    ]
+    return schemas.StocksOut(run=run_ref(run), stocks=out, exited=exited, **base)
 
 
 def _series(stmts: Statements) -> schemas.SeriesOut:
@@ -135,11 +141,16 @@ def _profile(row: sqlite3.Row | None) -> schemas.ProfileOut | None:
 
 def stock_view(repo: Repository, symbol: str) -> schemas.StockDetailOut | None:
     company = repo.get_company(symbol)
-    run = repo.latest_analysed_run()
-    if company is None or run is None:
+    latest = repo.latest_analysed_run()
+    if company is None or latest is None:
         return None
-    results = repo.results_for(run["id"], symbol)
-    if not results:
+    # A stock that left the screen is still viewable: figures come from its last analysed run.
+    run_id = repo.latest_run_with_results(symbol)
+    if run_id is None:
+        return None
+    run = repo.get_run(run_id)
+    results = repo.results_for(run_id, symbol)
+    if run is None or not results:
         return None
     defs = _all_criteria()
     order = {key: i for i, key in enumerate(defs)}  # lesson order, as in the criteria docs
@@ -183,6 +194,7 @@ def stock_view(repo: Repository, symbol: str) -> schemas.StockDetailOut | None:
         country=company["country"],
         exchange=company["exchange"],
         run=run_ref(run),
+        in_latest_run=run["id"] == latest["id"],
         labels=[
             schemas.LabelOut(label=r["label"], reason=r["reason"])
             for r in repo.classification_for(run["id"], symbol)

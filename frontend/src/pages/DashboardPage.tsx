@@ -166,6 +166,22 @@ export function DashboardPage() {
           </Table>
         </Table.ScrollContainer>
       </Card>
+
+      {data.exited.length > 0 && (
+        <Card>
+          <Title order={4} mb={4}>יצאו מהמעקב</Title>
+          <Text size="xs" c="dimmed" mb="sm">מניות שנותחו בריצה קודמת ואינן עוברות כרגע את הסינון. אפשר עדיין לפתוח את הדף שלהן (נתונים מהריצה האחרונה שבה נותחו).</Text>
+          <Group gap="xs">
+            {data.exited
+              .filter((e) => !query || e.symbol.toLowerCase().includes(query.toLowerCase()) || (e.name ?? "").toLowerCase().includes(query.toLowerCase()))
+              .map((e) => (
+                <Badge key={e.symbol} component={Link} to={`/stocks/${e.symbol}`} variant="default" size="lg" radius="sm" style={{ cursor: "pointer" }} title={`${e.name ?? ""} · ריצה אחרונה #${e.last_run_id}`}>
+                  <span style={{ fontFamily: "monospace" }}>{e.symbol}</span>
+                </Badge>
+              ))}
+          </Group>
+        </Card>
+      )}
     </Stack>
   );
 }
