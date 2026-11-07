@@ -15,6 +15,7 @@ import re
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date
 
 import httpx
 from bs4 import BeautifulSoup
@@ -22,7 +23,12 @@ from bs4 import BeautifulSoup
 TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik:010d}.json"
 ARCHIVE_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{document}"
-ANNUAL_FORMS = ("10-K", "20-F")
+ANNUAL_FORMS = ("10-K", "20-F")  # annual reports we can cut chapters from
+# Every annual-report form of an issuer. The NEWEST of these decides: a company that moved from 20-F
+# to 40-F (AEM, 2013) must not be summarised from its old 20-F (the bug behind a profile "based on
+# the 2013 report").
+ANY_ANNUAL_FORMS = (*ANNUAL_FORMS, "40-F")
+MAX_REPORT_AGE_DAYS = 550  # older than this: the company has not filed a recent annual report
 MIN_GAP_SECONDS = 1.0
 
 # Minimum length (characters) of a required chapter; a shorter one means the cut went wrong.
@@ -107,20 +113,28 @@ class SecClient:
                 return self._tickers[candidate]
         raise Unsupported(f"{symbol} is not in the SEC ticker list")
 
-    def latest_annual_filing(self, symbol: str) -> Filing:
+    def latest_annual_filing(self, symbol: str, today: date | None = None) -> Filing:
+        """The newest annual report. Raises Unsupported when that report is a form we cannot cut
+        (40-F), or is too old to describe the company today - never an older report instead."""
         cik = self.cik(symbol)
         data = self._get(SUBMISSIONS_URL.format(cik=cik)).json()
         recent = data["filings"]["recent"]
-        for form, accession, date, document in zip(
+        today = today or date.today()
+        for form, accession, filed, document in zip(
             recent["form"],
             recent["accessionNumber"],
             recent["filingDate"],
             recent["primaryDocument"],
             strict=True,
         ):
-            if form in ANNUAL_FORMS:  # the list is newest first
-                return Filing(cik, form, accession, date, document, data.get("sicDescription"))
-        raise Unsupported(f"{symbol} has no 10-K or 20-F among its recent filings")
+            if form not in ANY_ANNUAL_FORMS:  # the list is newest first
+                continue
+            if form not in ANNUAL_FORMS:
+                raise Unsupported(f"{symbol}'s latest annual report is a {form} ({filed})")
+            if (today - date.fromisoformat(filed)).days > MAX_REPORT_AGE_DAYS:
+                raise Unsupported(f"{symbol}'s latest {form} ({filed}) is too old")
+            return Filing(cik, form, accession, filed, document, data.get("sicDescription"))
+        raise Unsupported(f"{symbol} has no 10-K, 20-F or 40-F among its recent filings")
 
     def download_text(self, filing: Filing) -> str:
         return html_to_text(self._get(filing.url).text)

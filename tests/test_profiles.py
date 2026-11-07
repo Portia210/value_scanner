@@ -1,4 +1,5 @@
 import json
+from datetime import date
 
 import httpx
 import pytest
@@ -114,7 +115,7 @@ def sec_client(html=None, seen=None):
 
 
 def test_latest_annual_filing_skips_other_forms_and_builds_the_archive_url():
-    filing = sec_client().latest_annual_filing("AAA")
+    filing = sec_client().latest_annual_filing("AAA", today=date(2026, 11, 8))
     assert (filing.form, filing.accession, filing.filing_date) == (
         "10-K",
         "0000000002-26-000002",
@@ -125,7 +126,7 @@ def test_latest_annual_filing_skips_other_forms_and_builds_the_archive_url():
         == "https://www.sec.gov/Archives/edgar/data/123/000000000226000002/aaa-20251231.htm"
     )
     with pytest.raises(Unsupported):
-        sec_client().latest_annual_filing("ZZZ")
+        sec_client().latest_annual_filing("ZZZ", today=date(2026, 11, 8))
 
 
 def test_user_agent_carries_the_contact_address():
@@ -343,3 +344,54 @@ def test_on_demand_job_shows_the_text_so_far_and_keeps_nothing_until_the_end(tmp
         assert pj.profile_job_text("ZZZ") == ""  # the finished text lives in the database
     finally:
         gemini.generate_stream, pj.refresh_profile, pj.SecClient = originals
+
+
+def client_with_filings(forms, dates):
+    submissions = {
+        "sicDescription": "x",
+        "filings": {
+            "recent": {
+                "form": forms,
+                "accessionNumber": [f"0000000001-{i:02d}-000001" for i in range(len(forms))],
+                "filingDate": dates,
+                "primaryDocument": [f"d{i}.htm" for i in range(len(forms))],
+            }
+        },
+    }
+
+    def handler(request):
+        url = str(request.url)
+        if url == sec.TICKERS_URL:
+            return httpx.Response(200, json={"0": {"ticker": "AAA", "cik_str": 123, "title": "A"}})
+        return httpx.Response(200, json=submissions)
+
+    return SecClient(
+        "me@example.com", httpx.Client(transport=httpx.MockTransport(handler)), sleep=lambda s: None
+    )
+
+
+TODAY = date(2026, 11, 8)
+
+
+def test_a_newer_40f_is_never_replaced_by_an_older_20f():
+    """Regression (AEM): its 40-Fs since 2014 were skipped and the 2013 20-F was summarised."""
+    client = client_with_filings(
+        ["40-F", "40-F/A", "40-F", "20-F"], ["2026-03-19", "2025-04-01", "2025-02-27", "2013-03-28"]
+    )
+    with pytest.raises(Unsupported, match="40-F"):
+        client.latest_annual_filing("AAA", today=TODAY)
+
+
+def test_the_newest_supported_form_wins_even_if_an_older_40f_exists():
+    client = client_with_filings(["10-K", "40-F"], ["2026-02-20", "2020-02-20"])
+    assert client.latest_annual_filing("AAA", today=TODAY).form == "10-K"
+
+
+def test_an_annual_report_older_than_about_18_months_is_not_used():
+    client = client_with_filings(["20-F"], ["2024-03-19"])
+    with pytest.raises(Unsupported, match="too old"):
+        client.latest_annual_filing("AAA", today=TODAY)
+    ok = client_with_filings(["20-F"], ["2025-06-01"])  # ~17 months: still fine
+    assert ok.latest_annual_filing("AAA", today=TODAY).filing_date == "2025-06-01"
+    with pytest.raises(Unsupported, match="no 10-K"):
+        client_with_filings(["8-K"], ["2026-01-01"]).latest_annual_filing("AAA", today=TODAY)
