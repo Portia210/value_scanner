@@ -353,6 +353,8 @@ export interface components {
             guru: string;
             /** Id */
             id: string;
+            /** Meaning */
+            meaning: string;
             /** Note */
             note: string;
             /** Result Note */

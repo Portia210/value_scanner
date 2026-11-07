@@ -61,7 +61,7 @@ function Explanation({ c }: { c: Criterion }) {
 }
 
 /** One criterion: title, value, and (for threshold criteria) a bar showing value against the threshold. */
-export function CriterionGauge({ c }: { c: Criterion }) {
+export function CriterionGauge({ c, showMeaning = true }: { c: Criterion; showMeaning?: boolean }) {
   const status = c.status as "PASS" | "FAIL" | "NA";
   const color = strengthColor(c.strength ?? 0, status);
   const hasScale = !c.comparative && c.value !== null && c.threshold !== null && (c.direction === ">" || c.direction === "<" || c.direction === ">=" || c.direction === "<=");
@@ -87,7 +87,7 @@ export function CriterionGauge({ c }: { c: Criterion }) {
           </HoverCard.Target>
           <HoverCard.Dropdown><Explanation c={c} /></HoverCard.Dropdown>
         </HoverCard>
-        <Group gap="xs" wrap="nowrap">
+        <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
           {c.comparative && c.status !== "NA" ? (
             <Text size="sm" fw={600} ff="monospace" dir="ltr">{num(c.value, 3)} vs {num(c.threshold, 3)}</Text>
           ) : (
@@ -96,6 +96,7 @@ export function CriterionGauge({ c }: { c: Criterion }) {
           <Badge size="sm" variant="light" color={color}>{STATUS_TEXT[c.status]}</Badge>
         </Group>
       </Group>
+      {showMeaning && c.meaning && <Text size="xs" c="dimmed">{c.meaning}</Text>}
       {hasScale && (
         <Box dir="ltr" pos="relative" h={8} style={{ borderRadius: 4, background: "var(--mantine-color-default-hover)" }}>
           <Box

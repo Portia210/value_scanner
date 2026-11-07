@@ -66,6 +66,7 @@ class CriterionOut(BaseModel):
     title: str
     formula: str
     note: str
+    meaning: str  # one plain-Hebrew sentence: what the figure measures
     direction: str  # > >= < <=
     comparative: bool  # value is this year's figure and threshold last year's (Piotroski)
     status: str  # PASS | FAIL | NA

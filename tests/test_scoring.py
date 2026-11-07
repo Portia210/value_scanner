@@ -92,3 +92,14 @@ def test_opportunity_is_median_of_applicable_components():
 def test_candidate_thresholds_are_inclusive_and_need_both():
     assert is_candidate(0.7, 0.2) and not is_candidate(0.69, 0.5) and not is_candidate(0.9, 0.19)
     assert not is_candidate(None, 0.5) and not is_candidate(0.9, None)
+
+
+def test_every_criterion_has_a_plain_hebrew_meaning():
+    from value_scanner.analysis.gurus import fisher, graham, piotroski, screen
+    from value_scanner.analysis.meanings import MEANINGS, meaning
+
+    modules = (screen, graham, fisher, piotroski)
+    ids = {(c.guru, cid) for m in modules for cid, c in m.CRITERIA.items()}
+    assert ids == set(MEANINGS)  # none missing, none left over for a removed criterion
+    assert all(meaning(g, c).strip().endswith(".") for g, c in ids)
+    assert meaning("nope", "nope") == ""

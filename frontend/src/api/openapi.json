@@ -234,6 +234,10 @@
             "title": "Id",
             "type": "string"
           },
+          "meaning": {
+            "title": "Meaning",
+            "type": "string"
+          },
           "note": {
             "title": "Note",
             "type": "string"
@@ -297,6 +301,7 @@
           "title",
           "formula",
           "note",
+          "meaning",
           "direction",
           "comparative",
           "status",

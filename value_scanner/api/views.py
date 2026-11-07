@@ -6,7 +6,7 @@ import json
 import sqlite3
 from typing import Any
 
-from value_scanner.analysis import rows
+from value_scanner.analysis import meanings, rows
 from value_scanner.analysis.criteria import Criterion
 from value_scanner.analysis.docs import GURUS, OPPORTUNITY_DOCS, OPPORTUNITY_NOTE, SCORING
 from value_scanner.analysis.scoring import (
@@ -195,6 +195,7 @@ def stock_view(repo: Repository, symbol: str) -> schemas.StockDetailOut | None:
                 title=d.title if d else r["criterion_id"],
                 formula=d.formula if d else "",
                 note=d.note if d else "",
+                meaning=meanings.meaning(r["guru"], r["criterion_id"]),
                 direction=d.direction if d else ">",
                 comparative=r["guru"] == "piotroski",
                 status=r["status"],

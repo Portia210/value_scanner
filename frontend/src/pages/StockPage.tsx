@@ -1,4 +1,4 @@
-import { Alert, Anchor, Badge, Button, Card, Collapse, Divider, Grid, Group, Loader, RingProgress, SimpleGrid, Stack, Table, Tabs, Text, Title, UnstyledButton } from "@mantine/core";
+import { Alert, Anchor, Badge, Button, Card, Collapse, Divider, Grid, Group, Loader, RingProgress, SimpleGrid, Stack, Switch, Table, Tabs, Text, Title, UnstyledButton } from "@mantine/core";
 import { IconArrowRight, IconCalendarEvent, IconChevronDown, IconChevronUp, IconDoorExit } from "@tabler/icons-react";
 import ReactECharts from "echarts-for-react";
 import { useComputedColorScheme } from "@mantine/core";
@@ -22,6 +22,13 @@ export function StockPage() {
   const stockList = useStocks();
   const qualityMin = stockList.data?.quality_min ?? 0.7;
   const oppMin = stockList.data?.opportunity_min ?? 0.2;
+  const [showMeaning, setShowMeaning] = useState(() => {
+    try { return localStorage.getItem("criteria-meanings") !== "0"; } catch { return true; }
+  });
+  const toggleMeaning = (on: boolean) => {
+    setShowMeaning(on);
+    try { localStorage.setItem("criteria-meanings", on ? "1" : "0"); } catch { /* private mode */ }
+  };
   if (isLoading) return <Loader />;
   if (error instanceof ApiError && error.status === 404)
     return (
@@ -135,14 +142,17 @@ export function StockPage() {
       <Grid>
         <Grid.Col span={{ base: 12, lg: 7 }}>
           <Card>
-            <Title order={4} mb="sm">כל קריטריון מול הסף</Title>
+            <Group justify="space-between" mb="sm">
+              <Title order={4}>כל קריטריון מול הסף</Title>
+              <Switch size="xs" label="הסברים" checked={showMeaning} onChange={(e) => toggleMeaning(e.currentTarget.checked)} />
+            </Group>
             <Tabs defaultValue="graham">
               <Tabs.List>
                 {GURU_ORDER.map((g) => <Tabs.Tab key={g} value={g}>{GURU_LABELS[g]}</Tabs.Tab>)}
               </Tabs.List>
               {GURU_ORDER.map((g) => (
                 <Tabs.Panel key={g} value={g} pt="xs">
-                  {d.criteria.filter((c) => c.guru === g).map((c) => <CriterionGauge key={c.id} c={c} />)}
+                  {d.criteria.filter((c) => c.guru === g).map((c) => <CriterionGauge key={c.id} c={c} showMeaning={showMeaning} />)}
                 </Tabs.Panel>
               ))}
             </Tabs>
