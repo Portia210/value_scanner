@@ -312,3 +312,39 @@ def test_without_a_report_date_a_new_report_is_still_found_by_the_earnings_date(
     reported_again = {"CCC": {**no_date, "lastEarningsDate": "2026-11-05"}}
     analyse(repo, "CCC", reported_again, fetcher=fetcher(handler))
     assert len(requests) > first
+
+
+def test_recent_universe_is_fetched_without_a_pause_and_reused_for_a_short_while(monkeypatch):
+    from value_scanner.jobs import adhoc
+
+    calls = []
+    clock = {"t": 1000.0}
+    monkeypatch.setattr(adhoc, "_universe_cache", None)
+    monkeypatch.setattr(adhoc.time, "monotonic", lambda: clock["t"])
+    monkeypatch.setattr(adhoc, "fetch_universe", lambda pause=4.0: calls.append(pause) or object())
+    first = adhoc._recent_universe()
+    clock["t"] += adhoc.UNIVERSE_TTL - 1
+    assert adhoc._recent_universe() is first and calls == [0.0]  # no pause, one fetch
+    clock["t"] += 2
+    assert adhoc._recent_universe() is not first and calls == [0.0, 0.0]  # expired -> fetched again
+
+
+def test_a_blocked_universe_fetch_is_not_cached(monkeypatch):
+    from value_scanner.jobs import adhoc
+    from value_scanner.sources.screener import Blocked
+
+    state = {"fail": True, "calls": 0}
+
+    def fetch(pause=4.0):
+        state["calls"] += 1
+        if state["fail"]:
+            raise Blocked("HTTP 429")
+        return object()
+
+    monkeypatch.setattr(adhoc, "_universe_cache", None)
+    monkeypatch.setattr(adhoc, "fetch_universe", fetch)
+    with pytest.raises(Blocked):
+        adhoc._recent_universe()
+    state["fail"] = False
+    adhoc._recent_universe()
+    assert state["calls"] == 2

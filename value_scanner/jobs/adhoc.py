@@ -48,12 +48,31 @@ def over_daily_limit(repo: Repository, now: datetime | None = None) -> bool:
     return repo.adhoc_runs_since(since.strftime("%Y-%m-%dT%H:%M:%SZ")) >= DAILY_LIMIT
 
 
+# One ticker needs the whole screener table (two requests, ~1.7 s). The full scan waits 4 s between
+# them to be polite; for a single request that wait was most of the time (R6 measured hundreds of
+# requests a minute without a challenge), so there is none here, and the table is kept for a short
+# while so analysing a second ticker straight after does not fetch it again.
+UNIVERSE_TTL = 120.0
+_universe_cache: tuple[float, Universe] | None = None
+_universe_lock = threading.Lock()
+
+
+def _recent_universe() -> Universe:
+    global _universe_cache
+    with _universe_lock:
+        if _universe_cache and time.monotonic() - _universe_cache[0] < UNIVERSE_TTL:
+            return _universe_cache[1]
+        universe = fetch_universe(pause=0.0)  # a Blocked error propagates and is not cached
+        _universe_cache = (time.monotonic(), universe)
+        return universe
+
+
 def analyse_ticker(
     repo: Repository,
     settings: Settings,
     symbol: str,
     *,
-    fetch: Callable[[], Universe] = fetch_universe,
+    fetch: Callable[[], Universe] = _recent_universe,
     fetcher: StatementFetcher | None = None,
     pacing: Pacing | None = None,
     sleep: Callable[[float], None] = time.sleep,

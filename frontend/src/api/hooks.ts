@@ -49,7 +49,7 @@ export const useAnalysis = (symbol: string, poll: boolean) =>
     queryKey: ["analysis", symbol],
     queryFn: () => api<Analysis>(`/analyses/${encodeURIComponent(symbol)}`),
     enabled: symbol.length > 0,
-    refetchInterval: poll ? 2000 : false,
+    refetchInterval: poll ? 800 : false, // short jobs: a long interval was a visible part of the wait
   });
 
 export function useStartAnalysis() {
