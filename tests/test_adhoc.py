@@ -17,7 +17,7 @@ from value_scanner.storage import db
 from value_scanner.storage.repo import Repository
 
 SETTINGS = load_settings({"DB_PATH": ":memory:"})
-NO_PAUSE = Pacing(pause=(0, 0), rest_every=(1000, 1000), rest=(0, 0), block_wait=0)
+NO_PAUSE = Pacing(pause=(0, 0), block_wait=0, workers=1)
 
 
 @pytest.fixture

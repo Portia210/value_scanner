@@ -1,4 +1,5 @@
 import random
+import threading
 from datetime import UTC, date, datetime, timedelta
 
 import httpx
@@ -267,10 +268,12 @@ OK = lambda r: httpx.Response(200, text=statement_html())  # noqa: E731
 
 
 def test_download_saves_to_db_and_paces(repo):
-    summary, sleeps = run_download(repo, OK, statements=("income", "balance_sheet"))
+    summary, sleeps = run_download(
+        repo, OK, statements=("income", "balance_sheet"), pacing=Pacing(workers=1)
+    )
     assert (summary.ok, summary.failed) == (6, 0)
     assert len(sleeps) == 5  # between requests, none after the last
-    assert all(3.0 <= s <= 6.0 for s in sleeps)
+    assert all(0.5 <= s <= 1.0 for s in sleeps)
     fetch = repo.latest_statement_fetch("AAA", "balance_sheet")
     assert fetch["latest_period"] == "FY 2024" and fetch["source"] == "stockanalysis"
     assert len(repo.statement_values(fetch["id"])) == 9
@@ -325,16 +328,73 @@ def test_repeated_blocks_abort_the_batch(repo):
         return httpx.Response(429, text="slow down")
 
     with pytest.raises(Blocked):
-        run_download(repo, handler, pacing=Pacing(max_blocks_in_a_row=3, block_wait=1.0))
+        run_download(repo, handler, pacing=Pacing(max_blocks_in_a_row=3, block_wait=1.0, workers=1))
     assert repo.conn.execute("SELECT COUNT(*) FROM statement_fetches").fetchone()[0] == 3
 
 
-def test_long_rest_after_many_requests(repo):
+def test_workers_fetch_in_parallel(repo):
+    for i in range(4):
+        repo.upsert_company(f"P{i}")
+    barrier = threading.Barrier(4, timeout=5)  # only passes if 4 requests are in flight at once
+
+    def handler(request):
+        barrier.wait()
+        return httpx.Response(200, text=statement_html())
+
+    summary, sleeps = run_download(
+        repo, handler, symbols=[f"P{i}" for i in range(4)], pacing=Pacing(workers=4)
+    )
+    assert summary.ok == 4
+    assert sleeps == []  # each worker's last request is followed by no pause
+
+
+def test_each_worker_pauses_after_its_requests_except_the_last(repo):
     for i in range(10):
         repo.upsert_company(f"S{i}")
-    pacing = Pacing(pause=(3, 3), rest_every=(4, 4), rest=(100, 100))
-    _, sleeps = run_download(repo, OK, symbols=[f"S{i}" for i in range(10)], pacing=pacing)
-    assert sleeps == [3, 3, 3, 100, 3, 3, 3, 100, 3]  # rest after every 4th request
+    _, sleeps = run_download(repo, OK, symbols=[f"S{i}" for i in range(10)], pacing=Pacing())
+    assert len(sleeps) == 10 - 4  # all but the last 4 requests (one per worker)
+    assert all(0.5 <= s <= 1.0 for s in sleeps)
+
+
+def test_block_in_the_middle_of_parallel_work_waits_then_stores_everything(repo):
+    for i in range(8):
+        repo.upsert_company(f"S{i}")
+    lock = threading.Lock()
+    calls = {"n": 0}
+
+    def handler(request):
+        with lock:
+            calls["n"] += 1
+            n = calls["n"]
+        if n == 3:
+            return httpx.Response(403, headers={"cf-mitigated": "challenge"}, text="x")
+        return httpx.Response(200, text=statement_html())
+
+    progress = []
+    summary, sleeps = run_download(
+        repo,
+        handler,
+        symbols=[f"S{i}" for i in range(8)],
+        pacing=Pacing(workers=3, block_wait=600.0),
+        on_progress=lambda d, t: progress.append(d),
+    )
+    assert summary.ok == 8 and summary.failed == 0
+    assert sleeps.count(600.0) == 1  # one wait for the whole block, not one per worker
+    assert progress == list(range(1, 9))
+    ok = repo.conn.execute("SELECT COUNT(DISTINCT symbol) FROM statement_fetches WHERE status='ok'")
+    assert ok.fetchone()[0] == 8
+    blocked = repo.conn.execute("SELECT COUNT(*) FROM statement_fetches WHERE status='blocked'")
+    assert blocked.fetchone()[0] >= 1
+
+
+def test_repeated_blocks_with_workers_abort_after_the_limit(repo):
+    def handler(request):
+        return httpx.Response(429, text="slow down")
+
+    with pytest.raises(Blocked):
+        run_download(repo, handler, pacing=Pacing(max_blocks_in_a_row=2, block_wait=7.0, workers=3))
+    # one episode = at least one blocked request; the limit counts episodes, not requests
+    assert repo.conn.execute("SELECT COUNT(*) FROM statement_fetches").fetchone()[0] >= 2
 
 
 def test_earnings_triggers_refresh_via_snapshot(repo):

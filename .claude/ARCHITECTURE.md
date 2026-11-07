@@ -21,7 +21,7 @@ only until C9 (old-vs-new comparison) is closed; v2 does not import it.
    `screener_snapshots`; entries/exits vs the previous run → `membership_events` (reason: price /
    report / new_symbol / delisted / data).
 4. `jobs/refresh.py` + `sources/stockanalysis.py` — download income / balance-sheet / cash-flow
-   pages only when the screener's `lastReportDate` is newer than the one stored with our last download (R5; D18 earnings-date rules when either date is unknown; 120-day backstop), one request at a time, 3–6 s apart, long pause every few
+   pages only when the screener's `lastReportDate` is newer than the one stored with our last download (R5; D18 earnings-date rules when either date is unknown; 120-day backstop), 4 parallel workers with 0.5–1 s between a worker's requests (R6; DB written from one thread only)
    dozen requests; results in long format (`statement_values`).
 5. `jobs/analyze.py: analyse_run` — classify (`analysis/classify.py`), evaluate the criteria
    (`analysis/gurus/{screen,graham,fisher,piotroski}.py`), score (`analysis/scoring.py`) → `results`,

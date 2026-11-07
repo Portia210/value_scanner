@@ -11,14 +11,20 @@ appears. Both: a long backstop refresh (`FULL_REFRESH_DAYS`) for retroactive cor
 from __future__ import annotations
 
 import random
+import threading
 import time
 from collections.abc import Callable, Iterable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from value_scanner.sources.screener import Blocked
-from value_scanner.sources.stockanalysis import DEFAULT_STATEMENTS, StatementFetcher
+from value_scanner.sources.stockanalysis import (
+    DEFAULT_STATEMENTS,
+    FetchOutcome,
+    StatementFetcher,
+)
 from value_scanner.storage.repo import Repository
 
 FULL_REFRESH_DAYS = 120  # backstop; D18 used 45 before R5
@@ -146,11 +152,12 @@ class DownloadSummary:
 
 @dataclass
 class Pacing:
-    """Slow on purpose: one request at a time, 3-6 s apart, a long rest every few dozen."""
+    """Measured, not guessed (R6, 2026-11-07, Railway IP): 4 workers with 0.5-1 s between a
+    worker's requests ran 1,000 pages at ~200/min with no challenge; 8 workers back-to-back reached
+    ~790/min, also clean. We stay well below that."""
 
-    pause: tuple[float, float] = (3.0, 6.0)
-    rest_every: tuple[int, int] = (30, 60)  # requests between long rests
-    rest: tuple[float, float] = (60.0, 120.0)
+    workers: int = 4  # parallel requests; the database is only written from the calling thread
+    pause: tuple[float, float] = (0.5, 1.0)  # a worker's pause after each of its requests
     block_wait: float = 600.0  # after a challenge/429: stop this long, then try again
     max_blocks_in_a_row: int = 3  # abort the batch after this many blocks without a success
 
@@ -169,7 +176,11 @@ def download_statements(
     on_progress: Callable[[int, int], None] | None = None,
 ) -> DownloadSummary:
     """Download what is stale for each symbol. One failed stock never stops the run; repeated
-    blocking does (raises Blocked after the waits are exhausted). Nothing is bypassed."""
+    blocking does (raises Blocked after the waits are exhausted). Nothing is bypassed.
+
+    Pages are fetched by `pacing.workers` threads; results are stored in order, by this thread
+    only. A block stops new requests at once (requests already in flight finish), waits
+    `block_wait`, then retries everything not yet stored."""
     pacing = pacing or Pacing()
     rng = rng or random.Random()
     now = now or repo._clock
@@ -186,58 +197,120 @@ def download_statements(
             else:
                 summary.skipped_fresh += 1
 
-    requests_since_rest = 0
-    next_rest = rng.randint(*pacing.rest_every)
+    pending = list(work)
+    done = 0
     blocks_in_a_row = 0
-    for done, (symbol, statement, reason) in enumerate(work, start=1):
-        while True:
-            outcome = fetcher.fetch(symbol, statement)
-            requests_since_rest += 1
-            if outcome.status != "blocked":
-                blocks_in_a_row = 0
-                break
-            blocks_in_a_row += 1
-            repo.save_statement_fetch(symbol, statement, "stockanalysis", "blocked", run_id=run_id)
-            if run_id:
-                repo.log(run_id, "warning", f"blocked at {symbol}/{statement} ({reason}); resting")
+    while pending:
+        batch, pending = pending, []
+        halt = threading.Event()
+        tail_from = len(batch) - pacing.workers  # a worker's last request needs no pause after it
+
+        with ThreadPoolExecutor(max_workers=pacing.workers) as pool:
+            futures = [
+                pool.submit(
+                    _fetch_one,
+                    fetcher,
+                    halt,
+                    sleep,
+                    rng,
+                    pacing.pause,
+                    i >= tail_from,
+                    symbol,
+                    statement,
+                )
+                for i, (symbol, statement, _) in enumerate(batch)
+            ]
+            blocked_here = successes = 0
+            for item, future in zip(batch, futures, strict=True):
+                symbol, statement, reason = item
+                outcome = future.result()
+                if outcome is None:
+                    pending.append(item)
+                    continue
+                if outcome.status == "blocked":
+                    blocked_here += 1
+                    pending.append(item)
+                    repo.save_statement_fetch(
+                        symbol, statement, "stockanalysis", "blocked", run_id=run_id
+                    )
+                    if run_id:
+                        repo.log(
+                            run_id,
+                            "warning",
+                            f"blocked at {symbol}/{statement} ({reason}); resting",
+                        )
+                    continue
+                successes += 1
+                done += 1
+                _store(repo, summary, run_id, symbol, statement, reason, outcome)
+                if on_progress:
+                    on_progress(done, len(work))
+        if blocked_here:
+            blocks_in_a_row = blocks_in_a_row + 1 if successes == 0 else 1
             if blocks_in_a_row >= pacing.max_blocks_in_a_row:
+                symbol, statement, _ = pending[0]
                 raise Blocked(f"blocked {blocks_in_a_row} times in a row at {symbol}/{statement}")
             sleep(pacing.block_wait)
-
-        report_date = (
-            _report_date_to_store(repo, symbol, statement, reason, outcome.rows)
-            if outcome.status == "ok"
-            else None
-        )
-        repo.save_statement_fetch(
-            symbol,
-            statement,
-            "stockanalysis",
-            outcome.status,
-            outcome.rows,
-            outcome.latest_period,
-            run_id,
-            report_date,
-        )
-        if outcome.status == "ok":
-            summary.ok += 1
         else:
-            summary.no_table += outcome.status == "no_table"
-            summary.failed += outcome.status == "failed"
-            summary.failures.append(f"{symbol}/{statement}: {outcome.status} {outcome.detail[:80]}")
-            repo.add_parse_failure(
-                "stockanalysis", outcome.status, outcome.detail, symbol=symbol, run_id=run_id
-            )
-        if on_progress:
-            on_progress(done, len(work))
-        if done == len(work):
-            break
-        if requests_since_rest >= next_rest:
-            sleep(rng.uniform(*pacing.rest))
-            requests_since_rest, next_rest = 0, rng.randint(*pacing.rest_every)
-        else:
-            sleep(rng.uniform(*pacing.pause))
+            blocks_in_a_row = 0
     return summary
+
+
+def _fetch_one(
+    fetcher: StatementFetcher,
+    halt: threading.Event,
+    sleep: Callable[[float], None],
+    rng: random.Random,
+    pause: tuple[float, float],
+    is_tail: bool,
+    symbol: str,
+    statement: str,
+) -> FetchOutcome | None:
+    """Runs in a worker thread: one request, then this worker's pause. After a block (`halt`)
+    no more requests are sent (None = not attempted). A worker's last request needs no pause."""
+    if halt.is_set():
+        return None
+    outcome = fetcher.fetch(symbol, statement)
+    if outcome.status == "blocked":
+        halt.set()
+    elif not is_tail:
+        sleep(rng.uniform(*pause))
+    return outcome
+
+
+def _store(
+    repo: Repository,
+    summary: DownloadSummary,
+    run_id: int | None,
+    symbol: str,
+    statement: str,
+    reason: str,
+    outcome: FetchOutcome,
+) -> None:
+    report_date = (
+        _report_date_to_store(repo, symbol, statement, reason, outcome.rows)
+        if outcome.status == "ok"
+        else None
+    )
+    repo.save_statement_fetch(
+        symbol,
+        statement,
+        "stockanalysis",
+        outcome.status,
+        outcome.rows,
+        outcome.latest_period,
+        run_id,
+        report_date,
+    )
+    if outcome.status == "ok":
+        summary.ok += 1
+    else:
+        summary.no_table += outcome.status == "no_table"
+        summary.failed += outcome.status == "failed"
+        summary.failures.append(f"{symbol}/{statement}: {outcome.status} {outcome.detail[:80]}")
+        repo.add_parse_failure(
+            "stockanalysis", outcome.status, outcome.detail, symbol=symbol, run_id=run_id
+        )
 
 
 def _last_earnings(repo: Repository, symbol: str) -> date | None:

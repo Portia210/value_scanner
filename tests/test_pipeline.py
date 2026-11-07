@@ -14,7 +14,7 @@ from value_scanner.storage.repo import Repository
 SETTINGS = load_settings(
     {"MY_EMAIL": "me@example.com", "SMTP_HOST": "smtp.example.com", "SMTP_USER": "bot@example.com"}
 )
-NO_PAUSE = Pacing(pause=(0, 0), rest_every=(1000, 1000), rest=(0, 0), block_wait=0)
+NO_PAUSE = Pacing(pause=(0, 0), block_wait=0, workers=1)
 
 
 @pytest.fixture
@@ -132,7 +132,7 @@ def test_blocked_downloads_alert_and_stop(repo):
         {"AAA": {}},
         outbox,
         fetcher=f,
-        pacing=Pacing(pause=(0, 0), block_wait=0, max_blocks_in_a_row=2),
+        pacing=Pacing(pause=(0, 0), block_wait=0, max_blocks_in_a_row=2, workers=1),
     )
     assert out.status == "blocked"
     kinds = [a["kind"] for a in repo.conn.execute("SELECT kind FROM alerts")]
