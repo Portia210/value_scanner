@@ -28,15 +28,18 @@ const REASONS: Record<number, string> = {
 /**
  * Analyse any ticker on request (E8): starts a job on the server, shows its progress and opens
  * the stock page when it is done. `reanalyse` changes the wording for a stock that already has
- * an analysis.
+ * an analysis. `forLearning` (learning page): stay on the page, call `onDone` and say "download the
+ * reports" instead of "analyse".
  */
-export function TickerAnalyzer({ symbol, reanalyse = false }: { symbol: string; reanalyse?: boolean }) {
+export function TickerAnalyzer({ symbol, reanalyse = false, forLearning = false, onDone }: { symbol: string; reanalyse?: boolean; forLearning?: boolean; onDone?: () => void }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [started, setStarted] = useState(false);
   const previous = useRef<string | null>(null);
   const status = useAnalysis(symbol, started);
   const start = useStartAnalysis();
+  const doneRef = useRef(onDone);
+  doneRef.current = onDone; // the caller may pass a new function on every render
 
   const s = status.data;
   // the run is "ours" once its start time differs from the one seen before the click
@@ -48,7 +51,8 @@ export function TickerAnalyzer({ symbol, reanalyse = false }: { symbol: string; 
     if (finished && s?.status === "ok") {
       void qc.invalidateQueries({ queryKey: ["stock", symbol] });
       void qc.invalidateQueries({ queryKey: ["stocks"] });
-      navigate(`/stocks/${symbol}`);
+      if (doneRef.current) doneRef.current();
+      else navigate(`/stocks/${symbol}`);
     }
   }, [finished, s?.status, symbol, navigate, qc]);
 
@@ -69,7 +73,7 @@ export function TickerAnalyzer({ symbol, reanalyse = false }: { symbol: string; 
       <Group gap="sm">
         <Loader size="sm" />
         <Stack gap={0}>
-          <Text size="sm" fw={600}>מנתח את <span dir="ltr">{symbol}</span>…</Text>
+          <Text size="sm" fw={600}>{forLearning ? "מוריד את הדוחות של" : "מנתח את"} <span dir="ltr">{symbol}</span>…</Text>
           <Text size="xs" c="dimmed">
             {phaseText(mine ? s?.message : null)}
             {mine && s?.progress_total ? ` (${s.progress_done}/${s.progress_total})` : ""}
@@ -87,9 +91,10 @@ export function TickerAnalyzer({ symbol, reanalyse = false }: { symbol: string; 
       )}
       <Button leftSection={<IconChartBar size={16} />} onClick={onClick} loading={start.isPending}
         variant={reanalyse ? "light" : "filled"} size={reanalyse ? "xs" : "sm"}>
-        {reanalyse ? "נתח מחדש" : <>נתח את <span dir="ltr">&nbsp;{symbol}&nbsp;</span> לפי כל הקריטריונים</>}
+        {reanalyse ? "נתח מחדש" : forLearning ? <>הורד את הדוחות של <span dir="ltr">&nbsp;{symbol}&nbsp;</span> והצג</> : <>נתח את <span dir="ltr">&nbsp;{symbol}&nbsp;</span> לפי כל הקריטריונים</>}
       </Button>
-      {!reanalyse && (
+      {forLearning && <Text size="xs" c="dimmed">מוריד את הדוחות מהאתר (עד כדקה) ומציג אותם כאן. אם הסימול לא קיים, תופיע הודעה.</Text>}
+      {!reanalyse && !forLearning && (
         <Text size="xs" c="dimmed">
           מושך מחיר ומכפילים עדכניים, מוריד דוחות כספיים רק אם אין לה או אם הופיעו חדשים, ומריץ את כל הגורואים. לא משפיע על הסריקה הרגילה.
           {s ? ` נשארו ${s.analyses_left_today} ניתוחים היום.` : ""}

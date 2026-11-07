@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { Alert, Anchor, Button, Card, Group, Loader, Stack, Switch, Table, Tabs, Text, TextInput, Title } from "@mantine/core";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Alert, Button, Card, Collapse, Group, List, Loader, Stack, Switch, Table, Tabs, Text, TextInput, Title, UnstyledButton } from "@mantine/core";
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { TickerAnalyzer } from "../components/TickerAnalyzer";
+import { CONNECTION, STATEMENT_INTRO } from "../learnIntro";
 import { ApiError } from "../api/client";
 import { useLearn } from "../api/hooks";
 import type { components } from "../api/schema";
@@ -10,6 +14,46 @@ type Row = components["schemas"]["LearnRow"];
 type Statement = components["schemas"]["LearnStatement"];
 
 const EXPLAIN_KEY = "learn-explain";
+const INTRO_KEY = "learn-intro-open";
+
+/** What this statement is about, how it is built and what to know before reading it (foldable, remembered). */
+function Intro({ statement }: { statement: string }) {
+  const intro = STATEMENT_INTRO[statement];
+  const [open, setOpen] = useState(() => {
+    try { return localStorage.getItem(INTRO_KEY) !== "0"; } catch { return true; }
+  });
+  if (!intro) return null;
+  const flip = () => {
+    setOpen(!open);
+    try { localStorage.setItem(INTRO_KEY, open ? "0" : "1"); } catch { /* private mode */ }
+  };
+  return (
+    <Card withBorder bg="var(--mantine-color-default-hover)" mb="sm" p="md">
+      <UnstyledButton onClick={flip} w="100%">
+        <Group justify="space-between">
+          <div>
+            <Text fw={700}>על {intro.title}</Text>
+            <Text size="sm" c="dimmed">{intro.question}</Text>
+          </div>
+          {open ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
+        </Group>
+      </UnstyledButton>
+      <Collapse in={open}>
+        <Stack gap="sm" mt="sm">
+          <div>
+            <Text size="sm" fw={600} mb={2}>איך הוא בנוי</Text>
+            <List size="sm" spacing={2}>{intro.structure.map((t) => <List.Item key={t}>{t}</List.Item>)}</List>
+          </div>
+          <div>
+            <Text size="sm" fw={600} mb={2}>חשוב לדעת</Text>
+            <List size="sm" spacing={2}>{intro.know.map((t) => <List.Item key={t}>{t}</List.Item>)}</List>
+          </div>
+          <Text size="xs" c="dimmed">{CONNECTION}</Text>
+        </Stack>
+      </Collapse>
+    </Card>
+  );
+}
 
 function fmt(v: number | null, kind: string): string {
   if (v === null) return "—";
@@ -84,6 +128,7 @@ export function LearnPage() {
   const { symbol = "" } = useParams();
   const sym = symbol.toUpperCase();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [input, setInput] = useState(sym);
   const [explain, setExplain] = useState(() => {
     try { return localStorage.getItem(EXPLAIN_KEY) !== "0"; } catch { return true; }
@@ -110,9 +155,12 @@ export function LearnPage() {
       {sym === "" && <Text c="dimmed">הכנס סימול של מניה שכבר נותחה באתר, למשל TSM.</Text>}
       {sym !== "" && isLoading && <Loader />}
       {error instanceof ApiError && error.status === 404 && (
-        <Alert color="gray">
-          עוד אין דוחות שמורים של {sym}. אפשר להוריד אותם בעמוד המניה: <Anchor component={Link} to={`/stocks/${sym}`}>נתח את {sym}</Anchor>.
-        </Alert>
+        <Card>
+          <Stack gap="xs">
+            <Text fw={600}>עוד אין דוחות שמורים של <span dir="ltr">{sym}</span>.</Text>
+            <TickerAnalyzer symbol={sym} forLearning onDone={() => void qc.invalidateQueries({ queryKey: ["learn", sym] })} />
+          </Stack>
+        </Card>
       )}
       {error && !(error instanceof ApiError && error.status === 404) && <Alert color="red">לא הצלחתי לטעון את הדוחות.</Alert>}
 
@@ -136,7 +184,7 @@ export function LearnPage() {
           <Tabs defaultValue={data.statements[0]?.key}>
             <Tabs.List>{data.statements.map((s) => <Tabs.Tab key={s.key} value={s.key}>{s.label}</Tabs.Tab>)}</Tabs.List>
             {data.statements.map((s) => (
-              <Tabs.Panel key={s.key} value={s.key} pt="sm"><StatementTable st={s} explain={explain} /></Tabs.Panel>
+              <Tabs.Panel key={s.key} value={s.key} pt="sm"><Intro statement={s.key} /><StatementTable st={s} explain={explain} /></Tabs.Panel>
             ))}
           </Tabs>
         </Card>
