@@ -31,9 +31,15 @@ only until C9 (old-vs-new comparison) is closed; v2 does not import it.
 
 ## Web (`api/`, `frontend/`)
 - `api/app.py` `create_app`: JSON API (`/api/stocks`, `/api/stocks/{symbol}`, `/api/criteria`,
-  `/api/history`, `/api/runs`, `/api/runs/{id}/log`, `/api/settings`, `/api/auth/*`), response models in
+  `/api/history`, `/api/learn/{symbol}`, `/api/profiles/{symbol}[/status]`, `/api/runs`, `/api/runs/{id}/log`,
+  `/api/settings`, `/api/auth/*`), response models in
   `api/schemas.py`, row→model shaping in `api/views.py`. One SQLite connection per request.
   Serves `frontend/dist` (SPA fallback) when it exists.
+- Learning page (`/learn/:symbol`): every line of the stored income statement, balance sheet and cash
+  flow in the site's order, with a plain-Hebrew explanation under each line. The texts are curated data
+  in `learn/items_*.py` (keyed by StockAnalysis's English label; a test fails when a label seen in the
+  data has none); `criteria` rows get one sentence from `analysis/meanings.py`. The reporting currency
+  comes from the page's "Financials in millions TWD" line (`statement_fetches.currency`, migration 0004).
 - Auth: `DASHBOARD_PASSWORD` + `SESSION_SECRET` → signed cookie + CSRF header; without a password
   it is **local mode** (localhost Host only, `serve` refuses a non-loopback bind).
 - `frontend/`: Vite + React + TypeScript + Mantine (RTL, light/dark) + ECharts + TanStack Query.

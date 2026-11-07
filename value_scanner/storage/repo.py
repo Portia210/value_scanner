@@ -299,14 +299,26 @@ class Repository:
         latest_period: str | None = None,
         run_id: int | None = None,
         report_date: str | None = None,
+        currency: str | None = None,
     ) -> int:
         """Record one download and its (item, period, value) rows; keep the 4 latest good ones.
-        `report_date`: the screener's `lastReportDate` when the page was downloaded (R5)."""
+        `report_date`: the screener's `lastReportDate` when the page was downloaded (R5);
+        `currency`: the reporting currency the page states (3 letters), if it did."""
         with self.transaction():
             cur = self.conn.execute(
                 "INSERT INTO statement_fetches (run_id, symbol, statement, fetched_at, source, "
-                "status, latest_period, report_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (run_id, symbol, statement, self.now(), source, status, latest_period, report_date),
+                "status, latest_period, report_date, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    run_id,
+                    symbol,
+                    statement,
+                    self.now(),
+                    source,
+                    status,
+                    latest_period,
+                    report_date,
+                    currency,
+                ),
             )
             fetch_id = int(cur.lastrowid)
             self.conn.executemany(
@@ -332,6 +344,13 @@ class Repository:
             "ORDER BY fetched_at DESC, id DESC LIMIT 1",
             (symbol, statement),
         ).fetchone()
+
+    def statement_rows_in_order(self, fetch_id: int) -> list[sqlite3.Row]:
+        """The rows of one download in the order the site listed them (insertion order)."""
+        return self.conn.execute(
+            "SELECT item, period, value FROM statement_values WHERE fetch_id = ? ORDER BY rowid",
+            (fetch_id,),
+        ).fetchall()
 
     def statement_values(self, fetch_id: int) -> list[sqlite3.Row]:
         return self.conn.execute(

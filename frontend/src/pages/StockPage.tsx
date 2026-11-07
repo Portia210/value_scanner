@@ -124,6 +124,7 @@ export function StockPage() {
         </Group>
       </Group>
 
+      <Anchor component={Link} to={`/learn/${d.symbol}`} size="sm">הדוחות של {d.symbol}, שורה אחרי שורה עם הסבר</Anchor>
       {!d.profile && <ProfileButton symbol={d.symbol} />}
       {d.profile && <ProfileCard profile={d.profile} sic={d.sic_description} />}
 

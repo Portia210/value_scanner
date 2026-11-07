@@ -103,3 +103,17 @@ def test_every_criterion_has_a_plain_hebrew_meaning():
     assert ids == set(MEANINGS)  # none missing, none left over for a removed criterion
     assert all(meaning(g, c).strip().endswith(".") for g, c in ids)
     assert meaning("nope", "nope") == ""
+
+
+def test_every_statement_line_seen_in_the_data_has_an_explanation():
+    from pathlib import Path
+
+    from value_scanner.learn import STATEMENT_ITEMS, explain
+
+    text = Path("tests/fixtures/statement_items.txt").read_text(encoding="utf-8")
+    seen = [line.split("\t") for line in text.splitlines()]
+    assert len(seen) > 200
+    assert [s for s in seen if explain(*s) is None] == []  # a new site label needs a new entry
+    for statement, items in STATEMENT_ITEMS.items():
+        for item, entry in items.items():
+            assert entry[0].strip() and entry[1].strip().endswith("."), (statement, item)

@@ -1,0 +1,247 @@
+income	Adjusted Funds From Operations (AFFO)
+income	Advertising Expenses
+income	Amortization of Goodwill & Intangibles
+income	Asset Management Fee
+income	Asset Writedown
+income	Basic Shares Outstanding
+income	Brokerage Commission
+income	Cost of Revenue
+income	Cost of Services Provided
+income	Currency Exchange Gain (Loss)
+income	Currency Exchange Gains
+income	D&A For EBITDA
+income	D&A For Ebitda
+income	Diluted Shares Outstanding
+income	Dividend Growth
+income	Dividend Growth (%)
+income	Dividend Per Share
+income	EBIT
+income	EBIT Margin (%)
+income	EBITDA
+income	EBITDA Margin (%)
+income	EBT Excluding Unusual Items
+income	EPS (Basic)
+income	EPS (Diluted)
+income	EPS Growth (%)
+income	Earnings From Continuing Operations
+income	Earnings From Continuing Ops.
+income	Earnings From Discontinued Operations
+income	Earnings From Equity Investments
+income	Effective Tax Rate (%)
+income	FFO Payout Ratio (%)
+income	Free Cash Flow
+income	Free Cash Flow Margin (%)
+income	Free Cash Flow Per Share
+income	Funds From Operations (FFO)
+income	Gain (Loss) on Sale of Assets
+income	Gain (Loss) on Sale of Investments
+income	Gain on Sale of Investments (Rev)
+income	Gross Margin (%)
+income	Gross Profit
+income	Impairment of Goodwill
+income	Income (Loss) on Equity Investments
+income	Income Tax Expense
+income	Insurance Settlements
+income	Interest & Investment Income
+income	Interest Expense
+income	Interest Income
+income	Interest and Dividend Income
+income	Legal Settlements
+income	Merger & Restructuring Charges
+income	Minority Interest in Earnings
+income	Net Income
+income	Net Income Growth (%)
+income	Net Income to Common
+income	Net Income to Company
+income	Net Interest Expense
+income	Net Interest Income
+income	Operating Expenses
+income	Operating Income
+income	Operating Margin (%)
+income	Operating Revenue
+income	Operations & Maintenance
+income	Other Non Operating Income (Expenses)
+income	Other Non-Operating Income
+income	Other Non-Operating Income (Expenses)
+income	Other Operating Expenses
+income	Other Revenue
+income	Other Unusual Items
+income	Policy Acquisition & Underwriting Costs
+income	Policy Benefits
+income	Preferred Dividends & Other Adjustments
+income	Premiums & Annuity Revenue
+income	Pretax Income
+income	Profit Margin (%)
+income	Property Expenses
+income	Property Management Fees
+income	Provision for Loan Losses
+income	Rental Revenue
+income	Research & Development
+income	Revenue
+income	Revenue Before Loan Losses
+income	Revenue Growth (%)
+income	Revenue Growth (YoY (%)
+income	Revenue as Reported
+income	Salaries & Employee Benefits
+income	Selling, General & Admin
+income	Selling, General & Administrative
+income	Shares Change (%)
+income	Shares Outstanding (Basic)
+income	Shares Outstanding (Diluted)
+income	Total Insurance Settlements
+income	Total Interest & Dividend Income
+income	Total Interest Expense
+income	Total Operating Expenses
+income	Total Revenue
+income	Trading & Principal Transactions
+income	Underwriting & Investment Banking Fee
+balance_sheet	Accounts Payable
+balance_sheet	Accounts Receivable
+balance_sheet	Accrued Expenses
+balance_sheet	Additional Paid-In Capital
+balance_sheet	Book Value Per Share
+balance_sheet	Buildings
+balance_sheet	Cash & Equivalents
+balance_sheet	Cash & Short-Term Investments
+balance_sheet	Cash Growth (%)
+balance_sheet	Common Stock
+balance_sheet	Comprehensive Income & Other
+balance_sheet	Construction In Progress
+balance_sheet	Current Income Taxes Payable
+balance_sheet	Current Portion of Leases
+balance_sheet	Current Portion of Long-Term Debt
+balance_sheet	Current Unearned Revenue
+balance_sheet	Deferred Policy Acquisition Cost
+balance_sheet	Filing Date Shares Outstanding
+balance_sheet	Finance Div. Debt Current
+balance_sheet	Finance Div. Debt Long-Term
+balance_sheet	Finance Div. Loans and Leases
+balance_sheet	Finance Div. Loans and Leases Long-Term
+balance_sheet	Finance Div. Other Current Assets
+balance_sheet	Finance Div. Other Current Liabilities
+balance_sheet	Finance Div. Other Long-Term Liabilities
+balance_sheet	Goodwill
+balance_sheet	Inventory
+balance_sheet	Investments in Debt & Equity Securities
+balance_sheet	Investments in Debt Securities
+balance_sheet	Land
+balance_sheet	Leasehold Improvements
+balance_sheet	Long-Term Accounts Receivable
+balance_sheet	Long-Term Debt
+balance_sheet	Long-Term Deferred Charges
+balance_sheet	Long-Term Deferred Tax Assets
+balance_sheet	Long-Term Deferred Tax Liabilities
+balance_sheet	Long-Term Investments
+balance_sheet	Long-Term Leases
+balance_sheet	Long-Term Unearned Revenue
+balance_sheet	Machinery
+balance_sheet	Minority Interest
+balance_sheet	Net Cash (Debt)
+balance_sheet	Net Cash (Debt) Growth
+balance_sheet	Net Cash Growth
+balance_sheet	Net Cash Growth (%)
+balance_sheet	Net Cash Per Share
+balance_sheet	Order Backlog
+balance_sheet	Other Current Assets
+balance_sheet	Other Current Liabilities
+balance_sheet	Other Intangible Assets
+balance_sheet	Other Investments
+balance_sheet	Other Long-Term Assets
+balance_sheet	Other Long-Term Liabilities
+balance_sheet	Other Receivables
+balance_sheet	Pension & Post-Retirement Benefits
+balance_sheet	Prepaid Expenses
+balance_sheet	Property, Plant & Equipment
+balance_sheet	Receivables
+balance_sheet	Reinsurance Payable
+balance_sheet	Reinsurance Recoverable
+balance_sheet	Restricted Cash
+balance_sheet	Retained Earnings
+balance_sheet	Shareholders' Equity
+balance_sheet	Short-Term Debt
+balance_sheet	Short-Term Investments
+balance_sheet	Tangible Book Value
+balance_sheet	Tangible Book Value Per Share
+balance_sheet	Total Assets
+balance_sheet	Total Common Equity
+balance_sheet	Total Common Shares Outstanding
+balance_sheet	Total Current Assets
+balance_sheet	Total Current Liabilities
+balance_sheet	Total Debt
+balance_sheet	Total Investments
+balance_sheet	Total Liabilities
+balance_sheet	Total Liabilities & Equity
+balance_sheet	Trading Asset Securities
+balance_sheet	Treasury Stock
+balance_sheet	Unearned Premiums
+balance_sheet	Unpaid Claims
+balance_sheet	Working Capital
+cash_flow	Acquisition of Real Estate Assets
+cash_flow	Asset Writedown
+cash_flow	Asset Writedown & Restructuring Costs
+cash_flow	Capital Expenditures
+cash_flow	Cash Acquisitions
+cash_flow	Cash Income Tax Paid
+cash_flow	Cash Interest Paid
+cash_flow	Change in Accounts Payable
+cash_flow	Change in Accounts Receivable
+cash_flow	Change in Income Taxes
+cash_flow	Change in Insurance Reserves / Liabilities
+cash_flow	Change in Inventory
+cash_flow	Change in Other Net Operating Assets
+cash_flow	Change in Unearned Revenue
+cash_flow	Change in Working Capital
+cash_flow	Common Dividends Paid
+cash_flow	Depreciation & Amortization
+cash_flow	Depreciation & Amortization, Total
+cash_flow	Divestitures
+cash_flow	Dividends Paid
+cash_flow	Financing Cash Flow
+cash_flow	Foreign Exchange Rate Adjustments
+cash_flow	Free Cash Flow
+cash_flow	Free Cash Flow After Leases
+cash_flow	Free Cash Flow Growth (%)
+cash_flow	Free Cash Flow Margin (%)
+cash_flow	Free Cash Flow Per Share
+cash_flow	Gain (Loss) On Sale of Investments
+cash_flow	Gain (Loss) on Sale of Assets
+cash_flow	Gain (Loss) on Sale of Investments
+cash_flow	Income (Loss) on Equity Investments
+cash_flow	Investing Cash Flow
+cash_flow	Investment in Marketable & Equity Securities
+cash_flow	Investment in Securities
+cash_flow	Issuance of Common Stock
+cash_flow	Lease Payments
+cash_flow	Levered Free Cash Flow
+cash_flow	Long-Term Debt Issued
+cash_flow	Long-Term Debt Repaid
+cash_flow	Loss (Gain) From Sale of Assets
+cash_flow	Loss (Gain) From Sale of Investments
+cash_flow	Loss (Gain) on Equity Investments
+cash_flow	Loss (Gain) on Sale of Investments
+cash_flow	Miscellaneous Cash Flow Adjustments
+cash_flow	Net Cash Flow
+cash_flow	Net Debt Issued (Repaid)
+cash_flow	Net Income
+cash_flow	Net Sale / Acq. of Real Estate Assets
+cash_flow	Operating Cash Flow
+cash_flow	Operating Cash Flow Growth (%)
+cash_flow	Other Amortization
+cash_flow	Other Financing Activities
+cash_flow	Other Investing Activities
+cash_flow	Other Operating Activities
+cash_flow	Preferred Dividends Paid
+cash_flow	Provision & Write-off of Bad Debts
+cash_flow	Reinsurance Recoverable
+cash_flow	Repurchase of Common Stock
+cash_flow	Repurchases of Common Stock
+cash_flow	Sale (Purchase) of Intangibles
+cash_flow	Sale (Purchase) of Real Estate
+cash_flow	Sale of Property, Plant & Equipment
+cash_flow	Sale of Real Estate Assets
+cash_flow	Short-Term Debt Issued
+cash_flow	Short-Term Debt Repaid
+cash_flow	Stock-Based Compensation
+cash_flow	Total Debt Issued
+cash_flow	Total Debt Repaid
+cash_flow	Unlevered Free Cash Flow

@@ -1,6 +1,6 @@
 import { ActionIcon, Alert, AppShell, Burger, Button, Container, Drawer, Group, Loader, Stack, Text, Center, useMantineColorScheme } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconHistory, IconLayoutDashboard, IconLogout, IconMath, IconMoon, IconPlayerPlay, IconScale, IconSun, IconTransfer } from "@tabler/icons-react";
+import { IconBook2, IconHistory, IconLayoutDashboard, IconLogout, IconMath, IconMoon, IconPlayerPlay, IconScale, IconSun, IconTransfer } from "@tabler/icons-react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
 import { ApiError } from "./api/client";
@@ -11,6 +11,7 @@ import { dateTime } from "./format";
 import { CriteriaPage } from "./pages/CriteriaPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { HistoryPage } from "./pages/HistoryPage";
+import { LearnPage } from "./pages/LearnPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RunsPage } from "./pages/RunsPage";
 import { StockPage } from "./pages/StockPage";
@@ -20,6 +21,7 @@ const NAV = [
   { to: "/history", label: "כניסות ויציאות", icon: IconTransfer },
   { to: "/runs", label: "ריצות", icon: IconHistory },
   { to: "/criteria", label: "איך זה מחושב", icon: IconMath },
+  { to: "/learn", label: "למידה", icon: IconBook2 },
 ];
 
 function RunNow() {
@@ -98,6 +100,8 @@ export function App() {
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/runs" element={<RunsPage />} />
             <Route path="/criteria" element={<CriteriaPage />} />
+            <Route path="/learn" element={<LearnPage />} />
+            <Route path="/learn/:symbol" element={<LearnPage />} />
             <Route path="*" element={<Text c="dimmed">העמוד לא נמצא.</Text>} />
           </Routes>
         </Container>

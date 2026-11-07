@@ -406,3 +406,29 @@ def test_report_date_is_saved_with_snapshot_and_fetch(repo):
     )
     assert repo.latest_statement_fetch("AAA", "income")["report_date"] == "2026-06-30"
     assert fid
+
+
+def test_currency_migration_is_additive_and_currency_is_saved_with_the_fetch(tmp_path):
+    """Migration 0004 only adds a column: old rows keep NULL, new downloads carry the currency."""
+    path = tmp_path / "v3.db"
+    conn = db.connect(path)
+    conn.execute(
+        "CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)"
+    )
+    for version, statements in db._KNOWN_MIGRATIONS[:3]:
+        db._apply(conn, version, statements, verify_foreign_keys=version == 2)
+    conn.execute("INSERT INTO companies (symbol, first_seen_at, last_seen_at) VALUES ('A','x','x')")
+    conn.execute(
+        "INSERT INTO statement_fetches (symbol, statement, fetched_at, source, status) "
+        "VALUES ('A', 'income', 'x', 's', 'ok')"
+    )
+    conn.close()
+    conn = db.open_database(path)
+    assert db.schema_version(conn) >= 4
+    assert conn.execute("SELECT COUNT(*) FROM statement_fetches").fetchone()[0] == 1
+    assert conn.execute("SELECT currency FROM statement_fetches").fetchone()[0] is None
+    repo = Repository(conn)
+    repo.save_statement_fetch(
+        "A", "balance_sheet", "x", "ok", [("Revenue", "TTM", 1.0)], currency="TWD"
+    )
+    assert repo.latest_statement_fetch("A", "balance_sheet")["currency"] == "TWD"

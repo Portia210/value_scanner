@@ -301,6 +301,7 @@ def _store(
         outcome.latest_period,
         run_id,
         report_date,
+        outcome.currency,
     )
     if outcome.status == "ok":
         summary.ok += 1

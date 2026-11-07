@@ -82,3 +82,14 @@ export const useProfileJob = (symbol: string, poll: boolean) =>
 /** Server liveness and API version (the frontend warns when the running server is older). */
 export const useHealth = () =>
   useQuery({ queryKey: ["health"], queryFn: () => api<{ ok: boolean; api_version?: number }>("/health"), staleTime: Infinity, retry: false });
+
+type LearnOut = components["schemas"]["LearnOut"];
+
+/** Every line of a company's statements with values and explanations (the learning page). */
+export const useLearn = (symbol: string) =>
+  useQuery({
+    queryKey: ["learn", symbol],
+    queryFn: () => api<LearnOut>(`/learn/${encodeURIComponent(symbol)}`),
+    enabled: symbol !== "",
+    retry: false,
+  });

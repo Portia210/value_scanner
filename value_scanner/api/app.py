@@ -22,7 +22,7 @@ SETTING_DAYS = "days_between_runs"
 DEFAULT_DAYS = 7
 # Bump together with frontend/src/api/version.ts whenever the API changes in a way the frontend
 # depends on; the frontend warns when it meets a server that reports another (or no) version.
-API_VERSION = 9
+API_VERSION = 10
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
@@ -136,6 +136,13 @@ def create_app(
         if detail is None:
             raise HTTPException(404, "stock was not analysed in the latest run")
         return detail
+
+    @app.get("/api/learn/{symbol}", dependencies=[Depends(session_csrf)])
+    def learn(symbol: str, repo: RepoDep) -> schemas.LearnOut:
+        out = views.learn_view(repo, symbol.upper())
+        if out is None:
+            raise HTTPException(404, "no financial statements are stored for this stock")
+        return out
 
     @app.get("/api/criteria", dependencies=[Depends(session_csrf)])
     def criteria() -> schemas.CriteriaOut:

@@ -338,3 +338,38 @@ def test_stock_detail_reports_up_to_date_and_unknown(client, repo):
     r = client.get("/api/stocks/AAA").json()["reports"]
     # unknown is not "behind"
     assert (r["have"], r["site"], r["behind"]) == (None, "2026-09-30", False)
+
+
+def test_learn_page_data_orders_periods_explains_lines_and_reports_the_currency(client, repo, env):
+    repo.upsert_company("TSM", name="Taiwan Semiconductor")
+    rows = [
+        ("Revenue", "FY 2024", 100.0),
+        ("Revenue", "FY 2025", 130.0),
+        ("Revenue", "TTM", 150.0),
+        ("Revenue Growth (%)", "FY 2025", 30.0),
+        ("Some Brand New Line", "FY 2025", 7.0),
+    ]
+    repo.save_statement_fetch("TSM", "income", "stockanalysis", "ok", rows, currency="TWD")
+    csrf = login(client)
+    out = client.get("/api/learn/tsm", headers={"x-csrf-token": csrf})
+    assert out.status_code == 200
+    body = out.json()
+    assert body["symbol"] == "TSM" and body["name"] == "Taiwan Semiconductor"
+    assert [s["key"] for s in body["statements"]] == [
+        "income"
+    ]  # statements we do not have are left out
+    st = body["statements"][0]
+    assert st["periods"] == ["TTM", "FY 2025", "FY 2024"] and st["currency"] == "TWD"
+    by_item = {r["item"]: r for r in st["rows"]}
+    assert [r["item"] for r in st["rows"]][:2] == ["Revenue", "Revenue Growth (%)"]  # site order
+    assert by_item["Revenue"]["values"] == [150.0, 130.0, 100.0]
+    assert by_item["Revenue"]["he"] == "הכנסות" and by_item["Revenue"]["kind"] == "total"
+    assert by_item["Revenue Growth (%)"]["values"] == [None, 30.0, None]
+    assert by_item["Revenue Growth (%)"]["kind"] == "pct"
+    assert (
+        by_item["Some Brand New Line"]["he"] is None
+        and by_item["Some Brand New Line"]["short"] == ""
+    )
+    assert client.get("/api/learn/NOPE", headers={"x-csrf-token": csrf}).status_code == 404
+    anonymous = TestClient(create_app(load_settings(env)))
+    assert anonymous.get("/api/learn/TSM").status_code in (401, 403)  # needs a session

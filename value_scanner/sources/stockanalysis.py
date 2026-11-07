@@ -9,6 +9,7 @@ it never loops forever: network errors get a few bounded retries, a Cloudflare c
 from __future__ import annotations
 
 import random
+import re
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -49,6 +50,7 @@ class FetchOutcome:
     rows: list[Row] = field(default_factory=list)
     latest_period: str | None = None
     detail: str = ""  # short reason / sample for parse_failures (never headers)
+    currency: str | None = None  # reporting currency from "Financials in millions TWD" (3 letters)
 
 
 def statement_url(symbol: str, statement: str) -> str:
@@ -126,6 +128,16 @@ def parse_statement_table(html: str) -> tuple[list[Row], str | None]:
     return rows, latest
 
 
+_CURRENCY = re.compile(r"Financials in (?:(?:thousands|millions|billions|trillions) )?([A-Z]{3})\b")
+
+
+def parse_currency(html: str) -> str | None:
+    """The currency the page reports in ("TWD", "USD", ...), from its "Financials in millions TWD"
+    line; None if the page has no such line. Figures are in the company's reporting currency."""
+    match = _CURRENCY.search(html)
+    return match.group(1) if match else None
+
+
 def is_challenge(resp: httpx.Response) -> bool:
     return (
         bool(resp.headers.get("cf-mitigated"))
@@ -181,7 +193,7 @@ class StatementFetcher:
             return FetchOutcome("failed", detail=f"parse error: {exc}")
         if not rows:
             return FetchOutcome("no_table", detail=resp.text[:300])
-        return FetchOutcome("ok", rows, latest)
+        return FetchOutcome("ok", rows, latest, currency=parse_currency(resp.text))
 
 
 def jitter(

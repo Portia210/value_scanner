@@ -140,6 +140,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/learn/{symbol}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Learn */
+        get: operations["learn_api_learn__symbol__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profiles/{symbol}": {
         parameters: {
             query?: never;
@@ -442,6 +459,47 @@ export interface components {
             label: string;
             /** Reason */
             reason: string | null;
+        };
+        /** LearnOut */
+        LearnOut: {
+            /** Name */
+            name: string | null;
+            /** Statements */
+            statements: components["schemas"]["LearnStatement"][];
+            /** Symbol */
+            symbol: string;
+        };
+        /** LearnRow */
+        LearnRow: {
+            /** He */
+            he: string | null;
+            /** How */
+            how: string;
+            /** Item */
+            item: string;
+            /** Kind */
+            kind: string;
+            /** Look */
+            look: string;
+            /** Short */
+            short: string;
+            /** Values */
+            values: (number | null)[];
+        };
+        /** LearnStatement */
+        LearnStatement: {
+            /** Currency */
+            currency: string | null;
+            /** Fetched At */
+            fetched_at: string | null;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Periods */
+            periods: string[];
+            /** Rows */
+            rows: components["schemas"]["LearnRow"][];
         };
         /** LogLine */
         LogLine: {
@@ -902,6 +960,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HistoryOut"];
+                };
+            };
+        };
+    };
+    learn_api_learn__symbol__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                symbol: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LearnOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

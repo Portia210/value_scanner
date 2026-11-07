@@ -547,3 +547,27 @@ def test_equal_dates_still_get_the_long_backstop_refresh(repo):
     repo.state["t"] = NOW + timedelta(days=FULL_REFRESH_DAYS)
     run_download(repo, handler, symbols=("AAA",))
     assert len(calls) == 1
+
+
+# ── reporting currency ───────────────────────────────────────────────────────────────────────
+def test_currency_is_read_from_the_financials_in_line():
+    from value_scanner.sources.stockanalysis import parse_currency
+
+    assert (
+        parse_currency("<p>Financials in millions TWD. Fiscal year is January - December.</p>")
+        == "TWD"
+    )
+    assert parse_currency("Financials in USD") == "USD"
+    assert parse_currency("Financials in thousands EUR.") == "EUR"
+    assert parse_currency("<p>no such line</p>") is None
+    assert parse_currency("Financials in millions twd") is None  # ISO codes are upper case
+
+
+def test_download_stores_the_currency_the_page_states(repo):
+    def handler(request):
+        return httpx.Response(200, text=statement_html() + "<p>Financials in millions TWD.</p>")
+
+    run_download(repo, handler, symbols=("AAA",))
+    assert repo.latest_statement_fetch("AAA", "income")["currency"] == "TWD"
+    run_download(repo, OK, symbols=("BBB",))  # a page without the line: currency unknown
+    assert repo.latest_statement_fetch("BBB", "income")["currency"] is None

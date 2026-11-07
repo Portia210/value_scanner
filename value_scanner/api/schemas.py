@@ -241,3 +241,28 @@ class HistoryOut(BaseModel):
 
 
 CriteriaGuru.model_rebuild()
+
+
+class LearnRow(BaseModel):
+    item: str  # the site's English label
+    he: str | None  # Hebrew name (None: no explanation written for this line yet)
+    short: str  # one plain sentence: what the line is
+    how: str  # how it is built (empty when not needed)
+    look: str  # what to look at (empty when not needed)
+    kind: str  # normal | total | pct
+    values: list[float | None]  # aligned with the statement's `periods`
+
+
+class LearnStatement(BaseModel):
+    key: str  # income | balance_sheet | cash_flow
+    label: str
+    periods: list[str]  # TTM first, then fiscal years newest first
+    rows: list[LearnRow]
+    currency: str | None  # reporting currency; None until the next download stores it
+    fetched_at: str | None
+
+
+class LearnOut(BaseModel):
+    symbol: str
+    name: str | None
+    statements: list[LearnStatement]

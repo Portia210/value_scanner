@@ -16,6 +16,8 @@ from value_scanner.analysis.scoring import (
 )
 from value_scanner.analysis.statements import Statements
 from value_scanner.api import schemas
+from value_scanner.learn import explain
+from value_scanner.learn import kind as learn_kind
 from value_scanner.sources.stockanalysis import DEFAULT_STATEMENTS
 from value_scanner.storage.repo import Repository
 
@@ -292,4 +294,63 @@ def criteria_view() -> schemas.CriteriaOut:
         scoring=[SCORING.strip(), OPPORTUNITY_NOTE],
         quality_min=CANDIDATE_QUALITY,
         opportunity_min=CANDIDATE_OPPORTUNITY,
+    )
+
+
+_STATEMENT_LABELS = {
+    "income": "רווח והפסד",
+    "balance_sheet": "מאזן",
+    "cash_flow": "תזרים מזומנים",
+}
+
+
+def _period_order(period: str) -> tuple[int, int]:
+    """TTM first, then fiscal years newest first ("FY 2025" before "FY 2024")."""
+    if period == "TTM":
+        return (0, 0)
+    year = "".join(c for c in period if c.isdigit())
+    return (1, -int(year)) if year else (2, 0)
+
+
+def learn_view(repo: Repository, symbol: str) -> schemas.LearnOut | None:
+    """Every line of the company's latest income statement, balance sheet and cash flow, with its
+    values and a plain-language explanation. None if no statement of it is stored."""
+    statements: list[schemas.LearnStatement] = []
+    for key, label in _STATEMENT_LABELS.items():
+        fetch = repo.latest_statement_fetch(symbol, key)
+        if fetch is None:
+            continue
+        by_item: dict[str, dict[str, float | None]] = {}
+        for r in repo.statement_rows_in_order(fetch["id"]):
+            by_item.setdefault(r["item"], {})[r["period"]] = r["value"]
+        periods = sorted({p for values in by_item.values() for p in values}, key=_period_order)
+        rows = []
+        for item, values in by_item.items():
+            e = explain(key, item)
+            rows.append(
+                schemas.LearnRow(
+                    item=item,
+                    he=e.he if e else None,
+                    short=e.short if e else "",
+                    how=e.how if e else "",
+                    look=e.look if e else "",
+                    kind=learn_kind(item),
+                    values=[values.get(p) for p in periods],
+                )
+            )
+        statements.append(
+            schemas.LearnStatement(
+                key=key,
+                label=label,
+                periods=periods,
+                rows=rows,
+                currency=fetch["currency"],
+                fetched_at=fetch["fetched_at"],
+            )
+        )
+    if not statements:
+        return None
+    company = repo.get_company(symbol)
+    return schemas.LearnOut(
+        symbol=symbol, name=company["name"] if company else None, statements=statements
     )
