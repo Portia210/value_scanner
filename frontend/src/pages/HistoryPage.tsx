@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Alert, Badge, Box, Card, Group, Loader, SegmentedControl, Stack, Table, Text, Title } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { useHistory } from "../api/hooks";
+import { EntryExitTimeline } from "../components/EntryExitTimeline";
 import { FilterChanges } from "../components/FilterChanges";
 import { dateTime, REASON_LABELS } from "../format";
 
@@ -25,6 +26,13 @@ export function HistoryPage() {
           data={[{ value: "all", label: "הכול" }, ...Object.entries(REASON_LABELS).map(([value, label]) => ({ value, label }))]} />
         </Box>
       </Group>
+      {events.length > 0 && (
+        <Card>
+          <Text fw={600} mb={4}>כניסות ויציאות לפי יום</Text>
+          <Text c="dimmed" size="sm" mb="xs">כל עמודה היא יום. מעל הקו: מניות שנכנסו לסינון. מתחת: מניות שיצאו. אפשר לרחף על עמודה כדי לראות אילו.</Text>
+          <EntryExitTimeline events={events} />
+        </Card>
+      )}
       <Card p={0}>
         {events.length === 0 ? (
           <Text c="dimmed" p="lg">אין אירועים. אירועים נרשמים מהריצה השנייה ואילך, כשיש עם מה להשוות.</Text>
