@@ -22,7 +22,7 @@ SETTING_DAYS = "days_between_runs"
 DEFAULT_DAYS = 7
 # Bump together with frontend/src/api/version.ts whenever the API changes in a way the frontend
 # depends on; the frontend warns when it meets a server that reports another (or no) version.
-API_VERSION = 7
+API_VERSION = 8
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
@@ -233,7 +233,11 @@ def create_app(
     @app.get("/api/profiles/{symbol}/status", dependencies=[Depends(session_csrf)])
     def profile_status(symbol: str) -> schemas.ProfileJob:
         symbol = (adhoc_jobs.normalise(symbol) or "").upper()
-        return schemas.ProfileJob(symbol=symbol, status=profile_jobs.profile_job_status(symbol))
+        return schemas.ProfileJob(
+            symbol=symbol,
+            status=profile_jobs.profile_job_status(symbol),
+            text=profile_jobs.profile_job_text(symbol),
+        )
 
     # ── the built frontend (Vite output), served from the same origin ──────────────────────
     if frontend_dist is not None and (frontend_dist / "index.html").is_file():

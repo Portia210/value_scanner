@@ -109,6 +109,7 @@ def refresh_profiles(
 
 
 _JOBS: dict[str, str] = {}  # symbol -> running | ok | unsupported | failed | billing | busy
+_PARTIAL: dict[str, str] = {}  # symbol -> text written so far (memory only; the DB gets the end)
 _JOBS_LOCK = threading.Lock()
 
 
@@ -116,6 +117,13 @@ def profile_job_status(symbol: str) -> str:
     """Status of the newest on-demand profile job of this process ('none' if there was none)."""
     with _JOBS_LOCK:
         return _JOBS.get(symbol, "none")
+
+
+def profile_job_text(symbol: str) -> str:
+    """What Gemini has written so far for a running on-demand job ('' when none is running).
+    Only the finished text is saved to the database."""
+    with _JOBS_LOCK:
+        return _PARTIAL.get(symbol, "")
 
 
 def start_profile(settings: Settings, symbol: str) -> bool:
@@ -127,13 +135,25 @@ def start_profile(settings: Settings, symbol: str) -> bool:
         if _JOBS.get(symbol) == "running":
             return False
         _JOBS[symbol] = "running"
+        _PARTIAL[symbol] = ""
+
+    def streaming(api_key: str, prompt: str) -> str:
+        def add(piece: str) -> None:
+            with _JOBS_LOCK:
+                _PARTIAL[symbol] += piece
+
+        return gemini.generate_stream(api_key, prompt, add)
 
     def work() -> None:
         outcome = "failed"
         conn = db.connect(settings.db_path)
         try:
             result = refresh_profile(
-                Repository(conn), settings, symbol, SecClient(settings.require("my_email"))
+                Repository(conn),
+                settings,
+                symbol,
+                SecClient(settings.require("my_email")),
+                generate=streaming,
             )
             outcome = "ok" if result in ("created", "fresh") else result
         except gemini.BillingError:
@@ -144,6 +164,7 @@ def start_profile(settings: Settings, symbol: str) -> bool:
             conn.close()
             with _JOBS_LOCK:
                 _JOBS[symbol] = outcome
+                _PARTIAL.pop(symbol, None)
 
     threading.Thread(target=work, daemon=True).start()
     return True

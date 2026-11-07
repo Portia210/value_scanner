@@ -250,7 +250,11 @@ def test_profile_job_reports_unsupported_and_conflicts_while_running(tmp_path):
 
 def test_profile_status_endpoint(api):
     client, csrf, _, _ = api
-    assert client.get("/api/profiles/QQQQ/status").json() == {"symbol": "QQQQ", "status": "none"}
+    assert client.get("/api/profiles/QQQQ/status").json() == {
+        "symbol": "QQQQ",
+        "status": "none",
+        "text": "",
+    }
 
 
 def test_reanalysis_with_unchanged_reports_downloads_nothing_and_only_updates_the_price(repo):

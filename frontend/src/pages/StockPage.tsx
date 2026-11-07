@@ -312,10 +312,13 @@ function ProfileButton({ symbol }: { symbol: string }) {
   const status = job.data?.status ?? "none";
 
   useEffect(() => {
+    // a job that is already running (the page was opened or reloaded meanwhile): follow it
+    if (!waiting && status === "running") { setWaiting(true); return; }
     if (!waiting || status === "running" || status === "none") return;
     setWaiting(false);
     if (status === "ok") void qc.invalidateQueries({ queryKey: ["stock", symbol] });
   }, [waiting, status, symbol, qc]);
+  const written = job.data?.text ?? "";
 
   const onClick = () =>
     start.mutate(symbol, {
@@ -332,6 +335,17 @@ function ProfileButton({ symbol }: { symbol: string }) {
     });
 
   const failed = !waiting && status !== "none" && status !== "running" && status !== "ok";
+  if (waiting && written) {
+    return (
+      <Card>
+        <Group justify="space-between" mb="xs">
+          <Title order={4}>על החברה</Title>
+          <Group gap={6}><Loader size="xs" /><Text size="xs" c="dimmed">נכתב עכשיו, יישמר בסיום</Text></Group>
+        </Group>
+        <Prose text={written} />
+      </Card>
+    );
+  }
   return (
     <Card>
       <Group justify="space-between" wrap="nowrap">
@@ -343,7 +357,7 @@ function ProfileButton({ symbol }: { symbol: string }) {
           {failed && <Text size="sm" c="red" mt={4}>{PROFILE_MESSAGES[status] ?? "היצירה נכשלה."}</Text>}
         </div>
         <Button variant="light" loading={waiting || start.isPending} onClick={onClick}>
-          {waiting ? "יוצר…" : failed ? "נסה שוב" : "צור תיאור חברה"}
+          {waiting ? "קורא את הדוח…" : failed ? "נסה שוב" : "צור תיאור חברה"}
         </Button>
       </Group>
     </Card>

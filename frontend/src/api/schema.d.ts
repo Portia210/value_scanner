@@ -463,6 +463,11 @@ export interface components {
             status: string;
             /** Symbol */
             symbol: string;
+            /**
+             * Text
+             * @default
+             */
+            text: string;
         };
         /** ProfileOut */
         ProfileOut: {

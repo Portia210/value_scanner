@@ -71,12 +71,12 @@ export function useStartProfile() {
 
 type ProfileJob = components["schemas"]["ProfileJob"];
 
-/** Status of the on-demand profile job; polls every 3 s while `poll` is true. */
+/** Status and text-so-far of the on-demand profile job; polls about once a second while `poll` is true (the answer is shown as it is written). */
 export const useProfileJob = (symbol: string, poll: boolean) =>
   useQuery({
     queryKey: ["profilejob", symbol],
     queryFn: () => api<ProfileJob>(`/profiles/${encodeURIComponent(symbol)}/status`),
-    refetchInterval: poll ? 3000 : false,
+    refetchInterval: poll ? 800 : false,
   });
 
 /** Server liveness and API version (the frontend warns when the running server is older). */

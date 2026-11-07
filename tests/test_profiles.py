@@ -240,3 +240,106 @@ def test_candidate_symbols_come_from_the_latest_analysed_run(repo):
     repo.finish_run(run, "ok")
     assert "BBB" not in candidate_symbols(repo)
     assert isinstance(candidate_symbols(repo), list)
+
+
+def sse(*pieces: str, tail: str = "") -> bytes:
+    events = [json.dumps({"candidates": [{"content": {"parts": [{"text": t}]}}]}) for t in pieces]
+    return ("".join(f"data: {e}\r\n\r\n" for e in events) + tail).encode()
+
+
+def test_stream_delivers_every_piece_and_returns_the_whole_answer():
+    got = []
+    client = gemini_client([httpx.Response(200, content=sse("## א\n", "שלום ", "עולם "))])
+    assert gemini.generate_stream("k", "p", got.append, client=client) == "## א\nשלום עולם"
+    assert got == ["## א\n", "שלום ", "עולם "]
+
+
+def test_stream_retries_503_reports_402_and_mid_stream_errors_and_empty_answers():
+    waits = []
+    ok = httpx.Response(200, content=sse("שלום"))
+    client = gemini_client([httpx.Response(503), ok])
+    assert (
+        gemini.generate_stream("k", "p", lambda t: None, client=client, sleep=waits.append)
+        == "שלום"
+    )
+    assert waits == [20.0]
+    with pytest.raises(gemini.BillingError):
+        gemini.generate_stream(
+            "k", "p", lambda t: None, client=gemini_client([httpx.Response(402)])
+        )
+    failing = httpx.Response(200, content=sse("חלק", tail='data: {"error": {"code": 500}}\r\n\r\n'))
+    with pytest.raises(gemini.GeminiError, match="error"):
+        gemini.generate_stream("k", "p", lambda t: None, client=gemini_client([failing]))
+    with pytest.raises(gemini.GeminiError, match="empty"):
+        gemini.generate_stream(
+            "k", "p", lambda t: None, client=gemini_client([httpx.Response(200, content=b"")])
+        )
+    with pytest.raises(gemini.GeminiError, match="503"):
+        gemini.generate_stream(
+            "k",
+            "p",
+            lambda t: None,
+            sleep=lambda s: None,
+            client=gemini_client([httpx.Response(503)] * 3),
+        )
+
+
+def test_stream_key_is_a_header_and_url_asks_for_sse():
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        return httpx.Response(200, content=sse("x"))
+
+    gemini.generate_stream(
+        "secret-key",
+        "p",
+        lambda t: None,
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    assert "secret-key" not in str(seen[0].url) and "alt=sse" in str(seen[0].url)
+    assert seen[0].headers["x-goog-api-key"] == "secret-key"
+
+
+def test_on_demand_job_shows_the_text_so_far_and_keeps_nothing_until_the_end(tmp_path):
+    import threading
+
+    from value_scanner.jobs import profiles as pj
+    from value_scanner.settings import load_settings
+
+    env = {"DB_PATH": str(tmp_path / "p.db"), "GOOGLE_API_KEY": "k" * 10, "MY_EMAIL": "me@e.com"}
+    settings = load_settings(env)
+    db.open_database(env["DB_PATH"]).close()
+    first_piece, release = threading.Event(), threading.Event()
+
+    def fake_stream(api_key, prompt, on_text, **kw):
+        on_text("## במשפט")
+        on_text(" אחד")
+        first_piece.set()
+        release.wait(5)
+        return "## במשפט אחד"
+
+    def fake_refresh(repo, settings, symbol, sec, generate=None):
+        generate("k", "p")
+        return "created"
+
+    originals = gemini.generate_stream, pj.refresh_profile, pj.SecClient
+    gemini.generate_stream, pj.refresh_profile, pj.SecClient = (
+        fake_stream,
+        fake_refresh,
+        lambda contact: None,
+    )
+    try:
+        assert pj.start_profile(settings, "ZZZ") is True
+        assert first_piece.wait(5)
+        assert pj.profile_job_status("ZZZ") == "running"
+        assert pj.profile_job_text("ZZZ") == "## במשפט אחד"
+        release.set()
+        for _ in range(200):
+            if pj.profile_job_status("ZZZ") != "running":
+                break
+            threading.Event().wait(0.02)
+        assert pj.profile_job_status("ZZZ") == "ok"
+        assert pj.profile_job_text("ZZZ") == ""  # the finished text lives in the database
+    finally:
+        gemini.generate_stream, pj.refresh_profile, pj.SecClient = originals

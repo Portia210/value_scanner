@@ -598,6 +598,11 @@
           "symbol": {
             "title": "Symbol",
             "type": "string"
+          },
+          "text": {
+            "default": "",
+            "title": "Text",
+            "type": "string"
           }
         },
         "required": [

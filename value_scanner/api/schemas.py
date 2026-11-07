@@ -207,6 +207,7 @@ class AnalysisStatus(BaseModel):
 class ProfileJob(BaseModel):
     symbol: str
     status: str  # none | running | ok | unsupported | failed | billing
+    text: str = ""  # what the model has written so far while running
 
 
 class RunOut(BaseModel):
