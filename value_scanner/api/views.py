@@ -190,15 +190,17 @@ def stock_view(repo: Repository, symbol: str) -> schemas.StockDetailOut | None:
     criteria = []
     for r in sorted(results, key=lambda r: order.get((r["guru"], r["criterion_id"]), 999)):
         d = defs.get((r["guru"], r["criterion_id"]))
+        if d is None:  # a retired test (Piotroski's equity multiple) in an old run's results
+            continue
         criteria.append(
             schemas.CriterionOut(
                 guru=r["guru"],
                 id=r["criterion_id"],
-                title=d.title if d else r["criterion_id"],
-                formula=d.formula if d else "",
-                note=d.note if d else "",
+                title=d.title,
+                formula=d.formula,
+                note=d.note,
                 meaning=meanings.meaning(r["guru"], r["criterion_id"]),
-                direction=d.direction if d else ">",
+                direction=d.direction,
                 comparative=r["guru"] == "piotroski",
                 status=r["status"],
                 value=r["value"],

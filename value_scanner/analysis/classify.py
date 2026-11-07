@@ -4,7 +4,7 @@ Rules are the defaults of docs/classification-doubts.md (decision D6) - sector a
 only; the old "high growth" and "volatility trap" inventions are gone. Labels:
 
     tech      Technology sector; software/internet/gaming in Communication Services or Healthcare
-    pharma    biotechnology and drug manufacturers (medical devices are NOT pharma)
+    pharma    biotechnology, drug manufacturers and medical devices (the teacher, 2026-11-07)
     financial banks, insurance, asset managers - own pricing tests, some tests not applicable
     cyclical  Energy, Materials, Real Estate, Consumer Discretionary, and cyclical industries
               (construction, building materials, ...). Tech and financial are never cyclical.
@@ -21,6 +21,8 @@ PHARMA_INDUSTRIES = {
     "Biotechnology",
     "Drug Manufacturers - General",
     "Drug Manufacturers - Specialty & Generic",
+    "Medical Devices",  # "devices count as pharma in the financial statements"
+    "Medical Instruments & Supplies",
 }
 FINANCIAL_SECTORS = {"Financials", "Financial Services"}
 CYCLICAL_SECTORS = {
@@ -62,6 +64,8 @@ CYCLICAL_INDUSTRIES = {
 
 PE_LIMIT_DEFAULT = 15.0
 PE_LIMIT_TECH = 25.0  # D5
+NET_MARGIN_TECH = 15.0  # Fisher, 5-year average net margin: technology and pharma
+NET_MARGIN_DEFAULT = 8.0  # ... and everyone else (the teacher, 2026-11-07)
 
 
 @dataclass(frozen=True)
@@ -95,9 +99,9 @@ class Classification:
         return self.tech or self.pharma
 
     @property
-    def pb_applies(self) -> bool:
-        """Piotroski's equity-multiple pricing screen is for financial companies only (D2)."""
-        return self.financial
+    def net_margin_limit(self) -> float:
+        """Fisher's 5-year average net margin: 15% for technology and pharma, 8% otherwise."""
+        return NET_MARGIN_TECH if self.tech or self.pharma else NET_MARGIN_DEFAULT
 
 
 def classify(sector: str | None, industry: str | None) -> Classification:

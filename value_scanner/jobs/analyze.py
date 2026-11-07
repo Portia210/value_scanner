@@ -4,7 +4,6 @@ scores in the database (C2-C8 wired together). Only stocks that are in the scree
 
 from __future__ import annotations
 
-import statistics
 from dataclasses import dataclass, replace
 
 from value_scanner.analysis.classify import Classification, classify
@@ -55,7 +54,6 @@ def analyse_stock(
     stmts: Statements,
     cls: Classification,
     snap,
-    sector_pb_median: float | None,
 ) -> list[Result]:
     """All criteria for one stock; `snap` is its screener_snapshots row."""
     pe, pb, ps = snap["pe_ratio"], snap["pb_ratio"], snap["ps_ratio"]
@@ -70,9 +68,14 @@ def analyse_stock(
         ),
         *evaluate_graham(stmts, pe, pb, cls.pe_limit),
         *evaluate_fisher(
-            stmts, ps, snap["market_cap"], cyclical=cls.cyclical, rd_applies=cls.rd_applies
+            stmts,
+            ps,
+            snap["market_cap"],
+            cyclical=cls.cyclical,
+            rd_applies=cls.rd_applies,
+            net_margin_limit=cls.net_margin_limit,
         ),
-        *evaluate_piotroski(stmts, pb, sector_pb_median, cls.pb_applies),
+        *evaluate_piotroski(stmts),
         *evaluate_buffett(stmts, roe_5y=snap["roe_5y"]),
         *evaluate_neff(
             stmts,
@@ -96,12 +99,12 @@ def analyse_stock(
 
 
 def analyse_and_store(
-    repo: Repository, run_id: int, symbol: str, company, snap, sector_pb_median: float | None
+    repo: Repository, run_id: int, symbol: str, company, snap
 ) -> tuple[float | None, float | None]:
     """Classify, evaluate and score one stock and store everything for the run.
     Returns (quality, opportunity). The caller owns the transaction."""
     cls = classify(company["sector"], company["industry"])
-    results = analyse_stock(Statements.from_repo(repo, symbol), cls, snap, sector_pb_median)
+    results = analyse_stock(Statements.from_repo(repo, symbol), cls, snap)
 
     repo.save_classification(run_id, symbol, cls.labels or {"regular": "no special class"})
     repo.save_results(run_id, symbol, [r.as_row() for r in results])
@@ -128,21 +131,12 @@ def analyse_run(repo: Repository, run_id: int) -> AnalysisSummary:
     snaps = repo.snapshots_for_run(run_id)
     companies = {r["symbol"]: r for r in repo.conn.execute("SELECT * FROM companies")}
 
-    pb_by_sector: dict[str, list[float]] = {}
-    for symbol, snap in snaps.items():
-        sector, pb = companies[symbol]["sector"], snap["pb_ratio"]
-        if sector and pb is not None and pb > 0:
-            pb_by_sector.setdefault(sector, []).append(pb)
-
     candidates, unranked, count = [], [], 0
     with repo.transaction():
         for symbol, snap in sorted(snaps.items()):
             if not snap["in_screen"]:
                 continue
-            company = companies[symbol]
-            pbs = pb_by_sector.get(company["sector"] or "", [])
-            median = statistics.median(pbs) if len(pbs) >= 3 else None
-            q, opp = analyse_and_store(repo, run_id, symbol, company, snap, median)
+            q, opp = analyse_and_store(repo, run_id, symbol, companies[symbol], snap)
             count += 1
             if q is None:
                 unranked.append(symbol)

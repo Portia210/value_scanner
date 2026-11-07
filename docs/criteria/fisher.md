@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|
 | 1 | `ps` | Price / sales | P/S (screener, current) | `< 1.5` | limit 0.8 for cyclical companies, 1.5 otherwise; P/S <= 0 fails |
 | 2 | `eps_growth` | EPS growth, 5-year average | mean of the 4 year-over-year growths of EPS (Diluted) over 5 FY (%) | `> 15` | NA if any year's base EPS is not positive |
-| 3 | `net_margin` | Net margin, 5-year average | mean over FYs of Net Income / Revenue (%), >= 3 valid years | `> 5` | D1: 5% (PDF) rather than the 8%/15% sector variant |
+| 3 | `net_margin` | Net margin, 5-year average | mean over 5 FYs of Net Income / Revenue (%); NA with fewer than 5 fiscal years | `> 8` | limit 15% for technology and pharma, 8% for the rest (the teacher, 2026-11-07); always a 5-year average |
 | 4 | `debt_equity` | Liabilities / equity | Total Liabilities / Shareholders' Equity, current | `< 0.4` | equity <= 0 fails. Lesson 5's formula sheet says total liabilities |
 | 5 | `fcf` | Positive free cash flow per share | Free Cash Flow per share, current | `> 0` | — |
 | 6 | `rd` | Market cap / R&D between 5 and 15 | market cap (USD millions) / Research & Development, latest FY | `>= 5` | band: 5 <= ratio <= 15. Technology and pharma only; NA elsewhere (D4) |

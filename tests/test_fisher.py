@@ -31,9 +31,16 @@ GOOD = {
 }
 
 
-def run(ps=1.0, market_cap=500e6, cyclical=False, rd_applies=True, **overrides):
+def run(ps=1.0, market_cap=500e6, cyclical=False, rd_applies=True, margin=8.0, **overrides):
     data = {**GOOD, **overrides}
-    res = evaluate_fisher(stmts(**data), ps, market_cap, cyclical=cyclical, rd_applies=rd_applies)
+    res = evaluate_fisher(
+        stmts(**data),
+        ps,
+        market_cap,
+        cyclical=cyclical,
+        rd_applies=rd_applies,
+        net_margin_limit=margin,
+    )
     return {r.criterion_id: r for r in res}
 
 
@@ -77,16 +84,43 @@ def test_eps_growth_boundary_negative_and_loss_base():
     assert shrinking.status == Status.FAIL and shrinking.value < 0
 
 
-def test_net_margin_average_boundary_and_few_years():
-    five = {R.NET_INCOME: [50.0] * 5, R.REVENUE: [1000.0] * 5}
-    assert run(**five)["net_margin"].status == Status.FAIL  # exactly 5%
-    assert run(**{R.NET_INCOME: [50.1] * 5, R.REVENUE: [1000.0] * 5})["net_margin"].status == (
-        Status.PASS
-    )
+def margin(pct, **kw):
+    return run(**{R.NET_INCOME: [pct * 10] * 5, R.REVENUE: [1000.0] * 5}, **kw)["net_margin"]
+
+
+def test_net_margin_limit_is_8_percent_for_ordinary_companies_and_strict():
+    assert margin(8.0).status == Status.FAIL  # exactly 8%
+    assert margin(8.01).status == Status.PASS
+    assert margin(7.99).status == Status.FAIL
+    assert margin(8.01).threshold == 8.0
+
+
+def test_net_margin_limit_is_15_percent_for_technology_and_pharma():
+    assert margin(15.0, margin=15.0).status == Status.FAIL  # exactly 15%
+    assert margin(15.01, margin=15.0).status == Status.PASS
+    assert margin(14.99, margin=15.0).status == Status.FAIL
+    assert margin(10.0, margin=15.0).threshold == 15.0  # 10% passes for others, not here
+    assert margin(10.0).status == Status.PASS
+
+
+def test_net_margin_is_always_a_five_year_average():
+    mixed = run(**{R.NET_INCOME: [200.0, 0.0, 0.0, 0.0, 0.0], R.REVENUE: [1000.0] * 5})
+    assert mixed["net_margin"].value == pytest.approx(4.0)  # (20 + 0 + 0 + 0 + 0) / 5, not 20
+    assert mixed["net_margin"].status == Status.FAIL
+
+
+def test_net_margin_needs_all_five_years_or_it_is_na():
+    four = run(**{R.NET_INCOME: [100.0] * 4 + [None], R.REVENUE: [1000.0] * 5})
+    assert four["net_margin"].status == Status.NA
+    no_revenue = run(**{R.NET_INCOME: [100.0] * 5, R.REVENUE: [1000.0] * 4 + [0.0]})
+    assert no_revenue["net_margin"].status == Status.NA  # a year without revenue is not a year
     few = run(**{R.NET_INCOME: [100.0, 100.0, None, None, None], R.REVENUE: [1000.0] * 5})
-    assert few["net_margin"].status == Status.NA  # only 2 usable years
-    loss = run(**{R.NET_INCOME: [-100.0] * 5, R.REVENUE: [1000.0] * 5})["net_margin"]
-    assert loss.status == Status.FAIL and loss.strength == 0.0
+    assert few["net_margin"].status == Status.NA
+
+
+def test_net_margin_loss_years_count_and_a_full_loss_scores_zero():
+    loss = margin(-10.0)
+    assert loss.status == Status.FAIL and loss.strength == 0.0 and loss.value == -10.0
 
 
 def test_liabilities_to_equity():

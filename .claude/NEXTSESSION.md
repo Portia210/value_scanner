@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-08 — תשובות המורה: מכשור רפואי, שולי רווח של פישר, פיוטרוסקי
+- Changed: `Medical Devices` ו-`Medical Instruments & Supplies` ⇒ **פארמה** (`classify.py`; 4 מניות עברו: ISRG, RMD, UFPT, WST). פישר `net_margin`: ממוצע **5 שנות FY חובה** (אחרת NA), סף 15% טכנולוגיה/פארמה ו-8% לכל השאר (`Classification.net_margin_limit`, פרמטר `net_margin_limit`). פיוטרוסקי: **המבחן `pb_discount` הוסר** (7 מבחנים); נמחקו חציון הסקטור (`analyse_run`, `adhoc`) ו-`Repository.sector_pb_values`. `stock_view` מסתיר קריטריונים שאין להם הגדרה (שורות `pb_discount` בריצות ישנות). D1, D2 ושלושה ספקות נסגרו.
+- Verified: gate (ruff, 463 טסטים, כולל גבולות סף 8/15 ו-5 שנים) ; על עותק DB (ריצה 12, 105 מניות): **מועמדות 8 → 8** (אותן), 4 מניות סווגו מחדש, ציון איכות השתנה ל-32 מניות (פישר 24, פיוטרוסקי 9), גדול ביותר AMD 0.68→0.64. הדף של מניה בריצה ישנה לא מציג את `pb_discount`.
+- NOT verified: הריצה הבאה בשרת (מחשבת מחדש; ספירות פיוטרוסקי בריצות ישנות עדיין 8 עד אז); פרשנויות "תעשייה = כל מי שאינה טכנולוגיה/פארמה" ו"תמיד 5 שנים = חובה 5" מחכות לאישור המורה.
+- Traps / decisions: **חריגי הסקטור של פישר (D3, "אחד מהם מספיק") עדיין לא ממומשים**; הסריקה המשנית של שיעור 3 (רווח חיובי בכל שנה) עדיין לא ממומשת. אין שינוי API (בלי העלאת גרסה).
+- Next: אישור המורה לשתי הפרשנויות; D3; הסריקה המשנית.
+
 ## 2026-11-08 — שיעורים 7 ו-8: באפט ונף
 - Changed: `gurus/buffett.py` (6 מבחנים כמותיים + 4 שורות `MANUAL` "בדיקה אנושית": 3 איכותיות ו-DCF), `gurus/neff.py` (7 מבחנים). `Status.MANUAL` לא נספר בציון, בכיסוי ובספירות (`guru_score`, `result_counts`). **מיגרציה 0005**: 5 עמודות ל-`screener_snapshots` (`industry_pe`, `low_52`, `high_52`, `dividend_yield`, `industry_return_median`) + בנייה מחדש של `results` ו-`scores` (עלי-טבלאות; לא מפעיל cascade). `income_quarterly` ב-`DEFAULT_STATEMENTS` (בקשה רביעית למניה). חציון תשואה כוללת לענף מחושב ב-`jobs/universe.py` על כל ~5,600 מניות הסורק. ציון איכות = ממוצע 6 גורואים. API: `CriterionDoc.manual`, `API_VERSION` 12; frontend: תוויות, MANUAL.
 - Verified: gate (ruff, 462 טסטים כולל גבולות באפט/נף, מיגרציה על DB עם נתונים) + `pnpm build`; חי על עותק DB: מיגרציה 0005 על 12 ריצות, ניתוח AAPL/KO/CRUS (באפט ונף מלאים, מומנטום מ-20 רבעונים אמיתיים); דפדפן headless: דשבורד, דף מניה (טאבים באפט/נף, שורות "בדיקה אנושית"), "איך זה מחושב", מובייל 390px בלי גלילה אופקית.

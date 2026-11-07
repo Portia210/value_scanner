@@ -65,7 +65,7 @@ def test_full_analysis_is_stored(repo):
     summary = analyse_run(repo, run)
     assert summary.analysed == 1
     results = repo.results_for(run, "AAA")
-    assert len(results) == 8 + 6 + 6 + 8 + 10 + 7
+    assert len(results) == 8 + 6 + 6 + 7 + 10 + 7
     assert {r["guru"] for r in results} == {
         "screen",
         "graham",

@@ -27,15 +27,14 @@ GOOD = {
 }
 
 
-def run(pb=None, median=None, applies=False, **overrides):
+def run(**overrides):
     data = {**GOOD, **overrides}
-    return {r.criterion_id: r for r in evaluate_piotroski(stmts(**data), pb, median, applies)}
+    return {r.criterion_id: r for r in evaluate_piotroski(stmts(**data))}
 
 
 def test_improving_company_passes_the_seven_statement_tests():
     res = run()
-    assert len(res) == 8
-    assert res.pop("pb_discount").status == Status.NA  # not a financial company
+    assert len(res) == 7 and "pb_discount" not in res  # the equity-multiple test is gone
     assert {r.status for r in res.values()} == {Status.PASS}
     assert res["current_ratio"].value == pytest.approx(2.5)
     assert res["current_ratio"].threshold == pytest.approx(2.0)  # last year's figure
@@ -100,23 +99,3 @@ def test_missing_previous_year_is_na_not_pass():
 def test_zero_or_negative_denominators_are_na():
     r = run(**{R.TOTAL_CURRENT_LIABILITIES: (0.0, 200.0)})["current_ratio"]
     assert r.status == Status.NA
-
-
-@pytest.mark.parametrize(
-    ("pb", "status"),
-    [
-        (0.8, Status.PASS),
-        (0.81, Status.FAIL),
-        (0.5, Status.PASS),
-        (-1.0, Status.FAIL),
-        (None, Status.NA),
-    ],
-)
-def test_pb_discount_against_sector_median(pb, status):
-    assert run(pb=pb, median=1.0, applies=True)["pb_discount"].status == status
-
-
-def test_pb_discount_na_without_median_or_for_non_financials():
-    assert run(pb=0.5, median=None, applies=True)["pb_discount"].status == Status.NA
-    assert run(pb=0.5, median=0.0, applies=True)["pb_discount"].status == Status.NA
-    assert run(pb=0.5, median=1.0, applies=False)["pb_discount"].status == Status.NA

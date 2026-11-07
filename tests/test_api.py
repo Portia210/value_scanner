@@ -187,7 +187,7 @@ def test_stock_endpoints_before_and_after_a_run(client, repo):
     assert screen["passed"] <= screen["computed"] <= 8
 
     detail = client.get("/api/stocks/aaa").json()  # symbol is case-insensitive
-    assert len(detail["criteria"]) == 45 and detail["symbol"] == "AAA"
+    assert len(detail["criteria"]) == 44 and detail["symbol"] == "AAA"
     by_id = {(c["guru"], c["id"]): c for c in detail["criteria"]}
     assert by_id[("graham", "pe")]["title"] and by_id[("graham", "pe")]["direction"] == "<"
     assert by_id[("piotroski", "roa")]["comparative"] is True
@@ -203,6 +203,20 @@ def test_stock_endpoints_before_and_after_a_run(client, repo):
     assert client.get("/api/stocks/ZZZ").status_code == 404
 
 
+def test_a_retired_test_in_an_old_runs_results_is_not_shown(client, repo):
+    """Piotroski's equity-multiple test was removed (the teacher, 2026-11-07); runs analysed before
+    keep its row, and the stock page must not show it as an unnamed criterion."""
+    login(client)
+    run = run_with(repo, [seed(repo, "AAA")])
+    analyse_run(repo, run)
+    repo.finish_run(run, "ok")
+    repo.save_results(
+        run, "AAA", [{"guru": "piotroski", "criterion_id": "pb_discount", "status": "FAIL"}]
+    )
+    ids = {c["id"] for c in client.get("/api/stocks/AAA").json()["criteria"]}
+    assert "pb_discount" not in ids and "roa" in ids
+
+
 def test_criteria_catalog_lists_every_criterion(client):
     login(client)
     data = client.get("/api/criteria").json()
@@ -214,7 +228,7 @@ def test_criteria_catalog_lists_every_criterion(client):
         "buffett",
         "neff",
     ]
-    assert sum(len(g["criteria"]) for g in data["gurus"]) == 45
+    assert sum(len(g["criteria"]) for g in data["gurus"]) == 44
     manual = [c["id"] for g in data["gurus"] for c in g["criteria"] if c["manual"]]
     assert manual == ["consumer_monopoly", "inflation_pricing", "simple_product", "dcf_price"]
     assert len(data["opportunity"]) == 4 and data["scoring"]

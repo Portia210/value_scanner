@@ -56,10 +56,6 @@ MEANINGS: dict[tuple[str, str], str] = {
     # lesson 6 - Piotroski (this year against last year)
     (
         "piotroski",
-        "pb_discount",
-    ): "האם המניה נסחרת בזול ביחס להון העצמי שלה לעומת חציון הסקטור (חברות פיננסיות בלבד).",
-    (
-        "piotroski",
         "current_ratio",
     ): "האם היכולת לכסות התחייבויות לטווח קצר השתפרה לעומת השנה הקודמת.",
     ("piotroski", "lt_debt_assets"): "האם החוב לטווח ארוך ביחס לנכסים ירד לעומת השנה הקודמת.",

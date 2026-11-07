@@ -20,6 +20,8 @@ from value_scanner.analysis.statements import Statements
 
 GURU = "fisher"
 PS_CYCLICAL, PS_OTHER = 0.8, 1.5
+NET_MARGIN_DEFAULT = 8.0  # 15% for technology and pharma (the classifier passes the limit)
+MARGIN_YEARS = 5  # "always 5 years" (the teacher, 2026-11-07)
 RD_LOW, RD_HIGH = 5.0, 15.0
 
 CRITERIA = {
@@ -50,10 +52,11 @@ CRITERIA = {
             GURU,
             5,
             "Net margin, 5-year average",
-            "mean over FYs of Net Income / Revenue (%), >= 3 valid years",
+            "mean over 5 FYs of Net Income / Revenue (%); NA with fewer than 5 fiscal years",
             ">",
-            5.0,
-            "D1: 5% (PDF) rather than the 8%/15% sector variant",
+            NET_MARGIN_DEFAULT,
+            "limit 15% for technology and pharma, 8% for the rest (the teacher, 2026-11-07); "
+            "always a 5-year average",
         ),
         Criterion(
             "debt_equity",
@@ -100,12 +103,12 @@ def _yoy_growth_avg_pct(values: list[float | None]) -> float | None:
 
 def _avg_net_margin_pct(s: Statements) -> float | None:
     margins = []
-    for n in range(5):
+    for n in range(MARGIN_YEARS):
         income, revenue = s.fy(rows.NET_INCOME, n), s.fy(rows.REVENUE, n)
         if is_missing(income) or is_missing(revenue) or revenue <= 0:
             continue
         margins.append(income / revenue * 100)
-    return sum(margins) / len(margins) if len(margins) >= 3 else None
+    return sum(margins) / len(margins) if len(margins) == MARGIN_YEARS else None
 
 
 def fcf_per_share(s: Statements) -> float | None:
@@ -144,6 +147,7 @@ def evaluate_fisher(
     *,
     cyclical: bool = False,
     rd_applies: bool = False,
+    net_margin_limit: float = NET_MARGIN_DEFAULT,
 ) -> list[Result]:
     c = CRITERIA
     ps_limit = PS_CYCLICAL if cyclical else PS_OTHER
@@ -164,7 +168,10 @@ def evaluate_fisher(
     return [
         ps_result,
         evaluate(c["eps_growth"], _yoy_growth_avg_pct(s.series(rows.EPS_DILUTED, 5))),
-        evaluate(c["net_margin"], _avg_net_margin_pct(s)),
+        evaluate(
+            Criterion(**{**c["net_margin"].__dict__, "threshold": net_margin_limit}),
+            _avg_net_margin_pct(s),
+        ),
         de,
         evaluate(c["fcf"], fcf_per_share(s)),
         _rd_band(s, market_cap, rd_applies),

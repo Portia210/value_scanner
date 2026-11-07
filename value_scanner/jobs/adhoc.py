@@ -9,7 +9,6 @@ history. Steps: the stock's row from the screener JSON -> its statements (slow, 
 from __future__ import annotations
 
 import re
-import statistics
 import threading
 import time
 from collections.abc import Callable
@@ -141,10 +140,8 @@ def analyse_ticker(
         repo.set_run_summary(run_id, f"{symbol}: phase=analysing")
         company = repo.get_company(symbol)
         snap = repo.snapshot_for(run_id, symbol)
-        pbs = repo.sector_pb_values(company["sector"] or "") if company["sector"] else []
-        median = statistics.median(pbs) if len(pbs) >= 3 else None
         with repo.transaction():
-            quality, opportunity = analyse_and_store(repo, run_id, symbol, company, snap, median)
+            quality, opportunity = analyse_and_store(repo, run_id, symbol, company, snap)
         status = "ok"
         message = "ok" + ("" if quality is None else f" · quality {round(quality * 100)}")
         return RunOutcome(run_id, "ok", f"{symbol}: {message}")

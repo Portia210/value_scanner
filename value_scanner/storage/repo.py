@@ -570,24 +570,6 @@ class Repository:
             "SELECT COUNT(*) FROM runs WHERE kind = 'adhoc' AND started_at >= ?", (since_iso,)
         ).fetchone()[0]
 
-    def sector_pb_values(self, sector: str) -> list[float]:
-        """Positive P/B of the sector's stocks in the latest regular run's snapshots."""
-        run = self.conn.execute(
-            "SELECT MAX(id) FROM runs WHERE kind <> 'adhoc' AND id IN "
-            "(SELECT run_id FROM screener_snapshots)"
-        ).fetchone()[0]
-        if run is None:
-            return []
-        return [
-            r[0]
-            for r in self.conn.execute(
-                "SELECT s.pb_ratio FROM screener_snapshots s "
-                "JOIN companies c ON c.symbol = s.symbol "
-                "WHERE s.run_id = ? AND c.sector = ? AND s.pb_ratio > 0",
-                (run, sector),
-            )
-        ]
-
     def snapshot_for(self, run_id: int, symbol: str) -> sqlite3.Row | None:
         return self.conn.execute(
             "SELECT * FROM screener_snapshots WHERE run_id = ? AND symbol = ?", (run_id, symbol)
