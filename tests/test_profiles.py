@@ -111,7 +111,12 @@ def sec_handler(html=None, seen=None):
 
 def sec_client(html=None, seen=None):
     transport = httpx.MockTransport(sec_handler(html, seen))
-    return SecClient("me@example.com", httpx.Client(transport=transport), sleep=lambda s: None)
+    return SecClient(
+        "me@example.com",
+        httpx.Client(transport=transport),
+        sleep=lambda s: None,
+        today=lambda: date(2026, 11, 8),  # fixed: the fixtures' report dates must not age
+    )
 
 
 def test_latest_annual_filing_skips_other_forms_and_builds_the_archive_url():
@@ -320,7 +325,7 @@ def test_on_demand_job_shows_the_text_so_far_and_keeps_nothing_until_the_end(tmp
         release.wait(5)
         return "## במשפט אחד"
 
-    def fake_refresh(repo, settings, symbol, sec, generate=None):
+    def fake_refresh(repo, settings, symbol, sec, generate=None, force=False):
         generate("k", "p")
         return "created"
 
@@ -395,3 +400,34 @@ def test_an_annual_report_older_than_about_18_months_is_not_used():
     assert ok.latest_annual_filing("AAA", today=TODAY).filing_date == "2025-06-01"
     with pytest.raises(Unsupported, match="no 10-K"):
         client_with_filings(["8-K"], ["2026-01-01"]).latest_annual_filing("AAA", today=TODAY)
+
+
+def test_force_regenerates_a_fresh_profile_and_replaces_the_stored_one(repo):
+    repo.upsert_company("AAA", name="Alpha Corp")
+    sec_c = sec_client()
+    calls = []
+
+    def generate(key, prompt):
+        calls.append(1)
+        return f"## במשפט אחד\nגרסה {len(calls)}"
+
+    kw = {"generate": generate}
+    assert refresh_profile(repo, SETTINGS, "AAA", sec_c, **kw) == "created"
+    assert refresh_profile(repo, SETTINGS, "AAA", sec_c, **kw) == "fresh"  # nothing newer
+    assert len(calls) == 1
+    assert refresh_profile(repo, SETTINGS, "AAA", sec_c, force=True, **kw) == "created"
+    assert len(calls) == 2
+    rows = repo.conn.execute("SELECT text FROM profiles WHERE symbol = 'AAA'").fetchall()
+    assert [r["text"] for r in rows] == ["## במשפט אחד\nגרסה 2"]  # replaced, not added
+
+
+def test_a_failed_forced_regeneration_keeps_the_old_profile(repo):
+    repo.upsert_company("AAA", name="Alpha Corp")
+    sec_c = sec_client()
+    refresh_profile(repo, SETTINGS, "AAA", sec_c, generate=lambda k, p: "ישן")
+
+    def broken(key, prompt):
+        raise gemini.GeminiError("boom")
+
+    assert refresh_profile(repo, SETTINGS, "AAA", sec_c, generate=broken, force=True) == "failed"
+    assert repo.latest_profile("AAA")["text"] == "ישן"

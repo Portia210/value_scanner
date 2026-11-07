@@ -33,8 +33,11 @@ def refresh_profile(
     symbol: str,
     sec: SecClient,
     generate: Generate = gemini.generate,
+    force: bool = False,
 ) -> str:
-    """One company. Returns created | fresh | unsupported | failed. Raises BillingError."""
+    """One company. Returns created | fresh | unsupported | failed. Raises BillingError.
+    `force` writes a new profile even when the stored one is for the same report and prompt: the
+    saved row is replaced (never before the new text is complete)."""
     company = repo.get_company(symbol)
     if company is None:
         return "failed"
@@ -42,7 +45,8 @@ def refresh_profile(
         filing = sec.latest_annual_filing(symbol)
         stored = repo.latest_profile(symbol)
         if (
-            stored is not None
+            not force
+            and stored is not None
             and stored["accession"] == filing.accession
             and stored["prompt_version"] == gemini.PROMPT_VERSION
         ):
@@ -126,9 +130,9 @@ def profile_job_text(symbol: str) -> str:
         return _PARTIAL.get(symbol, "")
 
 
-def start_profile(settings: Settings, symbol: str) -> bool:
-    """Create or refresh one company's profile in a background thread (the dashboard button).
-    False if a job for this symbol is already running."""
+def start_profile(settings: Settings, symbol: str, force: bool = False) -> bool:
+    """Create or refresh one company's profile in a background thread (the dashboard button);
+    `force` regenerates it even if nothing is newer. False if a job for this symbol is running."""
     from value_scanner.storage import db
 
     with _JOBS_LOCK:
@@ -154,6 +158,7 @@ def start_profile(settings: Settings, symbol: str) -> bool:
                 symbol,
                 SecClient(settings.require("my_email")),
                 generate=streaming,
+                force=force,
             )
             outcome = "ok" if result in ("created", "fresh") else result
         except gemini.BillingError:

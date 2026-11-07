@@ -12,10 +12,15 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-08 — כפתור "צור מחדש" לפרופיל החברה
+- Changed: בכרטיס "על החברה" כפתור "צור מחדש" (עם אישור, כי זה עולה כסף ב-Gemini). `POST /api/profiles/{symbol}?force=true`, `refresh_profile(force=True)`: מדלג על בדיקת "עדכני", הטקסט החדש מוזרם לדף ("יחליף את התיאור הקודם בסיום") ושורת ה-DB מוחלפת (`ON CONFLICT … DO UPDATE`) רק כשהחדש הסתיים; כשל משאיר את הישן. `API_VERSION` 11 (שרת ישן יציג אזהרה במקום להתעלם מ-force). `SecClient` מקבל `today` לבדיקות.
+- Verified: 401 טסטים (כולל: force מחליף שורה ולא מוסיף; כשל מוכרח משאיר את הישן); חי על עותק DB (CRUS): אישור, הזרמה, שורה אחת עם `created_at` חדש.
+- Traps: **להפעיל מחדש `serve`** (API 11).
+
 ## 2026-11-08 — באג: פרופיל AEM מ-2013
 - Cause: `SecClient.latest_annual_filing` חיפש רק 10-K/20-F ודילג על כל ה-40-F שהוגשו מאז 2014, ולכן בחר 20-F מ-28.03.2013. ה-`profiles` בשרת: רק AEM הייתה ישנה (שאר התאריכים 2025-11 עד 2026-10).
 - Changed: `sources/sec.py`: הדוח השנתי החדש ביותר מכל סוג קובע; 40-F ⇒ `Unsupported` ("latest annual report is a 40-F"); דוח ישן מ-550 יום ⇒ `Unsupported`. 3 טסטים חדשים. נבדק חי מול SEC: AEM, KGC = 40-F (לא נתמך); TSM, DHT, AAON, CF, NTES תקינות.
-- Data fix: שורת הפרופיל של AEM בשרת נמחקה ידנית אחרי הפריסה (ר' הודעת הסיום); לא נוצר מחדש (40-F לא נתמך).
+- Data fix **לא בוצע**: שורת הפרופיל השגויה של AEM (filing_date 2013-03-28) עדיין בשרת — מנגנון ההרשאות חסם כתיבה לשרת מרוחק. למחוק: `DELETE FROM profiles WHERE symbol='AEM' AND filing_date='2013-03-28'` (פרופיל חדש לא ייווצר: 40-F לא נתמך).
 - Next: תמיכה ב-40-F לפי זיהוי נספחים (ר' GOTCHAS).
 
 ## 2026-11-08 — ניתוח מניה בודדת: מ-~6 שנ' ל-~1–3 שנ'

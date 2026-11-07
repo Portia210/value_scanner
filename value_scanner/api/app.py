@@ -22,7 +22,7 @@ SETTING_DAYS = "days_between_runs"
 DEFAULT_DAYS = 7
 # Bump together with frontend/src/api/version.ts whenever the API changes in a way the frontend
 # depends on; the frontend warns when it meets a server that reports another (or no) version.
-API_VERSION = 10
+API_VERSION = 11
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
@@ -227,13 +227,13 @@ def create_app(
         )
 
     @app.post("/api/profiles/{symbol}", status_code=202, dependencies=[Csrf])
-    def start_profile(symbol: str) -> dict[str, str]:
+    def start_profile(symbol: str, force: bool = False) -> dict[str, str]:
         symbol = adhoc_jobs.normalise(symbol)
         if symbol is None:
             raise HTTPException(422, "not a ticker")
         if not (settings.google_api_key and settings.my_email):
             raise HTTPException(503, "profiles are not configured (GOOGLE_API_KEY, MY_EMAIL)")
-        if profile_starter(settings, symbol) is False:
+        if profile_starter(settings, symbol, force) is False:
             raise HTTPException(409, "a profile for this stock is already being created")
         return {"symbol": symbol}
 

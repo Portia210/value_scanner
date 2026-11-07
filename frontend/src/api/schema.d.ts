@@ -997,7 +997,9 @@ export interface operations {
     };
     start_profile_api_profiles__symbol__post: {
         parameters: {
-            query?: never;
+            query?: {
+                force?: boolean;
+            };
             header?: never;
             path: {
                 symbol: string;

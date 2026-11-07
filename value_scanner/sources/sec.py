@@ -83,7 +83,9 @@ class SecClient:
         contact: str,
         client: httpx.Client | None = None,
         sleep: Callable[[float], None] = time.sleep,
+        today: Callable[[], date] = date.today,
     ):
+        self._today = today
         headers = {"User-Agent": f"value-scanner {contact}", "Accept-Encoding": "gzip, deflate"}
         self._client = client or httpx.Client(headers=headers, timeout=60, follow_redirects=True)
         self._sleep = sleep
@@ -119,7 +121,7 @@ class SecClient:
         cik = self.cik(symbol)
         data = self._get(SUBMISSIONS_URL.format(cik=cik)).json()
         recent = data["filings"]["recent"]
-        today = today or date.today()
+        today = today or self._today()
         for form, accession, filed, document in zip(
             recent["form"],
             recent["accessionNumber"],

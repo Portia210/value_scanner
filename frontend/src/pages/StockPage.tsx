@@ -1,5 +1,5 @@
 import { Alert, Anchor, Badge, Button, Card, Collapse, Divider, Grid, Group, Loader, RingProgress, SimpleGrid, Stack, Switch, Table, Tabs, Text, Title, UnstyledButton } from "@mantine/core";
-import { IconArrowRight, IconCalendarEvent, IconChevronDown, IconChevronUp, IconDoorExit } from "@tabler/icons-react";
+import { IconArrowRight, IconCalendarEvent, IconChevronDown, IconChevronUp, IconDoorExit, IconRefresh } from "@tabler/icons-react";
 import ReactECharts from "echarts-for-react";
 import { useComputedColorScheme } from "@mantine/core";
 import { useEffect, useState } from "react";
@@ -126,7 +126,7 @@ export function StockPage() {
 
       <Anchor component={Link} to={`/learn/${d.symbol}`} size="sm">הדוחות של {d.symbol}, שורה אחרי שורה עם הסבר</Anchor>
       {!d.profile && <ProfileButton symbol={d.symbol} />}
-      {d.profile && <ProfileCard profile={d.profile} sic={d.sic_description} />}
+      {d.profile && <ProfileCard symbol={d.symbol} profile={d.profile} sic={d.sic_description} />}
 
       <SimpleGrid cols={{ base: 2, md: 4 }}>
         {GURU_ORDER.map((g) => (
@@ -273,7 +273,8 @@ function oneLiner(text: string): string | null {
 }
 
 /** The company profile, foldable. Folded by default (it is long); the choice is remembered. */
-function ProfileCard({ profile, sic }: { profile: NonNullable<StockDetail["profile"]>; sic: string | null }) {
+function ProfileCard({ symbol, profile, sic }: { symbol: string; profile: NonNullable<StockDetail["profile"]>; sic: string | null }) {
+  const p = useProfileCreation(symbol);
   const [open, setOpen] = useState(readOpen);
   const toggle = () => {
     const next = !open;
@@ -281,6 +282,10 @@ function ProfileCard({ profile, sic }: { profile: NonNullable<StockDetail["profi
     try { localStorage.setItem(PROFILE_OPEN_KEY, next ? "1" : "0"); } catch { /* private mode */ }
   };
   const summary = oneLiner(profile.text);
+  const regenerate = () => {
+    if (window.confirm("ליצור את התיאור מחדש? זה קורא ל-Gemini (עולה כסף), לוקח כדקה, ויחליף את התיאור הנוכחי רק כשהחדש יסתיים.")) p.begin(true);
+  };
+  if (p.waiting && p.written) return <WritingCard text={p.written} replacing />;
   return (
     <Card>
       <UnstyledButton onClick={toggle} w="100%" aria-expanded={open} aria-label={open ? "הסתר את תיאור החברה" : "הצג את תיאור החברה"}>
@@ -304,6 +309,12 @@ function ProfileCard({ profile, sic }: { profile: NonNullable<StockDetail["profi
         <Prose text={profile.text} />
         {profile.source_url && <SourceLink href={profile.source_url} />}
       </Collapse>
+      <Group justify="space-between" mt="xs" wrap="nowrap" align="flex-start">
+        <Text size="xs" c="red">{p.failed ? PROFILE_MESSAGES[p.status] ?? "היצירה נכשלה." : ""}</Text>
+        <Button variant="subtle" size="xs" leftSection={<IconRefresh size={14} />} loading={p.waiting || p.starting} onClick={regenerate}>
+          {p.waiting ? "קורא את הדוח…" : "צור מחדש"}
+        </Button>
+      </Group>
     </Card>
   );
 }
@@ -314,8 +325,12 @@ const PROFILE_MESSAGES: Record<string, string> = {
   billing: "בעיית חיוב בחשבון של Gemini (HTTP 402).",
 };
 
-/** Create the business profile on request (SEC annual report -> Gemini, about two minutes). */
-function ProfileButton({ symbol }: { symbol: string }) {
+/**
+ * Creating (or re-creating) the profile: starts the server job, follows it while it runs (also after a
+ * reload) and exposes what Gemini has written so far. The stored profile is replaced only when the new
+ * one is complete, so a failure leaves the old one in place.
+ */
+function useProfileCreation(symbol: string) {
   const start = useStartProfile();
   const qc = useQueryClient();
   const [waiting, setWaiting] = useState(false);
@@ -329,10 +344,9 @@ function ProfileButton({ symbol }: { symbol: string }) {
     setWaiting(false);
     if (status === "ok") void qc.invalidateQueries({ queryKey: ["stock", symbol] });
   }, [waiting, status, symbol, qc]);
-  const written = job.data?.text ?? "";
 
-  const onClick = () =>
-    start.mutate(symbol, {
+  const begin = (force: boolean) =>
+    start.mutate({ symbol, force }, {
       onSuccess: () => { setWaiting(true); void job.refetch(); },
       onError: (e) => {
         const code = e instanceof ApiError ? e.status : 0;
@@ -345,30 +359,48 @@ function ProfileButton({ symbol }: { symbol: string }) {
       },
     });
 
-  const failed = !waiting && status !== "none" && status !== "running" && status !== "ok";
-  if (waiting && written) {
-    return (
-      <Card>
-        <Group justify="space-between" mb="xs">
-          <Title order={4}>על החברה</Title>
-          <Group gap={6}><Loader size="xs" /><Text size="xs" c="dimmed">נכתב עכשיו, יישמר בסיום</Text></Group>
+  return {
+    waiting,
+    written: job.data?.text ?? "",
+    failed: !waiting && status !== "none" && status !== "running" && status !== "ok",
+    status,
+    starting: start.isPending,
+    begin,
+  };
+}
+
+/** The profile while it is being written: shown as it grows, saved (and replacing any old one) at the end. */
+function WritingCard({ text, replacing }: { text: string; replacing: boolean }) {
+  return (
+    <Card>
+      <Group justify="space-between" mb="xs">
+        <Title order={4}>על החברה</Title>
+        <Group gap={6}>
+          <Loader size="xs" />
+          <Text size="xs" c="dimmed">{replacing ? "נכתב עכשיו, יחליף את התיאור הקודם בסיום" : "נכתב עכשיו, יישמר בסיום"}</Text>
         </Group>
-        <Prose text={written} />
-      </Card>
-    );
-  }
+      </Group>
+      <Prose text={text} />
+    </Card>
+  );
+}
+
+/** Create the business profile on request (SEC annual report -> Gemini, about a minute). */
+function ProfileButton({ symbol }: { symbol: string }) {
+  const p = useProfileCreation(symbol);
+  if (p.waiting && p.written) return <WritingCard text={p.written} replacing={false} />;
   return (
     <Card>
       <Group justify="space-between" wrap="nowrap">
         <div>
           <Title order={4}>על החברה</Title>
           <Text size="xs" c="dimmed">
-            עוד אין תיאור של החברה. אפשר ליצור אחד מהדוח השנתי שלה (סיכום AI, כשתי דקות).
+            עוד אין תיאור של החברה. אפשר ליצור אחד מהדוח השנתי שלה (סיכום AI, כדקה).
           </Text>
-          {failed && <Text size="sm" c="red" mt={4}>{PROFILE_MESSAGES[status] ?? "היצירה נכשלה."}</Text>}
+          {p.failed && <Text size="sm" c="red" mt={4}>{PROFILE_MESSAGES[p.status] ?? "היצירה נכשלה."}</Text>}
         </div>
-        <Button variant="light" loading={waiting || start.isPending} onClick={onClick}>
-          {waiting ? "קורא את הדוח…" : failed ? "נסה שוב" : "צור תיאור חברה"}
+        <Button variant="light" loading={p.waiting || p.starting} onClick={() => p.begin(false)}>
+          {p.waiting ? "קורא את הדוח…" : p.failed ? "נסה שוב" : "צור תיאור חברה"}
         </Button>
       </Group>
     </Card>

@@ -150,7 +150,7 @@ def api(tmp_path):
         return RunOutcome(None, "ok", "")
 
     app = create_app(
-        load_settings(env), adhoc_runner=fake_runner, profile_starter=lambda s, y: None
+        load_settings(env), adhoc_runner=fake_runner, profile_starter=lambda s, y, force=False: None
     )
     client = TestClient(app)
     csrf = client.post("/api/auth/login", json={"password": PASSWORD}).json()["csrf"]
@@ -228,7 +228,7 @@ def test_profile_job_reports_unsupported_and_conflicts_while_running(tmp_path):
 
     gate = threading.Event()
 
-    def slow_refresh(repo, settings, symbol, sec, generate=None):
+    def slow_refresh(repo, settings, symbol, sec, generate=None, force=False):
         gate.wait(5)
         return "unsupported"
 

@@ -65,7 +65,8 @@ export function useStartAnalysis() {
 
 export function useStartProfile() {
   return useMutation({
-    mutationFn: (symbol: string) => api<{ symbol: string }>(`/profiles/${encodeURIComponent(symbol)}`, { method: "POST" }),
+    mutationFn: ({ symbol, force = false }: { symbol: string; force?: boolean }) =>
+      api<{ symbol: string }>(`/profiles/${encodeURIComponent(symbol)}${force ? "?force=true" : ""}`, { method: "POST" }),
   });
 }
 
