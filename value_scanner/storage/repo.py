@@ -207,6 +207,11 @@ class Repository:
         "debt_equity",
         "current_ratio",
         "roe_5y",
+        "industry_pe",  # lesson 8 (Neff): the site's P/E of the stock's industry
+        "low_52",
+        "high_52",
+        "dividend_yield",  # percent
+        "industry_return_median",  # median of (EPS growth + dividend yield) / P/E in the industry
     )
 
     def save_snapshot(self, run_id: int, symbol: str, values: Mapping[str, Any]) -> None:
@@ -488,8 +493,8 @@ class Repository:
         for r in self.conn.execute(
             """SELECT symbol, guru,
                       SUM(status = 'PASS') AS passed,
-                      SUM(status <> 'NA') AS computed,
-                      COUNT(*) AS total
+                      SUM(status NOT IN ('NA', 'MANUAL')) AS computed,
+                      SUM(status <> 'MANUAL') AS total
                FROM results WHERE run_id = ? GROUP BY symbol, guru""",
             (run_id,),
         ):

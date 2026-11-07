@@ -53,6 +53,11 @@ EXTRA_FIELDS = (
     "lastEarningsDate",
     "nextEarningsDate",
     "lastReportDate",  # R5: period end of the latest financial report
+    # Lesson 8 (Neff): industry P/E, the 52-week range, dividend yield (percent)
+    "industryPe",
+    "low52",
+    "high52",
+    "dividendYield",
 )
 DATA_POINT_IDS = (*FILTERS, *EXTRA_FIELDS)
 

@@ -432,3 +432,62 @@ def test_currency_migration_is_additive_and_currency_is_saved_with_the_fetch(tmp
         "A", "balance_sheet", "x", "ok", [("Revenue", "TTM", 1.0)], currency="TWD"
     )
     assert repo.latest_statement_fetch("A", "balance_sheet")["currency"] == "TWD"
+
+
+def test_guru_migration_keeps_results_and_scores_and_accepts_the_new_gurus(tmp_path):
+    """Migration 0005 rebuilds `results` and `scores` (a CHECK has to change). Everything that
+    was there stays, nothing that references `runs` is lost, and the new values are accepted."""
+    path = tmp_path / "v4.db"
+    conn = db.connect(path)
+    conn.execute(
+        "CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)"
+    )
+    for version, statements in db._KNOWN_MIGRATIONS[:4]:
+        db._apply(conn, version, statements, verify_foreign_keys=version == 2)
+    conn.execute("INSERT INTO runs (kind, status, started_at) VALUES ('cli', 'ok', 'x')")
+    conn.execute("INSERT INTO companies (symbol, first_seen_at, last_seen_at) VALUES ('A','x','x')")
+    conn.execute("INSERT INTO run_log (run_id, ts, level, message) VALUES (1, 'x', 'info', 'm')")
+    conn.execute(
+        "INSERT INTO membership_events (run_id, symbol, direction, reason_type, created_at)"
+        " VALUES (1, 'A', 'exit', 'price', 'x')"
+    )
+    conn.execute(
+        "INSERT INTO screener_snapshots (run_id, symbol, captured_at, in_screen) "
+        "VALUES (1, 'A', 'x', 1)"
+    )
+    conn.execute(
+        "INSERT INTO results (run_id, symbol, guru, criterion_id, value, threshold, status, "
+        "strength, note) VALUES (1, 'A', 'graham', 'sales', 400, 350, 'PASS', 1.0, 'n')"
+    )
+    conn.execute(
+        "INSERT INTO scores (run_id, symbol, kind, score, coverage) "
+        "VALUES (1, 'A', 'fisher', .5, 1)"
+    )
+    conn.close()
+
+    conn = db.open_database(path)
+    assert db.schema_version(conn) >= 5
+    for table in ("runs", "companies", "run_log", "membership_events", "screener_snapshots"):
+        assert conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] == 1, table
+    old = conn.execute("SELECT * FROM results").fetchone()
+    assert tuple(old) == (1, "A", "graham", "sales", 400.0, 350.0, "PASS", 1.0, "n")
+    assert tuple(conn.execute("SELECT * FROM scores").fetchone()) == (1, "A", "fisher", 0.5, 1.0)
+    snap = conn.execute("SELECT industry_pe, low_52, high_52, dividend_yield, "
+                        "industry_return_median FROM screener_snapshots").fetchone()
+    assert tuple(snap) == (None,) * 5
+
+    repo = Repository(conn)
+    repo.save_results(1, "A", [
+        {"guru": "buffett", "criterion_id": "dcf_price", "status": "MANUAL"},
+        {"guru": "neff", "criterion_id": "momentum", "status": "PASS", "strength": 1.0},
+    ])
+    repo.save_score(1, "A", "buffett", 0.8, 1.0)
+    repo.save_score(1, "A", "neff", None, 0.2)
+    assert conn.execute("SELECT COUNT(*) FROM results").fetchone()[0] == 3
+    with pytest.raises(sqlite3.IntegrityError):
+        repo.save_results(1, "A", [{"guru": "munger", "criterion_id": "x", "status": "PASS"}])
+    with pytest.raises(sqlite3.IntegrityError):
+        repo.save_results(1, "A", [{"guru": "neff", "criterion_id": "x", "status": "MAYBE"}])
+    # the cascade from `runs` still works on the rebuilt tables
+    conn.execute("DELETE FROM runs WHERE id = 1")
+    assert conn.execute("SELECT COUNT(*) FROM results").fetchone()[0] == 0

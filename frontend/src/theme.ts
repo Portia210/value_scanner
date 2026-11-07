@@ -26,8 +26,8 @@ export const STATUS_COLORS = {
   na: "gray",
 } as const;
 
-export function strengthColor(strength: number, status: "PASS" | "FAIL" | "NA"): string {
-  if (status === "NA") return STATUS_COLORS.na;
+export function strengthColor(strength: number, status: "PASS" | "FAIL" | "NA" | "MANUAL"): string {
+  if (status === "NA" || status === "MANUAL") return STATUS_COLORS.na;
   if (strength >= 1) return STATUS_COLORS.strong;
   if (strength >= 0.75) return STATUS_COLORS.near;
   if (strength > 0) return STATUS_COLORS.weak;

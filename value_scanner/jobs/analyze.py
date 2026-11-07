@@ -9,8 +9,10 @@ from dataclasses import dataclass, replace
 
 from value_scanner.analysis.classify import Classification, classify
 from value_scanner.analysis.criteria import Result, Status
+from value_scanner.analysis.gurus.buffett import evaluate_buffett
 from value_scanner.analysis.gurus.fisher import evaluate_fisher
 from value_scanner.analysis.gurus.graham import evaluate_graham
+from value_scanner.analysis.gurus.neff import evaluate_neff
 from value_scanner.analysis.gurus.piotroski import evaluate_piotroski
 from value_scanner.analysis.gurus.screen import evaluate_screen
 from value_scanner.analysis.scoring import (
@@ -31,7 +33,9 @@ NOT_FOR_FINANCIALS = {
     ("fisher", "ps"),
     ("fisher", "rd"),
     ("piotroski", "current_ratio"),
+    ("buffett", "earnings_vs_liabilities"),  # a bank's liabilities are its deposits
 }
+GURUS = ("screen", "graham", "fisher", "piotroski", "buffett", "neff")
 
 
 @dataclass(frozen=True)
@@ -69,6 +73,19 @@ def analyse_stock(
             stmts, ps, snap["market_cap"], cyclical=cls.cyclical, rd_applies=cls.rd_applies
         ),
         *evaluate_piotroski(stmts, pb, sector_pb_median, cls.pb_applies),
+        *evaluate_buffett(stmts, roe_5y=snap["roe_5y"]),
+        *evaluate_neff(
+            stmts,
+            pe=pe,
+            industry_pe=snap["industry_pe"],
+            price=snap["price"],
+            low_52=snap["low_52"],
+            high_52=snap["high_52"],
+            eps_growth_5y=snap["eps_growth_5y"],
+            revenue_growth_5y=snap["revenue_growth_5y"],
+            dividend_yield=snap["dividend_yield"],
+            industry_return_median=snap["industry_return_median"],
+        ),
     ]
     if cls.financial:
         results = [
@@ -89,7 +106,7 @@ def analyse_and_store(
     repo.save_classification(run_id, symbol, cls.labels or {"regular": "no special class"})
     repo.save_results(run_id, symbol, [r.as_row() for r in results])
     scores = {}
-    for guru in ("screen", "graham", "fisher", "piotroski"):
+    for guru in GURUS:
         scores[guru] = guru_score(r for r in results if r.guru == guru)
         repo.save_score(run_id, symbol, guru, scores[guru].score, scores[guru].coverage)
     q = quality(scores)

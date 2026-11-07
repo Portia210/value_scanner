@@ -19,6 +19,7 @@ class Status(StrEnum):
     PASS = "PASS"
     FAIL = "FAIL"
     NA = "NA"
+    MANUAL = "MANUAL"  # a human check: shown in the table, never counted in a score or coverage
 
 
 _COMPARE: dict[str, Callable[[float, float], bool]] = {
@@ -32,13 +33,14 @@ _COMPARE: dict[str, Callable[[float, float], bool]] = {
 @dataclass(frozen=True)
 class Criterion:
     id: str
-    guru: str  # screen | graham | fisher | piotroski
+    guru: str  # screen | graham | fisher | piotroski | buffett | neff
     lesson: int
     title: str
     formula: str  # human-readable, becomes docs/criteria/*.md (C10)
     direction: str  # one of > >= < <=
     threshold: float
     note: str = ""
+    manual: bool = False  # no formula: a person decides (Buffett's qualitative parameters)
 
 
 @dataclass(frozen=True)
@@ -62,6 +64,11 @@ class Result:
             "strength": self.strength,
             "note": self.note,
         }
+
+
+def manual_result(criterion: Criterion) -> Result:
+    """A criterion nobody can compute from the statements: it stays in the table for a person."""
+    return Result(criterion.guru, criterion.id, Status.MANUAL, None, None, None, "human check")
 
 
 def is_missing(value: float | None) -> bool:

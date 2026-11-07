@@ -3,9 +3,10 @@ import type { Criterion } from "../api/client";
 import { strengthColor } from "../theme";
 import { num } from "../format";
 
-const STATUS_TEXT: Record<string, string> = { PASS: "עובר", FAIL: "נכשל", NA: "לא חושב" };
+const STATUS_TEXT: Record<string, string> = { PASS: "עובר", FAIL: "נכשל", NA: "לא חושב", MANUAL: "בדיקה אנושית" };
 
 function verdict(c: Criterion): string {
+  if (c.status === "MANUAL") return "בדיקה אנושית";
   if (c.status === "NA") return c.result_note ?? "אין נתון";
   if (c.status === "PASS") return (c.strength ?? 0) >= 1 ? "עובר בביטחון" : "עובר, קרוב לסף";
   return (c.strength ?? 0) > 0 ? "נכשל, קרוב לסף" : "נכשל";
@@ -25,7 +26,7 @@ function Line({ label, children, words = false }: { label: string; children: Rea
 
 /** What a hover on the criterion's title shows: the formula, the rule, and this stock's numbers. */
 function Explanation({ c }: { c: Criterion }) {
-  const need = c.comparative ? "גבוה מהשנה הקודמת" : `${DIRECTION_TEXT[c.direction] ?? c.direction} ${num(c.threshold)}`;
+  const need = c.status === "MANUAL" ? "בדיקה אנושית" : c.comparative ? "גבוה מהשנה הקודמת" : `${DIRECTION_TEXT[c.direction] ?? c.direction} ${num(c.threshold)}`;
   return (
     <Stack gap={8}>
       <div>
@@ -62,7 +63,7 @@ function Explanation({ c }: { c: Criterion }) {
 
 /** One criterion: title, value, and (for threshold criteria) a bar showing value against the threshold. */
 export function CriterionGauge({ c, showMeaning = true }: { c: Criterion; showMeaning?: boolean }) {
-  const status = c.status as "PASS" | "FAIL" | "NA";
+  const status = c.status as "PASS" | "FAIL" | "NA" | "MANUAL";
   const color = strengthColor(c.strength ?? 0, status);
   const hasScale = !c.comparative && c.value !== null && c.threshold !== null && (c.direction === ">" || c.direction === "<" || c.direction === ">=" || c.direction === "<=");
   const higherIsBetter = c.direction.startsWith(">");

@@ -9,7 +9,8 @@ from collections.abc import Iterable
 from value_scanner.storage.repo import Repository
 
 _FY = re.compile(r"^FY (\d{4})$")
-STATEMENTS = ("income", "balance_sheet", "cash_flow")
+_QUARTER = re.compile(r"^Q([1-4]) (\d{4})$")
+STATEMENTS = ("income", "balance_sheet", "cash_flow", "income_quarterly")
 
 
 def _clean(value: float | None) -> float | None:
@@ -69,6 +70,20 @@ class Statements:
     def current(self, item: str) -> float | None:
         value = self.ttm(item)
         return value if value is not None else self.fy(item, 0)
+
+    def quarter(self, item: str, year: int, q: int) -> float | None:
+        """`item` in fiscal quarter `q` (1-4) of fiscal year `year` (None if missing)."""
+        return self._data.get(item, {}).get(f"Q{q} {year}")
+
+    def latest_quarters(self, item: str, count: int = 4) -> list[tuple[int, int]]:
+        """The newest `count` fiscal quarters (year, q) the statements have for `item`, newest first
+        (fewer if there are fewer). Only quarters with a value count."""
+        found = {
+            (int(m.group(2)), int(m.group(1)))
+            for p, v in self._data.get(item, {}).items()
+            if v is not None and (m := _QUARTER.match(p))
+        }
+        return sorted(found, reverse=True)[:count]
 
     def series(self, item: str, years: int = 5) -> list[float | None]:
         """Last `years` fiscal years, newest first; None where missing."""

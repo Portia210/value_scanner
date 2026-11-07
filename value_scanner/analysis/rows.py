@@ -20,6 +20,7 @@ TOTAL_LIABILITIES = "Total Liabilities"
 TOTAL_DEBT = "Total Debt"
 LONG_TERM_DEBT = "Long-Term Debt"
 EQUITY = "Shareholders' Equity"
+RETAINED_EARNINGS = "Retained Earnings"
 
 OPERATING_CASH_FLOW = "Operating Cash Flow"
 CAPEX = "Capital Expenditures"

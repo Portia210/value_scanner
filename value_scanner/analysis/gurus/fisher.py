@@ -108,7 +108,7 @@ def _avg_net_margin_pct(s: Statements) -> float | None:
     return sum(margins) / len(margins) if len(margins) >= 3 else None
 
 
-def _fcf_per_share(s: Statements) -> float | None:
+def fcf_per_share(s: Statements) -> float | None:
     value = s.current("Free Cash Flow Per Share")
     if not is_missing(value):
         return value
@@ -166,6 +166,6 @@ def evaluate_fisher(
         evaluate(c["eps_growth"], _yoy_growth_avg_pct(s.series(rows.EPS_DILUTED, 5))),
         evaluate(c["net_margin"], _avg_net_margin_pct(s)),
         de,
-        evaluate(c["fcf"], _fcf_per_share(s)),
+        evaluate(c["fcf"], fcf_per_share(s)),
         _rd_band(s, market_cap, rd_applies),
     ]

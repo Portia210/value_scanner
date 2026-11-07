@@ -257,3 +257,65 @@ def test_refresh_universe_alerts_on_block_and_structure_change(repo):
     kinds = [a["kind"] for a in repo.conn.execute("SELECT kind FROM alerts ORDER BY id")]
     assert kinds == ["blocked", "structure_changed"]
     assert [m["level"] for m in repo.run_log(run)] == ["error", "error"]
+
+
+# ── lesson 8 (Neff): extra fields and the industry median ───────────────────────────────────
+def neff_stock(industry, pe, growth, dividend):
+    return {"industry": industry, "peRatio": pe, "epsGrowth5Y": growth, "dividendYield": dividend}
+
+
+def universe_of(stocks):
+    initial, points = screener_json(stocks)
+    return parse_universe(initial, points)
+
+
+def test_industry_median_needs_five_stocks_with_the_figures():
+    from value_scanner.jobs.universe import MIN_INDUSTRY_STOCKS, industry_return_medians
+
+    assert MIN_INDUSTRY_STOCKS == 5
+    four = {f"S{i}": neff_stock("Banks", 10.0, 5.0, 1.0) for i in range(4)}
+    assert industry_return_medians(universe_of(four)) == {}
+    five = {**four, "S4": neff_stock("Banks", 10.0, 5.0, 1.0)}
+    assert industry_return_medians(universe_of(five)) == {"Banks": 0.6}  # (5 + 1) / 10
+
+
+def test_industry_median_skips_unusable_stocks_and_is_a_median_not_a_mean():
+    from value_scanner.jobs.universe import industry_return_medians
+
+    stocks = {
+        "A": neff_stock("Banks", 10.0, 4.0, 0.0),  # 0.4
+        "B": neff_stock("Banks", 10.0, 5.0, 0.0),  # 0.5
+        "C": neff_stock("Banks", 10.0, 6.0, 0.0),  # 0.6
+        "D": neff_stock("Banks", 10.0, 7.0, 0.0),  # 0.7
+        "E": neff_stock("Banks", 1.0, 500.0, 0.0),  # 500: an outlier that a mean would feel
+        "LOSS": neff_stock("Banks", -5.0, 9.0, 1.0),  # negative P/E: left out
+        "NODIV": neff_stock("Banks", 10.0, 9.0, None),  # no dividend figure: left out
+        "NOGROWTH": neff_stock("Banks", 10.0, None, 1.0),  # no growth figure: left out
+        "OTHER": neff_stock("Steel", 10.0, 5.0, 1.0),  # another industry, too few
+    }
+    assert industry_return_medians(universe_of(stocks)) == {"Banks": 0.6}
+
+
+def test_snapshot_stores_the_lesson_8_fields_and_the_industry_median(repo):
+    stocks = {f"B{i}": neff_stock("Banks", 10.0, 5.0 + i, 1.0) for i in range(5)}
+    stocks["AAA"] = {
+        **neff_stock("Banks", 8.0, 10.0, 2.0),
+        "industryPe": 15.0,
+        "low52": 100.0,
+        "high52": 200.0,
+    }
+    run, _ = run_with(repo, stocks)
+    row = repo.snapshots_for_run(run)["AAA"]
+    assert (row["industry_pe"], row["low_52"], row["high_52"], row["dividend_yield"]) == (
+        15.0,
+        100.0,
+        200.0,
+        2.0,
+    )
+    assert row["industry_return_median"] == pytest.approx(0.85)  # median of 0.6 .. 1.0 and 1.5
+    assert repo.get_company("AAA")["industry"] == "Banks"
+
+
+def test_the_new_data_points_are_requested():
+    for name in ("industryPe", "low52", "high52", "dividendYield"):
+        assert name in sc.DATA_POINT_IDS

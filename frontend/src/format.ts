@@ -8,9 +8,11 @@ export const GURU_LABELS: Record<string, string> = {
   graham: "גראהם",
   fisher: "פישר",
   piotroski: "פיוטרוסקי",
+  buffett: "באפט",
+  neff: "נף",
 };
 
-export const GURU_ORDER = ["screen", "graham", "fisher", "piotroski"] as const;
+export const GURU_ORDER = ["screen", "graham", "fisher", "piotroski", "buffett", "neff"] as const;
 
 export const TYPE_LABELS: Record<string, string> = {
   tech: "טכנולוגיה",

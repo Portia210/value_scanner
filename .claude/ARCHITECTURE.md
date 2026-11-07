@@ -20,11 +20,11 @@ only until C9 (old-vs-new comparison) is closed; v2 does not import it.
 3. `jobs/universe.py` — snapshots of every stock in the screen or "almost" (≤2 failed filters) →
    `screener_snapshots`; entries/exits vs the previous run → `membership_events` (reason: price /
    report / new_symbol / delisted / data).
-4. `jobs/refresh.py` + `sources/stockanalysis.py` — download income / balance-sheet / cash-flow
+4. `jobs/refresh.py` + `sources/stockanalysis.py` — download income / balance-sheet / cash-flow / quarterly-income
    pages only when the screener's `lastReportDate` is newer than the one stored with our last download (R5; D18 earnings-date rules when either date is unknown; 120-day backstop), 4 parallel workers with 0.5–1 s between a worker's requests (R6; DB written from one thread only)
    dozen requests; results in long format (`statement_values`).
 5. `jobs/analyze.py: analyse_run` — classify (`analysis/classify.py`), evaluate the criteria
-   (`analysis/gurus/{screen,graham,fisher,piotroski}.py`), score (`analysis/scoring.py`) → `results`,
+   (`analysis/gurus/{screen,graham,fisher,piotroski,buffett,neff}.py`; a `MANUAL` result is a human check, outside every score), score (`analysis/scoring.py`) → `results`,
    `scores`, `score_components`, `classifications`.
 6. `jobs/alerts.py` — alerts are stored in `alerts` and emailed to `MY_EMAIL` (SMTP_*); a delivery
    failure never fails a run.

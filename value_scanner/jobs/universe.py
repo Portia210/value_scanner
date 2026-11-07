@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import statistics
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -39,7 +40,13 @@ SNAPSHOT_FIELDS = {
     "debtEquity": "debt_equity",
     "currentRatio": "current_ratio",
     "roe5y": "roe_5y",
+    "industryPe": "industry_pe",
+    "low52": "low_52",
+    "high52": "high_52",
+    "dividendYield": "dividend_yield",
 }
+# Neff's "total return" needs this many stocks of the industry before its median means anything.
+MIN_INDUSTRY_STOCKS = 5
 PRICE_DRIVEN = {"marketCap", "peRatio"}  # filters that move with the price alone
 UNIVERSE_COUNT_KEY = "universe_count"
 
@@ -52,6 +59,24 @@ class UniverseResult:
     dropped_share_classes: list[str]
     entered: list[str]
     exited: list[str]
+
+
+def industry_return_medians(universe: Universe) -> dict[str, float]:
+    """Industry -> median of Neff's total return (EPS growth 5Y + dividend yield) / P/E, over
+    every stock of the screener (not only the ~1,000 we store). A stock counts only with a positive
+    P/E and both figures present; an industry needs `MIN_INDUSTRY_STOCKS` of them. The lesson does
+    not state this: docs/formula-decisions.md."""
+    by_industry: dict[str, list[float]] = {}
+    for stock in universe.stocks.values():
+        industry, pe = stock.get("industry"), stock.get("peRatio")
+        growth, dividend = stock.get("epsGrowth5Y"), stock.get("dividendYield")
+        if industry and pe is not None and pe > 0 and growth is not None and dividend is not None:
+            by_industry.setdefault(industry, []).append((growth + dividend) / pe)
+    return {
+        industry: statistics.median(values)
+        for industry, values in by_industry.items()
+        if len(values) >= MIN_INDUSTRY_STOCKS
+    }
 
 
 def _passes(filter_name: str, value: float | None) -> bool:
@@ -92,6 +117,7 @@ def record_universe(repo: Repository, run_id: int, universe: Universe) -> Univer
         s for s in universe.stocks.values() if len(outcomes[s.symbol].failed) <= ALMOST_MAX_FAILED
     ]
     kept, dropped = dedupe_share_classes(candidates)
+    medians = industry_return_medians(universe)
 
     row = repo.conn.execute(
         "SELECT MAX(run_id) FROM screener_snapshots WHERE run_id < ? "
@@ -120,7 +146,12 @@ def record_universe(repo: Repository, run_id: int, universe: Universe) -> Univer
             repo.save_snapshot(
                 run_id,
                 stock.symbol,
-                {**fields, "in_screen": int(outcome.passed), "filters_failed": len(outcome.failed)},
+                {
+                    **fields,
+                    "industry_return_median": medians.get(stock.get("industry") or ""),
+                    "in_screen": int(outcome.passed),
+                    "filters_failed": len(outcome.failed),
+                },
             )
             (in_screen if outcome.passed else almost).append(stock.symbol)
 

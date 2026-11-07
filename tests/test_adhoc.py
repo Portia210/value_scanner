@@ -63,7 +63,7 @@ def test_a_stock_outside_the_screen_is_analysed_like_any_other(repo):
     assert run["kind"] == "adhoc" and run["status"] == "ok"
     assert repo.latest_statement_fetch("CCC", "income") is not None
     assert repo.latest_statement_fetch("AAA", "income") is None  # only the asked ticker
-    assert len(repo.results_for(out.run_id, "CCC")) == 28
+    assert len(repo.results_for(out.run_id, "CCC")) == 45
     assert {r["kind"] for r in repo.scores_for(out.run_id, "CCC")} >= {"quality", "opportunity"}
     snap = repo.snapshot_for(out.run_id, "CCC")
     assert snap["in_screen"] == 0 and snap["filters_failed"] == 1
@@ -265,18 +265,19 @@ def test_reanalysis_with_unchanged_reports_downloads_nothing_and_only_updates_th
         return httpx.Response(200, text=statement_html())
 
     first = analyse(repo, "CCC", {"CCC": {"price": 50.0}}, fetcher=fetcher(handler))
-    assert first.status == "ok" and len(requests) == 3  # income, balance sheet, cash flow
+    # income, balance sheet, cash flow, quarterly income
+    assert first.status == "ok" and len(requests) == 4
 
     second = analyse(
         repo, "CCC", {"CCC": {"price": 61.5, "pbRatio": 4.0}}, fetcher=fetcher(handler)
     )
     assert second.status == "ok"
-    assert len(requests) == 3  # the reports are fresh: not one more statement request
+    assert len(requests) == 4  # the reports are fresh: not one more statement request
     assert repo.snapshot_for(first.run_id, "CCC")["price"] == 50.0
     new = repo.snapshot_for(second.run_id, "CCC")
     assert new["price"] == 61.5 and new["pb_ratio"] == 4.0  # price and multiples are current
     # and the criteria were re-evaluated against the new multiples
-    assert len(repo.results_for(second.run_id, "CCC")) == 28
+    assert len(repo.results_for(second.run_id, "CCC")) == 45
 
 
 def test_a_new_report_date_since_the_last_download_is_downloaded_again(repo):

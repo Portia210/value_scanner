@@ -351,6 +351,11 @@ export interface components {
             formula: string;
             /** Id */
             id: string;
+            /**
+             * Manual
+             * @default false
+             */
+            manual: boolean;
             /** Note */
             note: string;
             /** Threshold */

@@ -32,7 +32,7 @@ export function CriteriaPage() {
                         <Table.Td>{i + 1}</Table.Td>
                         <Table.Td dir="ltr" ta="right"><Text size="sm">{c.title}</Text><Text size="xs" c="dimmed" ff="monospace">{c.id}</Text></Table.Td>
                         <Table.Td dir="ltr" ta="right"><Text size="sm">{c.formula}</Text></Table.Td>
-                        <Table.Td><Text size="sm" ff="monospace" dir="ltr" ta="right" style={{ whiteSpace: "nowrap" }}>{c.direction} {num(c.threshold)}</Text></Table.Td>
+                        <Table.Td><Text size="sm" ff="monospace" dir="ltr" ta="right" style={{ whiteSpace: "nowrap" }}>{c.manual ? "בדיקה אנושית" : `${c.direction} ${num(c.threshold)}`}</Text></Table.Td>
                         <Table.Td dir="ltr" ta="right"><Text size="xs" c="dimmed">{c.note || "—"}</Text></Table.Td>
                       </Table.Tr>
                     ))}

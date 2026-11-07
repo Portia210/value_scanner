@@ -115,7 +115,7 @@ def roe_5y_avg_pct(s: Statements) -> float | None:
     return sum(values) / len(values) if len(values) >= MIN_ROE_YEARS else None
 
 
-def _prefer_screener(
+def prefer_screener(
     criterion: Criterion, screener: float | None, computed: float | None
 ) -> Result:
     """The screener's own 5-year figure (its window reaches years the free statement pages hide)
@@ -155,11 +155,11 @@ def evaluate_screen(
     return [
         evaluate(c["market_cap"], market_cap),
         evaluate(c["pe"], pe),
-        _prefer_screener(
+        prefer_screener(
             c["revenue_growth_5y"], revenue_growth_5y, cagr_pct(s.series(rows.REVENUE, 5))
         ),
         evaluate(c["profit_margin"], None if margin is None else margin * 100),
-        _prefer_screener(
+        prefer_screener(
             c["eps_growth_5y"], eps_growth_5y, cagr_pct(s.series(rows.EPS_DILUTED, 5))
         ),
         de_result,
@@ -167,5 +167,5 @@ def evaluate_screen(
             c["current_ratio"],
             _ratio(s.current(rows.TOTAL_CURRENT_ASSETS), s.current(rows.TOTAL_CURRENT_LIABILITIES)),
         ),
-        _prefer_screener(c["roe_5y"], roe_5y, roe_5y_avg_pct(s)),
+        prefer_screener(c["roe_5y"], roe_5y, roe_5y_avg_pct(s)),
     ]

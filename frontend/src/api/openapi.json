@@ -188,6 +188,11 @@
             "title": "Id",
             "type": "string"
           },
+          "manual": {
+            "default": false,
+            "title": "Manual",
+            "type": "boolean"
+          },
           "note": {
             "title": "Note",
             "type": "string"

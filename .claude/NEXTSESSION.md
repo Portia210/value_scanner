@@ -12,6 +12,13 @@
     - Traps / decisions: <what the next session must know>
     - Next: <what's owed, open questions>
 
+## 2026-11-08 — שיעורים 7 ו-8: באפט ונף
+- Changed: `gurus/buffett.py` (6 מבחנים כמותיים + 4 שורות `MANUAL` "בדיקה אנושית": 3 איכותיות ו-DCF), `gurus/neff.py` (7 מבחנים). `Status.MANUAL` לא נספר בציון, בכיסוי ובספירות (`guru_score`, `result_counts`). **מיגרציה 0005**: 5 עמודות ל-`screener_snapshots` (`industry_pe`, `low_52`, `high_52`, `dividend_yield`, `industry_return_median`) + בנייה מחדש של `results` ו-`scores` (עלי-טבלאות; לא מפעיל cascade). `income_quarterly` ב-`DEFAULT_STATEMENTS` (בקשה רביעית למניה). חציון תשואה כוללת לענף מחושב ב-`jobs/universe.py` על כל ~5,600 מניות הסורק. ציון איכות = ממוצע 6 גורואים. API: `CriterionDoc.manual`, `API_VERSION` 12; frontend: תוויות, MANUAL.
+- Verified: gate (ruff, 462 טסטים כולל גבולות באפט/נף, מיגרציה על DB עם נתונים) + `pnpm build`; חי על עותק DB: מיגרציה 0005 על 12 ריצות, ניתוח AAPL/KO/CRUS (באפט ונף מלאים, מומנטום מ-20 רבעונים אמיתיים); דפדפן headless: דשבורד, דף מניה (טאבים באפט/נף, שורות "בדיקה אנושית"), "איך זה מחושב", מובייל 390px בלי גלילה אופקית.
+- NOT verified: **נף בהיקף** (ב-snapshots הישנים אין שדות/רבעונים: חציון תשואה כוללת, מועמדות עם נף); מיגרציה 0005 על ה-DB בשרת (תרוץ בפריסה; נבדקה על עותק של ה-DB המקומי); הורדת הרבעונים לכל המניות (~108 בקשות בריצה הראשונה); הגדרת `industryPe` של האתר.
+- Traps / decisions: **כל הפרשנויות פתוחות** — `docs/formula-decisions.md` (B1–B8, N1–N7) ו-`docs/teacher-questions.md` (32 שאלות). B3 ו-B4 נכתבו כפתוחות לבקשת המפתח. מכפיל נף = טווח 0.4–0.6 (הוחלט). **להפעיל מחדש `serve`** (מיגרציה + API 12). עם באפט בלבד מועמדות 11→8 (CTSH, DHT, DINO, FSLR יצאו; NVDA נכנסה) על ריצה 12.
+- Next: תשובות המורה; ריצה מלאה ולבדוק מועמדות עם נף; לאמת את `industryPe`.
+
 ## 2026-11-08 — כפתור "צור מחדש" לפרופיל החברה
 - Changed: בכרטיס "על החברה" כפתור "צור מחדש" (עם אישור, כי זה עולה כסף ב-Gemini). `POST /api/profiles/{symbol}?force=true`, `refresh_profile(force=True)`: מדלג על בדיקת "עדכני", הטקסט החדש מוזרם לדף ("יחליף את התיאור הקודם בסיום") ושורת ה-DB מוחלפת (`ON CONFLICT … DO UPDATE`) רק כשהחדש הסתיים; כשל משאיר את הישן. `API_VERSION` 11 (שרת ישן יציג אזהרה במקום להתעלם מ-force). `SecClient` מקבל `today` לבדיקות.
 - Verified: 401 טסטים (כולל: force מחליף שורה ולא מוסיף; כשל מוכרח משאיר את הישן); חי על עותק DB (CRUS): אישור, הזרמה, שורה אחת עם `created_at` חדש.

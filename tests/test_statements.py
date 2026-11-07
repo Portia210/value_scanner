@@ -571,3 +571,25 @@ def test_download_stores_the_currency_the_page_states(repo):
     assert repo.latest_statement_fetch("AAA", "income")["currency"] == "TWD"
     run_download(repo, OK, symbols=("BBB",))  # a page without the line: currency unknown
     assert repo.latest_statement_fetch("BBB", "income")["currency"] is None
+
+
+def test_the_quarterly_income_statement_is_downloaded_from_its_own_page():
+    from value_scanner.sources.stockanalysis import DEFAULT_STATEMENTS
+
+    assert "income_quarterly" in DEFAULT_STATEMENTS
+    url = statement_url("AAPL", "income_quarterly")
+    assert url == "https://stockanalysis.com/stocks/aapl/financials/income-statement/?p=quarterly"
+
+
+def test_quarterly_columns_are_parsed_with_their_fiscal_labels():
+    html = statement_html(
+        rows=[["EPS (Diluted)", "2.10", "2.02", "1.84"]],
+        periods=("Quarter Ended", "Q4 2026", "Q3 2026", "Q4 2025"),
+    )
+    rows, latest = parse_statement_table(html)
+    assert {(i, p): v for i, p, v in rows} == {
+        ("EPS (Diluted)", "Q4 2026"): 2.10,
+        ("EPS (Diluted)", "Q3 2026"): 2.02,
+        ("EPS (Diluted)", "Q4 2025"): 1.84,
+    }
+    assert latest == "Q4 2026"

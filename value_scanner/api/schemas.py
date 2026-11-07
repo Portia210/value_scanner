@@ -181,6 +181,7 @@ class CriterionDoc(BaseModel):
     direction: str
     threshold: float
     note: str
+    manual: bool = False  # no formula: a person decides ("בדיקה אנושית")
 
 
 class CriteriaOut(BaseModel):

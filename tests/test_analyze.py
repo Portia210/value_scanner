@@ -65,10 +65,26 @@ def test_full_analysis_is_stored(repo):
     summary = analyse_run(repo, run)
     assert summary.analysed == 1
     results = repo.results_for(run, "AAA")
-    assert len(results) == 8 + 6 + 6 + 8
-    assert {r["guru"] for r in results} == {"screen", "graham", "fisher", "piotroski"}
+    assert len(results) == 8 + 6 + 6 + 8 + 10 + 7
+    assert {r["guru"] for r in results} == {
+        "screen",
+        "graham",
+        "fisher",
+        "piotroski",
+        "buffett",
+        "neff",
+    }
     kinds = {r["kind"]: r for r in repo.conn.execute("SELECT * FROM scores WHERE symbol='AAA'")}
-    assert set(kinds) == {"screen", "graham", "fisher", "piotroski", "quality", "opportunity"}
+    assert set(kinds) == {
+        "screen",
+        "graham",
+        "fisher",
+        "piotroski",
+        "buffett",
+        "neff",
+        "quality",
+        "opportunity",
+    }
     assert kinds["opportunity"]["score"] is not None
     comps = repo.conn.execute("SELECT COUNT(*) FROM score_components").fetchone()[0]
     assert comps == 4
@@ -126,3 +142,49 @@ def test_candidate_needs_quality_and_opportunity(repo):
         for r in repo.conn.execute("SELECT symbol, score FROM scores WHERE kind='opportunity'")
     }
     assert opp["CHEAP"] > 0.2 > opp["DEAR"]
+
+
+def test_buffett_and_neff_are_stored_and_human_checks_stay_out_of_the_counts(repo):
+    run = run_with(repo, [seed(repo, "AAA")])
+    analyse_run(repo, run)
+    by_guru = {}
+    for r in repo.results_for(run, "AAA"):
+        by_guru.setdefault(r["guru"], []).append(r)
+    assert len(by_guru["buffett"]) == 10 and len(by_guru["neff"]) == 7
+    manual = [r["criterion_id"] for r in by_guru["buffett"] if r["status"] == "MANUAL"]
+    assert manual == ["consumer_monopoly", "dcf_price", "inflation_pricing", "simple_product"]
+    passed, computed, total = repo.result_counts(run)["AAA"]["buffett"]
+    assert total == 6 and computed <= total  # the 4 human checks are not counted
+    assert repo.result_counts(run)["AAA"]["neff"][2] == 7
+
+
+def test_a_financial_company_skips_the_liabilities_test(repo):
+    run = run_with(repo, [seed(repo, "BANK", sector="Financials", industry="Banks - Regional")])
+    analyse_run(repo, run)
+    row = {r["criterion_id"]: r for r in repo.results_for(run, "BANK") if r["guru"] == "buffett"}
+    assert row["earnings_vs_liabilities"]["status"] == "NA"
+    assert row["earnings_vs_liabilities"]["note"] == "not applicable to financial companies"
+    assert row["roa"]["status"] != "NA"  # the other tests still apply
+
+
+def test_neff_reads_the_snapshot_figures(repo):
+    snap = dict(
+        industry_pe=15.0,
+        low_52=100.0,
+        high_52=200.0,
+        dividend_yield=2.0,
+        industry_return_median=0.5,
+        eps_growth_5y=10.0,
+        revenue_growth_5y=9.0,
+        price=110.0,
+        pe_ratio=8.0,
+    )
+    run = run_with(repo, [seed(repo, "AAA", **snap)])
+    analyse_run(repo, run)
+    row = {r["criterion_id"]: r for r in repo.results_for(run, "AAA") if r["guru"] == "neff"}
+    assert row["pe_vs_industry"]["status"] == "PASS"
+    assert row["price_in_range"]["status"] == "PASS"
+    assert row["eps_growth"]["status"] == "PASS"
+    assert (row["total_return"]["value"], row["total_return"]["threshold"]) == (1.5, 1.0)
+    assert row["revenue_vs_eps"]["status"] == "PASS"
+    assert row["momentum"]["status"] == "NA"  # the test data has no quarterly statement

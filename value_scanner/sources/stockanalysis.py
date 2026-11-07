@@ -28,6 +28,7 @@ HEADERS = {
 # statement key (statement_fetches.statement) -> path under /stocks/<symbol>/ (P14).
 STATEMENT_PATHS = {
     "income": "financials/income-statement/",
+    "income_quarterly": "financials/income-statement/?p=quarterly",
     "metrics": "financials/metrics/",
     "balance_sheet": "financials/balance-sheet/",
     "cash_flow": "financials/cash-flow-statement/",
@@ -35,7 +36,7 @@ STATEMENT_PATHS = {
 }
 # What a scan downloads. `ratios` (stale, 4 rows) and `metrics` (company-specific segment revenue)
 # are left out; see GOTCHAS.
-DEFAULT_STATEMENTS = ("income", "balance_sheet", "cash_flow")
+DEFAULT_STATEMENTS = ("income", "balance_sheet", "cash_flow", "income_quarterly")
 
 Row = tuple[str, str, float | None]  # (item, period, value)
 

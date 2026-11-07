@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from value_scanner.analysis.criteria import Criterion
-from value_scanner.analysis.gurus import fisher, graham, piotroski, screen
+from value_scanner.analysis.gurus import buffett, fisher, graham, neff, piotroski, screen
 from value_scanner.analysis.scoring import (
     CANDIDATE_OPPORTUNITY,
     CANDIDATE_QUALITY,
@@ -26,6 +26,8 @@ GURUS = {
     "graham": ("שיעור 4 - בנג'מין גראהם", graham.CRITERIA),
     "fisher": ("שיעור 5 - קן פישר", fisher.CRITERIA),
     "piotroski": ("שיעור 6 - יוסף פיוטרוסקי", piotroski.CRITERIA),
+    "buffett": ("שיעור 7 - וורן באפט", buffett.CRITERIA),
+    "neff": ("שיעור 8 - ג'ון נף", neff.CRITERIA),
 }
 
 HEADER = (
@@ -37,6 +39,7 @@ SCORING = """
 
 - כל קריטריון מחזיר `PASS` / `FAIL` / `NA` ועוצמה (strength) בין 0 ל-1: עובר עם מרווח של לפחות
   20% מהסף = 1.0; עובר בפחות = 0.75; נכשל בפחות מ-20% = 0.25; נכשל בהרבה = 0.
+- שורה `MANUAL` ("בדיקה אנושית") אי אפשר לחשב מהדוחות: היא בטבלה, ואינה נספרת בציון או בכיסוי.
 - נתון חסר = `NA`: לא נספר בציון, ומוריד את ה"כיסוי". כיסוי מתחת ל-60% = הגורו לא מדרג את המניה.
 - בדיוק על הסף נכשלים (השוואה חמורה) אלא אם כתוב אחרת. ערך שלילי לא עובר מבחן "מתחת לסף".
 """
@@ -87,6 +90,8 @@ def render_opportunity() -> str:
 
 
 def _threshold(c: Criterion) -> str:
+    if c.manual:
+        return "בדיקה אנושית"
     return f"{c.direction} {c.threshold:g}"
 
 

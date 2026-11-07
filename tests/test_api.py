@@ -180,14 +180,14 @@ def test_stock_endpoints_before_and_after_a_run(client, repo):
     assert data["run"]["id"] == run and [s["symbol"] for s in data["stocks"]] == ["AAA", "BBB"]
     assert (data["quality_min"], data["opportunity_min"]) == (0.7, 0.2)
     aaa = data["stocks"][0]
-    assert set(aaa["gurus"]) == {"screen", "graham", "fisher", "piotroski"}
+    assert set(aaa["gurus"]) == {"screen", "graham", "fisher", "piotroski", "buffett", "neff"}
     assert aaa["labels"] == ["regular"] and isinstance(aaa["candidate"], bool)
     screen = aaa["gurus"]["screen"]
     assert screen["total"] == 8
     assert screen["passed"] <= screen["computed"] <= 8
 
     detail = client.get("/api/stocks/aaa").json()  # symbol is case-insensitive
-    assert len(detail["criteria"]) == 28 and detail["symbol"] == "AAA"
+    assert len(detail["criteria"]) == 45 and detail["symbol"] == "AAA"
     by_id = {(c["guru"], c["id"]): c for c in detail["criteria"]}
     assert by_id[("graham", "pe")]["title"] and by_id[("graham", "pe")]["direction"] == "<"
     assert by_id[("piotroski", "roa")]["comparative"] is True
@@ -206,8 +206,17 @@ def test_stock_endpoints_before_and_after_a_run(client, repo):
 def test_criteria_catalog_lists_every_criterion(client):
     login(client)
     data = client.get("/api/criteria").json()
-    assert [g["guru"] for g in data["gurus"]] == ["screen", "graham", "fisher", "piotroski"]
-    assert sum(len(g["criteria"]) for g in data["gurus"]) == 28
+    assert [g["guru"] for g in data["gurus"]] == [
+        "screen",
+        "graham",
+        "fisher",
+        "piotroski",
+        "buffett",
+        "neff",
+    ]
+    assert sum(len(g["criteria"]) for g in data["gurus"]) == 45
+    manual = [c["id"] for g in data["gurus"] for c in g["criteria"] if c["manual"]]
+    assert manual == ["consumer_monopoly", "inflation_pricing", "simple_product", "dcf_price"]
     assert len(data["opportunity"]) == 4 and data["scoring"]
 
 

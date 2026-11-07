@@ -21,7 +21,7 @@ from value_scanner.learn import kind as learn_kind
 from value_scanner.sources.stockanalysis import DEFAULT_STATEMENTS
 from value_scanner.storage.repo import Repository
 
-GURU_KEYS = ("screen", "graham", "fisher", "piotroski")
+GURU_KEYS = ("screen", "graham", "fisher", "piotroski", "buffett", "neff")
 
 
 def _all_criteria() -> dict[tuple[str, str], Criterion]:
@@ -281,6 +281,7 @@ def criteria_view() -> schemas.CriteriaOut:
                         direction=c.direction,
                         threshold=c.threshold,
                         note=c.note,
+                        manual=c.manual,
                     )
                     for c in crit.values()
                 ],

@@ -24,7 +24,7 @@ from value_scanner.jobs.refresh import (
     download_statements,
     statement_refresh_reason,
 )
-from value_scanner.jobs.universe import SNAPSHOT_FIELDS
+from value_scanner.jobs.universe import SNAPSHOT_FIELDS, industry_return_medians
 from value_scanner.settings import Settings
 from value_scanner.sources.screener import Blocked, Universe, evaluate, fetch_universe
 from value_scanner.sources.stockanalysis import DEFAULT_STATEMENTS, StatementFetcher
@@ -85,7 +85,8 @@ def analyse_ticker(
     repo.set_run_summary(run_id, symbol)  # the status endpoint finds the run by this
     status, message, error = "failed", "", None
     try:
-        stock = {k.upper(): v for k, v in fetch().stocks.items()}.get(symbol)
+        universe = fetch()
+        stock = {k.upper(): v for k, v in universe.stocks.items()}.get(symbol)
         if stock is None:
             message = "unknown ticker (not in the StockAnalysis screener)"
             return RunOutcome(run_id, "failed", f"{symbol}: {message}")
@@ -103,7 +104,14 @@ def analyse_ticker(
             repo.save_snapshot(
                 run_id,
                 symbol,
-                {**fields, "in_screen": int(outcome.passed), "filters_failed": len(outcome.failed)},
+                {
+                    **fields,
+                    "industry_return_median": industry_return_medians(universe).get(
+                        stock.get("industry") or ""
+                    ),
+                    "in_screen": int(outcome.passed),
+                    "filters_failed": len(outcome.failed),
+                },
             )
         # Statements are downloaded only when stale (D18: a new report appeared, or 45 days);
         # otherwise only the price and multiples (from the screener row above) are refreshed.

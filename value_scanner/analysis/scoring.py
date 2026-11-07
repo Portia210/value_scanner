@@ -31,7 +31,7 @@ class GuruScore:
 
 
 def guru_score(results: Iterable[Result]) -> GuruScore:
-    results = list(results)
+    results = [r for r in results if r.status != Status.MANUAL]  # a human check is not a test
     scored = [r for r in results if r.status != Status.NA and r.strength is not None]
     total = len(results)
     coverage = len(scored) / total if total else 0.0

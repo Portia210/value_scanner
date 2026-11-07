@@ -8,7 +8,7 @@
 
 **What this is:** A value-investing stock scanner. It scrapes financial statements from
 StockAnalysis.com, checks each stock against the guru criteria from the developer's course
-(lessons 3–6: initial screen, Graham, Ken Fisher, Piotroski), and scores quality and buy
+(lessons 3–8: initial screen, Graham, Ken Fisher, Piotroski, Buffett, Neff), and scores quality and buy
 opportunity. **Being rebuilt as v2:** an online dashboard on Railway with scheduled runs —
 see `.claude/plans/v2-rebuild.md`.
 **Stack:** Python ≥3.11, uv, pandas, httpx, BeautifulSoup (Playwright only in legacy v1 code). v2 adds a FastAPI
